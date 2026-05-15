@@ -3,6 +3,26 @@ services:
     container_name: nextjs_frontend
     build:
       context: .
+      dockerfile: Dockerfile.dev
+    working_dir: /app
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    ports:
+      - "${PORT:-3004}:${PORT:-3004}"
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:3000}
+      - WATCHPACK_POLLING=true
+      - CHOKIDAR_USEPOLLING=true
+    command: npm run dev -- -p ${PORT:-3004}
+
+  web-prod:
+    profiles: [prod]
+    container_name: nextjs_frontend_prod
+    build:
+      context: .
       dockerfile: Dockerfile
       args:
         NODE_ENV: production
