@@ -19,12 +19,9 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-COPY package.json package-lock.json ./
-RUN npm install --production
-
-COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
-COPY --from=builder /app/package.json ./package.json
 
 ENV NODE_ENV=production
 ENV PORT=3004
@@ -32,4 +29,4 @@ ENV NEXT_PUBLIC_API_URL=http://localhost:3000
 
 EXPOSE 3004
 
-CMD ["npm", "run", "start", "--", "-p", "3004"]
+CMD ["node", "server.js"]
