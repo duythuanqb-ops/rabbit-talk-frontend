@@ -20,3 +20,22 @@ export async function googleLogin(token: string) {
     body: JSON.stringify({ token }),
   });
 }
+
+export async function getProfile() {
+  return apiCall('/auth/profile', {
+    method: 'GET',
+  });
+}
+
+export async function sendVerificationEmail() {
+  return apiCall('/auth/send-verification-email', {
+    method: 'POST',
+  });
+}
+
+export async function verifyEmailOtp(code: string) {
+  return apiCall('/auth/verify-email-otp', {
+    method: 'POST',
+    body: JSON.stringify({ code }),
+  });
+}
