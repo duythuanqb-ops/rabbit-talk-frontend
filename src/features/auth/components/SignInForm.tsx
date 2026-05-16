@@ -2,8 +2,9 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { login } from '@/features/auth/services/auth.service';
+import { login, googleLogin } from '@/features/auth/services/auth.service';
 import { EyeIcon, EyeOffIcon } from '@/shared/icons';
+import { useGoogleLogin } from '@react-oauth/google';
 
 export default function SignInForm() {
   const [identifier, setIdentifier] = useState('');
@@ -13,6 +14,24 @@ export default function SignInForm() {
   const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+
+  const handleGoogleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      setError(null);
+      setSuccess(null);
+      setLoading(true);
+      try {
+        const result = await googleLogin(tokenResponse.access_token);
+        setSuccess(result.message || 'Google login successful');
+        router.push('/dashboard');
+      } catch (err: any) {
+        setError(err.message || 'Google login failed');
+      } finally {
+        setLoading(false);
+      }
+    },
+    onError: () => setError('Google login failed'),
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -102,7 +121,9 @@ export default function SignInForm() {
 
         <button
           type="button"
-          className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-900 transition hover:border-slate-300 hover:bg-slate-50"
+          onClick={() => handleGoogleLogin()}
+          disabled={loading}
+          className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-900 transition hover:border-slate-300 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M23.5 12.2814C23.5 11.4167 23.4292 10.7083 23.2917 10.0208H12.25V13.9792H18.2625C18.0575 15.0625 17.4025 16.0104 16.4042 16.6458V19.5208H19.8125C21.6775 17.9167 23 15.303 23 12.2814Z" fill="#4285F4" />
