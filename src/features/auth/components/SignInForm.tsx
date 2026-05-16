@@ -1,23 +1,81 @@
+'use client';
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { login } from '@/features/auth/services/auth.service';
+import { EyeIcon, EyeOffIcon } from '@/shared/icons';
+
 export default function SignInForm() {
+  const [identifier, setIdentifier] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setSuccess(null);
+    setLoading(true);
+
+    try {
+      const result = await login(identifier, password);
+      setSuccess(result.message || 'Login successful');
+      router.push('/dashboard');
+    } catch (err: any) {
+      setError(err.message || 'Something went wrong');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
   return (
-    <form className="space-y-6">
+    <form className="space-y-6" onSubmit={handleSubmit}>
       <div className="space-y-4">
+        {error && (
+          <div className="rounded-xl bg-red-50 p-4 text-sm text-red-600 border border-red-100">
+            {error}
+          </div>
+        )}
+        {success && (
+          <div className="rounded-xl bg-emerald-50 p-4 text-sm text-emerald-600 border border-emerald-100">
+            {success}
+          </div>
+        )}
         <label className="block text-sm font-medium text-slate-700">
           Email or username
           <input
             type="text"
+            value={identifier}
+            onChange={(e) => setIdentifier(e.target.value)}
             placeholder="Email or username"
+            required
             className="mt-3 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
           />
         </label>
 
-        <label className="block text-sm font-medium text-slate-700">
+        <label className="block text-sm font-medium text-slate-700 relative">
           Password
-          <input
-            type="password"
-            placeholder="Password"
-            className="mt-3 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
-          />
+          <div className="relative mt-3">
+            <input
+              type={showPassword ? 'text' : 'password'}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Password"
+              required
+              className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100 pr-12"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-emerald-500 transition-colors"
+            >
+              {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+            </button>
+          </div>
         </label>
       </div>
 
@@ -31,9 +89,10 @@ export default function SignInForm() {
       <div className="space-y-4">
         <button
           type="submit"
-          className="inline-flex w-full items-center justify-center rounded-2xl bg-emerald-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-200"
+          disabled={loading}
+          className="inline-flex w-full items-center justify-center rounded-2xl bg-emerald-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-200 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Sign in
+          {loading ? 'Signing in...' : 'Sign in'}
         </button>
 
         <div className="relative flex items-center justify-center text-xs uppercase tracking-[0.3em] text-slate-400">
