@@ -1,7 +1,10 @@
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Toast from '@/components/ui/Toast';
 import { userAPI } from '@/features/user/services/user.service';
-import { EyeIcon, EyeOffIcon } from '@/shared/icons';
+import { EyeIcon, EyeOffIcon, GoogleIcon } from '@/shared/icons';
+import { googleLogin } from '@/features/auth/services/auth.service';
+import { useGoogleLogin } from '@react-oauth/google';
 
 interface Props {
   onSuccess?: () => void;
@@ -25,6 +28,7 @@ export default function SignUpForm({ onSuccess }: Props) {
     type: 'success',
     visible: false,
   });
+  const router = useRouter();
 
   const inputClass =
     'mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100 pr-12';
@@ -36,6 +40,26 @@ export default function SignUpForm({ onSuccess }: Props) {
   const showMessage = (message: string, type: 'success' | 'error' = 'success') => {
     setToast({ message, type, visible: true });
   };
+
+  const handleGoogleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      setIsSubmitting(true);
+      try {
+        await googleLogin(tokenResponse.access_token);
+        showMessage('Google account connected successfully!', 'success');
+        if (onSuccess) {
+          onSuccess();
+        } else {
+          router.push('/dashboard');
+        }
+      } catch (error: any) {
+        showMessage(error.message || 'Google signup failed', 'error');
+      } finally {
+        setIsSubmitting(false);
+      }
+    },
+    onError: () => showMessage('Google signup failed', 'error'),
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -197,6 +221,21 @@ export default function SignUpForm({ onSuccess }: Props) {
           className="mt-2 inline-flex w-full items-center justify-center rounded-2xl bg-emerald-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-200 disabled:opacity-50"
         >
           {isSubmitting ? 'Creating account...' : 'Create account'}
+        </button>
+
+        <div className="relative flex items-center justify-center text-xs uppercase tracking-[0.3em] text-slate-400 mt-4 mb-4">
+          <span className="absolute left-0 right-0 top-1/2 h-px bg-slate-200" />
+          <span className="relative bg-white px-3">or</span>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => handleGoogleLogin()}
+          disabled={isSubmitting}
+          className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-900 transition hover:border-slate-300 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <GoogleIcon />
+          Sign up with Google
         </button>
       </form>
     </>

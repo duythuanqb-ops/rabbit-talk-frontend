@@ -13,3 +13,10 @@ export async function logout() {
     method: 'POST',
   });
 }
+
+export async function googleLogin(token: string) {
+  return apiCall('/auth/google', {
+    method: 'POST',
+    body: JSON.stringify({ token }),
+  });
+}
