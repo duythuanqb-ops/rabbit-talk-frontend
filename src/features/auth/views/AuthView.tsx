@@ -1,17 +1,33 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import AuthCard from '../components/AuthCard';
 import SignUpCard from '../components/SignUpCard';
 
 export default function AuthView() {
-  const [panelIsSignUp, setPanelIsSignUp] = useState(false);
-  const [formIsSignUp, setFormIsSignUp] = useState(false);
+  const pathname = usePathname();
+  const router = useRouter();
+  const isSignUpPath = pathname === '/sign-up';
+
+  const [panelIsSignUp, setPanelIsSignUp] = useState(isSignUpPath);
+  const [formIsSignUp, setFormIsSignUp] = useState(isSignUpPath);
   const [formVisible, setFormVisible] = useState(true);
 
+  useEffect(() => {
+    setPanelIsSignUp(isSignUpPath);
+    setFormIsSignUp(isSignUpPath);
+  }, [isSignUpPath]);
+
   const switchTo = (toSignUp: boolean) => {
+    const newPath = toSignUp ? '/sign-up' : '/sign-in';
+    
     setPanelIsSignUp(toSignUp);
     setFormVisible(false);
+    
+    // Change URL
+    router.push(newPath, { scroll: false });
+
     setTimeout(() => {
       setFormIsSignUp(toSignUp);
       setFormVisible(true);
@@ -36,6 +52,12 @@ export default function AuthView() {
             className="h-36 w-auto drop-shadow-md"
           />
           <p className="mt-2 text-xs font-bold uppercase tracking-widest text-emerald-600">RibbitTalk</p>
+          <h1 className="mt-4 text-3xl font-bold text-slate-900 leading-tight text-center">
+            {panelIsSignUp ? 'Start your journey' : 'Learn every day,'}
+            <span className="block text-emerald-600 text-2xl">
+              {panelIsSignUp ? 'one lesson at a time.' : 'smile every hour.'}
+            </span>
+          </h1>
         </div>
 
         {/* Form */}

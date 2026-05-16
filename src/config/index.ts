@@ -1,13 +1,9 @@
-import development from './development';
-import production from './production';
-
 const env = process.env.NODE_ENV === 'production' ? 'production' : 'development';
-const baseConfig = env === 'production' ? production : development;
 
 const config = {
   nodeEnv: env,
-  port: Number(process.env.PORT ?? baseConfig.port),
-  apiUrl: process.env.NEXT_PUBLIC_API_URL ?? baseConfig.apiUrl,
+  port: Number(process.env.PORT ?? 3004),
+  apiUrl: process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000/api/v1',
 } as const;
 
 export default config;
