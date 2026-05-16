@@ -70,7 +70,8 @@ export default function SignUpForm({ onSuccess }: Props) {
 
     setIsSubmitting(true);
     try {
-      await userAPI.create(formData);
+      const { confirm_password, ...submitData } = formData;
+      await userAPI.create(submitData);
       showMessage('Account created successfully!', 'success');
       // Clear form
       setFormData({
