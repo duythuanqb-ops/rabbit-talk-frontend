@@ -16,8 +16,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "RibbitTalk | Sign in",
-  description: "RibbitTalk authentication page with a friendly green frog brand experience.",
+  title: {
+    template: '%s | RibbitTalk',
+    default: 'RibbitTalk',
+  },
+  description: "RibbitTalk: Interactive language learning platform with a friendly green frog brand experience.",
   icons: {
     icon: "/rabbit-mascot.png?v=1",
   },

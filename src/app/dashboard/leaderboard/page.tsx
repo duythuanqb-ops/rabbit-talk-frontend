@@ -1,6 +1,6 @@
 'use client';
 
-import { DashboardLayout } from '@/features/dashboard/components/DashboardLayout';
+import { DashboardLayout } from '@/features/dashboard/components';
 import { Trophy, Star, Flame } from 'lucide-react';
 
 const mockTop3 = [

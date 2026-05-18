@@ -1,15 +1,16 @@
 'use client';
 
-import { useState } from 'react';
-import { DashboardLayout } from '@/features/dashboard/components/DashboardLayout';
-import { StatCard } from '@/features/dashboard/components/StatCard';
-import { Leaderboard } from '@/features/dashboard/components/Leaderboard';
-import { AttendanceTracker } from '@/features/dashboard/components/AttendanceTracker';
-import { VocabularyWidget } from '@/features/dashboard/components/VocabularyWidget';
-import { TeacherGroupManager } from '@/features/dashboard/components/TeacherGroupManager';
-import { DailyQuests } from '@/features/dashboard/components/DailyQuests';
-import { UpcomingAssignments } from '@/features/dashboard/components/UpcomingAssignments';
-import { NeedsAttention } from '@/features/dashboard/components/NeedsAttention';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { DashboardLayout } from '@/features/dashboard/components';
+import { StatCard } from '@/features/dashboard/components';
+import { Leaderboard } from '@/features/dashboard/components';
+import { AttendanceTracker } from '@/features/dashboard/components';
+import { VocabularyWidget } from '@/features/dashboard/components';
+import { TeacherGroupManager } from '@/features/dashboard/components';
+import { DailyQuests } from '@/features/dashboard/components';
+import { UpcomingAssignments } from '@/features/dashboard/components';
+import { NeedsAttention } from '@/features/dashboard/components';
 import { 
   Users, 
   BookOpen, 
@@ -17,8 +18,10 @@ import {
   Star, 
   Flame,
   FileText,
-  Clock
+  Clock,
+  Loader2
 } from 'lucide-react';
+import { getProfile } from '@/features/auth/services/auth.service';
 
 const mockLeaderboard = [
   { id: '1', name: 'Leo Chen', points: 2450, rank: 1 },
@@ -29,36 +32,53 @@ const mockLeaderboard = [
 ];
 
 export default function DashboardPage() {
-  const [role, setRole] = useState<'student' | 'teacher'>('student');
+  const router = useRouter();
+  const [role, setRole] = useState<'student' | 'teacher' | null>(null);
+  const [userName, setUserName] = useState('');
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getProfile()
+      .then((res) => {
+        const user = res.data || res;
+        if (user.role === 'admin') {
+          router.push('/dashboard/admin');
+        } else {
+          setRole(user.role || 'student');
+          setUserName(user.first_name || user.username || 'User');
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to fetch profile', err);
+        setRole('student');
+        setUserName('User');
+        setLoading(false);
+      });
+  }, [router]);
+
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <div className="flex justify-center items-center h-64">
+          <Loader2 className="animate-spin text-emerald-500" size={32} />
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout>
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-8">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight">
-            Good morning, {role === 'student' ? 'Leo!' : 'Professor Rossi!'} 👋
+            Good morning, {role === 'student' ? `${userName}!` : `Professor ${userName}!`} 👋
           </h1>
           <p className="text-sm md:text-base text-slate-500 mt-1">
             {role === 'student' 
               ? "You're on an 18-day streak! Keep up the great work." 
               : "Here's what's happening with your classes today."}
           </p>
-        </div>
-        
-        {/* Simple Role Toggle for Demo */}
-        <div className="flex bg-slate-200/50 p-1 rounded-xl border border-slate-200 w-full md:w-auto self-stretch md:self-auto overflow-hidden">
-          <button 
-            onClick={() => setRole('student')}
-            className={`flex-1 md:flex-none px-4 py-2 rounded-lg text-xs font-bold transition-all ${role === 'student' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500'}`}
-          >
-            Student View
-          </button>
-          <button 
-            onClick={() => setRole('teacher')}
-            className={`flex-1 md:flex-none px-4 py-2 rounded-lg text-xs font-bold transition-all ${role === 'teacher' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500'}`}
-          >
-            Teacher View
-          </button>
         </div>
       </div>
 

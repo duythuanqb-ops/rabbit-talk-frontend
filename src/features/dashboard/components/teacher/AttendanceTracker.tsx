@@ -1,5 +1,5 @@
 import { CheckCircle2, Circle } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn } from '@/shared/utils/cn';
 
 const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 

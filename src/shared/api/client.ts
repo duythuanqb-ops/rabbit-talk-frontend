@@ -2,16 +2,24 @@ import config from '@/config';
 
 const API_URL = config.apiUrl;
 
+const NO_REFRESH_ENDPOINTS = ['/auth/login', '/auth/logout', '/auth/refresh', '/auth/google'];
+
+function redirectToSignIn() {
+  if (typeof window !== 'undefined') {
+    window.location.href = '/sign-in';
+  }
+}
+
 export async function apiCall<T = any>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> {
   const url = `${API_URL}${endpoint}`;
-  
+
   const fetchOptions: RequestInit = {
     ...options,
     headers: {
-      'Content-Type': 'application/json',
+      ...(options.body instanceof FormData ? {} : { 'Content-Type': 'application/json' }),
       ...options.headers,
     },
     credentials: 'include',
@@ -19,8 +27,11 @@ export async function apiCall<T = any>(
 
   let response = await fetch(url, fetchOptions);
 
-  // If unauthorized and not already trying to auth, try to refresh
-  if (response.status === 401 && !endpoint.includes('/auth/')) {
+  // If unauthorized and not a no-refresh endpoint, attempt token refresh
+  const shouldAttemptRefresh = response.status === 401 &&
+    !NO_REFRESH_ENDPOINTS.some(ep => endpoint.includes(ep));
+
+  if (shouldAttemptRefresh) {
     try {
       const refreshRes = await fetch(`${API_URL}/auth/refresh`, {
         method: 'POST',
@@ -28,11 +39,21 @@ export async function apiCall<T = any>(
       });
 
       if (refreshRes.ok) {
-        // Retry the original request
+        // Retry the original request with fresh token
         response = await fetch(url, fetchOptions);
+      } else {
+        // Refresh token is invalid/expired — session is lost, force logout
+        console.warn('[apiCall] Refresh token expired. Redirecting to sign-in.');
+        redirectToSignIn();
+        throw new Error('Session expired. Please sign in again.');
       }
     } catch (err) {
-      console.error('Refresh token failed:', err);
+      if (err instanceof Error && err.message === 'Session expired. Please sign in again.') {
+        throw err;
+      }
+      console.error('[apiCall] Refresh token request failed:', err);
+      redirectToSignIn();
+      throw new Error('Session expired. Please sign in again.');
     }
   }
 
@@ -44,5 +65,3 @@ export async function apiCall<T = any>(
 
   return response.json();
 }
-
-
