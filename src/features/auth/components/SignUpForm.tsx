@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Toast from '@/components/ui/Toast';
+import Toast from '@/shared/components/Toast';
 import { userAPI } from '@/features/user/services/user.service';
 import { EyeIcon, EyeOffIcon, GoogleIcon } from '@/shared/icons';
 import { googleLogin } from '@/features/auth/services/auth.service';

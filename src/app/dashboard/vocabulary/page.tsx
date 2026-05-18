@@ -1,6 +1,6 @@
 'use client';
 
-import { DashboardLayout } from '@/features/dashboard/components/DashboardLayout';
+import { DashboardLayout } from '@/features/dashboard/components';
 import { BookOpen, Search, Filter, Play, CheckCircle2 } from 'lucide-react';
 
 const mockSets = [

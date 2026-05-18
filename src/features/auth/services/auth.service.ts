@@ -1,5 +1,5 @@
-import config from '@/config';
 import { apiCall } from '@/shared/api/client';
+
 
 export async function login(identifier: string, pass: string) {
   return apiCall('/auth/login', {
@@ -39,3 +39,43 @@ export async function verifyEmailOtp(code: string) {
     body: JSON.stringify({ code }),
   });
 }
+
+export async function updateProfile(data: {
+  first_name?: string;
+  last_name?: string;
+  bio?: string;
+}) {
+  return apiCall('/auth/profile', {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function uploadAvatar(file: File) {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  return apiCall('/auth/avatar', {
+    method: 'POST',
+    body: formData as any,
+  });
+}
+
+export async function removeAvatar() {
+  return apiCall('/auth/avatar/remove', {
+    method: 'PATCH',
+  });
+}
+
+export async function registerTeacher(data: {
+  headline: string;
+  experience_years: number;
+  video_intro_url?: string;
+  certificates?: string;
+}) {
+  return apiCall('/auth/teacher/register', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+

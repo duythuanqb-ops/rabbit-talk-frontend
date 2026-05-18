@@ -1,13 +1,45 @@
 'use client';
 
-import { DashboardLayout } from '@/features/dashboard/components/DashboardLayout';
-import { TeacherGroupManager } from '@/features/dashboard/components/TeacherGroupManager';
-import { Users, Search, Plus, UserPlus, GraduationCap } from 'lucide-react';
-import { useState } from 'react';
+import { DashboardLayout } from '@/features/dashboard/components';
+import { TeacherGroupManager } from '@/features/dashboard/components';
+import { Users, Search, Plus, UserPlus, GraduationCap, Loader2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { getProfile } from '@/features/auth/services/auth.service';
 
 export default function GroupsPage() {
-  const [role, setRole] = useState<'student' | 'teacher'>('student');
+  const router = useRouter();
+  const [role, setRole] = useState<'student' | 'teacher' | null>(null);
   const [studentTab, setStudentTab] = useState<'classes' | 'friends'>('classes');
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getProfile()
+      .then((res) => {
+        const user = res.data || res;
+        if (user.role === 'admin') {
+          router.push('/dashboard/admin');
+        } else {
+          setRole(user.role || 'student');
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to fetch profile', err);
+        setRole('student');
+        setLoading(false);
+      });
+  }, [router]);
+
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <div className="flex justify-center items-center h-64">
+          <Loader2 className="animate-spin text-emerald-500" size={32} />
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout>
@@ -20,21 +52,6 @@ export default function GroupsPage() {
           <p className="text-sm md:text-base text-slate-500 mt-1">
             {role === 'student' ? 'View your classes and connect with friends.' : 'Manage your classes and students.'}
           </p>
-        </div>
-        
-        <div className="flex bg-slate-200/50 p-1 rounded-xl border border-slate-200 w-full md:w-auto overflow-hidden">
-          <button 
-            onClick={() => setRole('student')} 
-            className={`flex-1 md:flex-none px-4 py-2 rounded-lg text-xs font-bold transition-all ${role === 'student' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500'}`}
-          >
-            Student
-          </button>
-          <button 
-            onClick={() => setRole('teacher')} 
-            className={`flex-1 md:flex-none px-4 py-2 rounded-lg text-xs font-bold transition-all ${role === 'teacher' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500'}`}
-          >
-            Teacher
-          </button>
         </div>
       </div>
 

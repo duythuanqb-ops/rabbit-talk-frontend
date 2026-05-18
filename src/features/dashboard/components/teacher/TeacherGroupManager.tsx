@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Users, Plus, FileText, BarChart3, ChevronLeft, BookOpen, Clock, Trophy, Play } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Users, Plus, FileText, BarChart3, ChevronLeft, BookOpen, Clock, Trophy, Play, Swords } from 'lucide-react';
 
 const mockGroups = [
   { 
@@ -23,9 +24,15 @@ const mockGroups = [
 ];
 
 export function TeacherGroupManager() {
+  const router = useRouter();
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
 
   const selectedGroup = mockGroups.find(g => g.id === selectedGroupId);
+
+  const handleStartBattle = (groupId: string, groupName: string, e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    router.push(`/dashboard/battle?groupId=${groupId}&groupName=${encodeURIComponent(groupName)}`);
+  };
 
   if (selectedGroup) {
     return (
@@ -103,21 +110,25 @@ export function TeacherGroupManager() {
             </div>
           </div>
 
-        {/* Live Battle Section */}
-          <div className="bg-gradient-to-r from-emerald-500 to-teal-500 rounded-xl p-5 text-white shadow-lg shadow-emerald-200">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          {/* Live Battle Section — now passes groupId to battle page */}
+          <div className="bg-gradient-to-r from-slate-900 to-slate-800 rounded-xl p-5 text-white shadow-lg relative overflow-hidden">
+            {/* Decorative glow */}
+            <div className="absolute -top-6 -right-6 w-32 h-32 bg-emerald-500/20 rounded-full blur-2xl pointer-events-none" />
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 relative z-10">
               <div>
                 <h4 className="font-bold flex items-center gap-2 text-lg">
-                  <Trophy size={20} className="text-yellow-300" />
+                  <Swords size={20} className="text-emerald-400" />
                   Live Vocab Battle
                 </h4>
-                <p className="text-sm text-white/80 mt-1">Engage your class in a real-time pronunciation competition.</p>
+                <p className="text-sm text-white/70 mt-1">
+                  Start a real-time pronunciation battle for <span className="font-semibold text-white">{selectedGroup.name}</span>
+                </p>
               </div>
               <button 
-                onClick={() => window.location.href = '/dashboard/battle'}
-                className="flex items-center gap-2 px-6 py-2.5 bg-white text-emerald-600 rounded-xl hover:bg-emerald-50 transition-colors font-bold shadow-sm whitespace-nowrap"
+                onClick={() => handleStartBattle(selectedGroup.id, selectedGroup.name)}
+                className="flex items-center gap-2 px-6 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-white rounded-xl transition-colors font-bold shadow-lg shadow-emerald-900/30 whitespace-nowrap"
               >
-                <Play size={16} className="fill-emerald-600" />
+                <Play size={16} className="fill-white" />
                 Start Battle
               </button>
             </div>
@@ -127,7 +138,7 @@ export function TeacherGroupManager() {
     );
   }
 
-  // Original list view below
+  // List view — each card now has a Battle button
   return (
     <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
       <div className="flex items-center justify-between mb-6">
@@ -144,9 +155,9 @@ export function TeacherGroupManager() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {mockGroups.map((group) => (
           <div 
-            key={group.id} 
+            key={group.id}
             onClick={() => setSelectedGroupId(group.id)}
-            className="p-4 rounded-2xl border border-slate-50 hover:border-emerald-200 transition-all cursor-pointer bg-slate-50/50 hover:shadow-md group"
+            className="p-4 rounded-2xl border border-slate-100 hover:border-emerald-200 transition-all cursor-pointer bg-slate-50/50 hover:shadow-md group"
           >
             <div className="flex justify-between items-start mb-4">
               <div>
@@ -158,7 +169,7 @@ export function TeacherGroupManager() {
               </div>
             </div>
             
-            <div className="space-y-2">
+            <div className="space-y-2 mb-4">
               <div className="flex justify-between text-xs font-bold text-slate-500 uppercase">
                 <span>Progress</span>
                 <span>{group.avgProgress}%</span>
@@ -171,7 +182,7 @@ export function TeacherGroupManager() {
               </div>
             </div>
 
-            <div className="mt-4 flex gap-2">
+            <div className="flex gap-2">
               <div className="flex-1 py-2 bg-white text-slate-700 text-xs font-bold rounded-lg border border-slate-100 flex items-center justify-center gap-2">
                 <FileText size={14} />
                 {group.exams.length} Exams
@@ -180,6 +191,15 @@ export function TeacherGroupManager() {
                 <BookOpen size={14} />
                 {group.vocabLessons.length} Vocab
               </div>
+              {/* Battle shortcut button */}
+              <button
+                onClick={(e) => handleStartBattle(group.id, group.name, e)}
+                className="px-3 py-2 bg-slate-900 hover:bg-emerald-600 text-white text-xs font-bold rounded-lg flex items-center gap-1.5 transition-colors shadow-sm"
+                title="Start Live Battle"
+              >
+                <Swords size={13} />
+                Battle
+              </button>
             </div>
           </div>
         ))}

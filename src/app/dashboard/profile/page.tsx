@@ -1,6 +1,6 @@
 'use client';
 
-import { DashboardLayout } from '@/features/dashboard/components/DashboardLayout';
+import { DashboardLayout } from '@/features/dashboard/components';
 import { UserCircle, Mail, MapPin, Calendar, Edit3, Settings, Shield, Award, Flame, Star } from 'lucide-react';
 
 export default function ProfilePage() {
