@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import config from '@/config';
 
@@ -13,48 +13,69 @@ import config from '@/config';
 export default function SessionManager() {
   const pathname = usePathname();
   const router = useRouter();
+  const hasRefreshedOnMount = useRef(false);
 
   useEffect(() => {
     const authRoutes = ['/sign-in', '/sign-up', '/'];
     const isAuthRoute = authRoutes.some(route => pathname === route || pathname.startsWith('/sign-'));
 
-    if (isAuthRoute) return;
+    if (isAuthRoute) {
+      // Reset so that when they log in again, we can do a refresh on mount if they reload
+      hasRefreshedOnMount.current = false;
+      return;
+    }
 
     /**
-     * Attempt to refresh the token. Returns true if successful, false if session is dead.
+     * Attempt to refresh the token.
+     * Returns:
+     * - 'success': Token refreshed successfully.
+     * - 'expired': Refresh token is expired or invalid (401/403).
+     * - 'network_error': Server is down, request aborted, or other network failure.
      */
-    async function tryRefresh(): Promise<boolean> {
+    async function tryRefresh(): Promise<'success' | 'expired' | 'network_error'> {
       try {
         const res = await fetch(`${config.apiUrl}/auth/refresh`, {
           method: 'POST',
           credentials: 'include',
         });
-        return res.ok;
-      } catch {
-        return false;
+        if (res.ok) return 'success';
+        if (res.status === 401 || res.status === 403) return 'expired';
+        return 'network_error';
+      } catch (err) {
+        console.warn('[SessionManager] tryRefresh caught exception:', err);
+        return 'network_error';
       }
     }
 
-    // Immediately refresh on mount for protected routes.
-    // This ensures a long-idle session gets a fresh token before any API call is made.
-    (async () => {
-      const ok = await tryRefresh();
-      if (ok) {
-        console.debug('[SessionManager] Token refreshed on mount');
-      } else {
-        console.warn('[SessionManager] Session expired on mount. Redirecting to sign-in.');
-        router.replace('/sign-in');
-      }
-    })();
+    // Immediately refresh on mount for protected routes ONLY once per app load.
+    // This prevents redundant requests during rapid client-side navigations.
+    if (!hasRefreshedOnMount.current) {
+      (async () => {
+        const result = await tryRefresh();
+        if (result === 'success') {
+          console.debug('[SessionManager] Token refreshed on initial mount');
+          hasRefreshedOnMount.current = true;
+        } else if (result === 'expired') {
+          console.warn('[SessionManager] Session expired on mount. Redirecting to sign-in.');
+          router.replace('/sign-in');
+        } else {
+          console.warn('[SessionManager] Network issue during mount refresh. Allowing session to continue.');
+          // Do not redirect to sign-in on network errors!
+          hasRefreshedOnMount.current = true; // Mark as done to prevent infinite retries
+        }
+      })();
+    }
 
     // Proactively refresh every 10 minutes to keep session alive
     const interval = setInterval(async () => {
-      const ok = await tryRefresh();
-      if (ok) {
+      const result = await tryRefresh();
+      if (result === 'success') {
         console.debug('[SessionManager] Token proactively refreshed');
-      } else {
-        console.warn('[SessionManager] Proactive refresh failed. Redirecting to sign-in.');
+      } else if (result === 'expired') {
+        console.warn('[SessionManager] Proactive refresh failed (session expired). Redirecting to sign-in.');
         router.replace('/sign-in');
+      } else {
+        console.warn('[SessionManager] Proactive refresh failed due to network. Will retry next interval.');
       }
     }, 10 * 60 * 1000); // 10 minutes
 
