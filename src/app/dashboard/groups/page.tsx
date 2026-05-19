@@ -3,7 +3,7 @@
 import { DashboardLayout } from '@/features/dashboard/components';
 import { TeacherGroupManager } from '@/features/dashboard/components';
 import { Users, Search, Plus, UserPlus, GraduationCap, Loader2 } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import { getProfile } from '@/features/auth/services/auth.service';
 
@@ -56,7 +56,9 @@ export default function GroupsPage() {
       </div>
 
       {role === 'teacher' ? (
-        <TeacherGroupManager />
+        <Suspense fallback={<div className="flex justify-center items-center h-64"><Loader2 className="animate-spin text-emerald-500" size={32} /></div>}>
+          <TeacherGroupManager />
+        </Suspense>
       ) : (
         <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
@@ -129,7 +131,7 @@ export default function GroupsPage() {
                <div className="flex gap-2 w-full max-w-md mb-6">
                  <div className="relative flex-1">
                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                   <input type="text" placeholder="Search friends by name or username..." className="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500" />
+                   <input type="text" placeholder="Search friends by name or username..." className="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-slate-800" />
                  </div>
                  <button className="px-6 py-2.5 bg-emerald-500 text-white font-bold rounded-xl text-sm hover:bg-emerald-600 transition shadow-lg shadow-emerald-200">
                    Search
