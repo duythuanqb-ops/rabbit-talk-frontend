@@ -15,6 +15,7 @@ import {
   ShieldAlert,
   School,
   ChevronUp,
+  UserPlus,
 } from 'lucide-react';
 import { cn } from '@/shared/utils/cn';
 import { logout, getProfile } from '@/features/auth/services/auth.service';
@@ -32,6 +33,7 @@ const studentNav = [
   { name: 'Dashboard', icon: LayoutDashboard, href: '/dashboard' },
   { name: 'My Groups', icon: Users, href: '/dashboard/groups' },
   { name: 'Vocabulary', icon: BookOpen, href: '/dashboard/vocabulary' },
+  { name: 'Friends', icon: UserPlus, href: '/dashboard/friends' },
   { name: 'Leaderboard', icon: Trophy, href: '/dashboard/leaderboard' },
   { name: 'Profile', icon: UserCircle, href: '/dashboard/profile' },
 ];
@@ -39,6 +41,7 @@ const studentNav = [
 const teacherNav = [
   { name: 'Dashboard', icon: LayoutDashboard, href: '/dashboard' },
   { name: 'My Classes', icon: School, href: '/dashboard/groups' },
+  { name: 'Friends', icon: UserPlus, href: '/dashboard/friends' },
   { name: 'Leaderboard', icon: Trophy, href: '/dashboard/leaderboard' },
   { name: 'Profile', icon: UserCircle, href: '/dashboard/profile' },
 ];

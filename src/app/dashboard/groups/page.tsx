@@ -10,7 +10,6 @@ import { getProfile } from '@/features/auth/services/auth.service';
 export default function GroupsPage() {
   const router = useRouter();
   const [role, setRole] = useState<'student' | 'teacher' | null>(null);
-  const [studentTab, setStudentTab] = useState<'classes' | 'friends'>('classes');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -61,24 +60,6 @@ export default function GroupsPage() {
         </Suspense>
       ) : (
         <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-              <div className="flex gap-4 border-b border-slate-100 w-full md:w-auto">
-                 <button 
-                   onClick={() => setStudentTab('classes')}
-                   className={`pb-3 text-sm font-bold transition-colors ${studentTab === 'classes' ? 'text-emerald-600 border-b-2 border-emerald-500' : 'text-slate-500 hover:text-slate-700'}`}
-                 >
-                   My Classes
-                 </button>
-                 <button 
-                   onClick={() => setStudentTab('friends')}
-                   className={`pb-3 text-sm font-bold transition-colors ${studentTab === 'friends' ? 'text-emerald-600 border-b-2 border-emerald-500' : 'text-slate-500 hover:text-slate-700'}`}
-                 >
-                   Find Friends
-                 </button>
-              </div>
-           </div>
-           
-           {studentTab === 'classes' ? (
              <div>
                <p className="text-sm text-slate-500 mb-4 bg-slate-50 p-3 rounded-lg border border-slate-100 flex items-center gap-2">
                  <GraduationCap size={16} className="text-emerald-500" />
@@ -126,42 +107,6 @@ export default function GroupsPage() {
                   ))}
                </div>
              </div>
-           ) : (
-             <div>
-               <div className="flex gap-2 w-full max-w-md mb-6">
-                 <div className="relative flex-1">
-                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                   <input type="text" placeholder="Search friends by name or username..." className="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-slate-800" />
-                 </div>
-                 <button className="px-6 py-2.5 bg-emerald-500 text-white font-bold rounded-xl text-sm hover:bg-emerald-600 transition shadow-lg shadow-emerald-200">
-                   Search
-                 </button>
-               </div>
-               
-               <div className="space-y-3">
-                 {[
-                   { name: 'Michael Scott', username: '@mscott', mutual: 3, avatar: 'MS' },
-                   { name: 'Jim Halpert', username: '@jhalpert', mutual: 1, avatar: 'JH' },
-                   { name: 'Pam Beesly', username: '@pbeesly', mutual: 5, avatar: 'PB' },
-                 ].map((user, i) => (
-                   <div key={i} className="flex items-center justify-between p-4 rounded-xl border border-slate-100 hover:bg-slate-50 transition-colors">
-                     <div className="flex items-center gap-4">
-                       <div className="w-10 h-10 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center font-bold">
-                         {user.avatar}
-                       </div>
-                       <div>
-                         <div className="font-bold text-slate-800">{user.name} <span className="font-normal text-slate-500 text-sm ml-1">{user.username}</span></div>
-                         <div className="text-xs text-slate-500 mt-0.5">{user.mutual} mutual friends</div>
-                       </div>
-                     </div>
-                     <button className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 text-slate-600 font-bold rounded-lg text-xs hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-200 transition-colors">
-                       <UserPlus size={14} /> Add Friend
-                     </button>
-                   </div>
-                 ))}
-               </div>
-             </div>
-           )}
         </div>
       )}
     </DashboardLayout>
