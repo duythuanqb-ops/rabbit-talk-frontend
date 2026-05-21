@@ -17,16 +17,14 @@ export function TeacherGroupManager() {
   const [members, setMembers] = useState<GroupMember[]>([]);
   const [loading, setLoading] = useState(true);
   
-  // Modals state
   const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
   const [isMemberModalOpen, setIsMemberModalOpen] = useState(false);
   const [editingGroup, setEditingGroup] = useState<Group | null>(null);
   
-  // Form state
   const [groupForm, setGroupForm] = useState({ title: '', description: '' });
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
-  const [memberEmail, setMemberEmail] = useState(''); // Just for simplicity, using a generic user_id field
+  const [memberEmail, setMemberEmail] = useState('');
   const [memberIdentifier, setMemberIdentifier] = useState(''); 
   const [confirmState, setConfirmState] = useState<{
     isOpen: boolean;
@@ -107,14 +105,12 @@ export function TeacherGroupManager() {
     e.preventDefault();
     try {
       if (editingGroup) {
-        // 1. Update text fields
         const updateRes = await groupsService.updateGroup(editingGroup.id, { 
           title: groupForm.title, 
           description: groupForm.description 
         });
         let updatedGroup = updateRes.data || updateRes as any;
 
-        // 2. Upload avatar if selected
         if (avatarFile) {
           const avatarRes = await groupsService.uploadAvatar(editingGroup.id, avatarFile);
           updatedGroup = avatarRes.data || avatarRes as any;
@@ -125,14 +121,12 @@ export function TeacherGroupManager() {
           setSelectedGroup(updatedGroup);
         }
       } else {
-        // 1. Create group first
         const createRes = await groupsService.createGroup({ 
           title: groupForm.title, 
           description: groupForm.description 
         });
         const newGroup = createRes.data || createRes as any;
 
-        // 2. Upload avatar if selected
         if (avatarFile && newGroup?.id) {
           await groupsService.uploadAvatar(newGroup.id, avatarFile);
         }
@@ -207,7 +201,6 @@ export function TeacherGroupManager() {
   if (selectedGroup) {
     return (
       <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm relative">
-        {/* Modals */}
         {isGroupModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
              <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
@@ -288,7 +281,6 @@ export function TeacherGroupManager() {
           </div>
         )}
 
-        {/* Detail view header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-100">
           <div className="flex items-center gap-4">
             <button 
@@ -339,7 +331,6 @@ export function TeacherGroupManager() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
-            {/* Live Battle Section */}
             <div className="bg-gradient-to-r from-slate-900 to-slate-800 rounded-2xl p-6 text-white shadow-xl relative overflow-hidden group">
               <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none group-hover:bg-emerald-500/30 transition-colors duration-700" />
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 relative z-10">
@@ -362,7 +353,6 @@ export function TeacherGroupManager() {
               </div>
             </div>
 
-            {/* Empty States for Exams & Vocab (Since backend isn't ready for these) */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="bg-slate-50/50 rounded-2xl p-5 border border-slate-100">
                 <div className="flex items-center justify-between mb-4">
@@ -375,22 +365,37 @@ export function TeacherGroupManager() {
                   <p className="text-sm text-slate-500 font-medium">Coming soon</p>
                 </div>
               </div>
-              <div className="bg-slate-50/50 rounded-2xl p-5 border border-slate-100">
-                <div className="flex items-center justify-between mb-4">
-                  <h4 className="font-bold text-slate-800 flex items-center gap-2">
-                    <BookOpen className="text-orange-500" size={18} />
-                    Vocabulary
-                  </h4>
+              <div className="bg-slate-50/50 rounded-2xl p-5 border border-slate-100 flex flex-col justify-between h-full">
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="font-bold text-slate-800 flex items-center gap-2">
+                      <BookOpen className="text-orange-500" size={18} />
+                      Vocabulary Sets
+                    </h4>
+                  </div>
+                  <p className="text-sm text-slate-500 mb-6">
+                    Create flashcards for your students with automated dictionary lookup and AI-generated definitions.
+                  </p>
                 </div>
-                <div className="p-6 text-center border-2 border-dashed border-slate-200 rounded-xl bg-white">
-                  <p className="text-sm text-slate-500 font-medium">Coming soon</p>
+                <div className="flex gap-2">
+                  <button 
+                    onClick={() => router.push(`/dashboard/vocabulary?groupId=${selectedGroup.id}`)}
+                    className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition-colors border border-slate-200"
+                  >
+                    View Library
+                  </button>
+                  <button 
+                    onClick={() => router.push(`/dashboard/vocabulary?groupId=${selectedGroup.id}&create=true`)}
+                    className="flex-1 py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl text-xs shadow-md shadow-orange-200 transition-colors"
+                  >
+                    + Create Set
+                  </button>
                 </div>
               </div>
             </div>
           </div>
 
           <div className="lg:col-span-1">
-            {/* Members Section */}
             <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm sticky top-6">
               <div className="flex items-center justify-between mb-5">
                 <h4 className="font-bold text-slate-800 flex items-center gap-2">
@@ -455,10 +460,8 @@ export function TeacherGroupManager() {
     );
   }
 
-  // List view
   return (
     <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm relative min-h-[400px]">
-      {/* Group Modal */}
       {isGroupModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
            <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">

@@ -1,6 +1,7 @@
 import { NextResponse, NextRequest } from 'next/server';
+import appConfig from '@/config';
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api/v1';
+const BACKEND_URL = appConfig.apiUrl;
 
 export async function middleware(request: NextRequest) {
   const accessToken = request.cookies.get('access_token');
@@ -38,7 +39,7 @@ export async function middleware(request: NextRequest) {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
                 sameSite: 'lax',
-                maxAge: 15 * 60, // 15 mins in seconds
+                maxAge: 15 * 60,
                 path: '/',
               });
             }
@@ -46,7 +47,6 @@ export async function middleware(request: NextRequest) {
           return response;
         }
       } catch {
-        // Network error talking to backend — fall through to redirect
       }
     }
 
