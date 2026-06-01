@@ -1,12 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Users, Plus, FileText, BarChart3, ChevronLeft, BookOpen, Clock, Play, Swords, Trash2, Edit, Loader2, UserPlus, UserMinus, Settings } from 'lucide-react';
+import { Users, Plus, ChevronLeft, BookOpen, Swords, Trash2, Edit, Loader2, UserPlus, UserMinus, Settings, Play, FileText } from 'lucide-react';
 import { groupsService } from '../../../groups/services/groups.service';
 import { Group, GroupMember } from '../../../groups/types/groups.types';
 import toast from 'react-hot-toast';
 import { ConfirmModal } from '@/shared/components/ConfirmModal';
+import { ExamCreateWizard } from '@/features/exam/components/ExamCreateWizard';
+import { CreateSetModal } from '@/features/flashcard/components/CreateSetModal';
+import { flashcardService } from '@/features/flashcard/services/flashcard.service';
 
 export function TeacherGroupManager() {
   const router = useRouter();
@@ -24,7 +27,6 @@ export function TeacherGroupManager() {
   const [groupForm, setGroupForm] = useState({ title: '', description: '' });
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
-  const [memberEmail, setMemberEmail] = useState('');
   const [memberIdentifier, setMemberIdentifier] = useState(''); 
   const [confirmState, setConfirmState] = useState<{
     isOpen: boolean;
@@ -39,6 +41,10 @@ export function TeacherGroupManager() {
     onConfirm: () => {},
   });
 
+  // Inline create modals (no navigation needed)
+  const [isCreateExamOpen, setIsCreateExamOpen] = useState(false);
+  const [isCreateSetOpen, setIsCreateSetOpen] = useState(false);
+
   const triggerConfirm = (options: {
     title: string;
     message: string;
@@ -51,49 +57,49 @@ export function TeacherGroupManager() {
     });
   };
 
-  useEffect(() => {
-    fetchGroups();
+  const fetchGroups = useCallback(async () => {
+    try {
+      setLoading(true);
+      const res = await groupsService.getGroups();
+      setGroups(res.data || []);
+    } catch {
+      toast.error('Failed to load groups');
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  const fetchMembers = useCallback(async (groupId: string) => {
+    try {
+      const res = await groupsService.getGroupMembers(groupId);
+      console.log('Group members response data:', res.data);
+      setMembers(res.data || []);
+    } catch {
+      toast.error('Failed to load members');
+    }
+  }, []);
+
+  const handleSelectGroup = useCallback((group: Group) => {
+    setSelectedGroup(group);
+    fetchMembers(group.id);
+  }, [fetchMembers]);
+
+  useEffect(() => {
+    void (async () => { await Promise.resolve(); fetchGroups(); })();
+  }, [fetchGroups]);
 
   useEffect(() => {
     if (queryGroupId && groups.length > 0) {
       const found = groups.find(g => g.id === queryGroupId);
       if (found) {
-        handleSelectGroup(found);
+        void Promise.resolve().then(() => handleSelectGroup(found));
       }
     }
-  }, [queryGroupId, groups]);
+  }, [queryGroupId, groups, handleSelectGroup]);
 
   const handleGoBack = () => {
     setSelectedGroup(null);
     router.push('/dashboard/groups');
-  };
-
-  const fetchGroups = async () => {
-    try {
-      setLoading(true);
-      const res = await groupsService.getGroups();
-      setGroups(res.data || []);
-    } catch (error) {
-      toast.error('Failed to load groups');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchMembers = async (groupId: string) => {
-    try {
-      const res = await groupsService.getGroupMembers(groupId);
-      console.log('Group members response data:', res.data);
-      setMembers(res.data || []);
-    } catch (error) {
-      toast.error('Failed to load members');
-    }
-  };
-
-  const handleSelectGroup = (group: Group) => {
-    setSelectedGroup(group);
-    fetchMembers(group.id);
   };
 
   const handleStartBattle = (groupId: string, groupName: string, e?: React.MouseEvent) => {
@@ -109,11 +115,11 @@ export function TeacherGroupManager() {
           title: groupForm.title, 
           description: groupForm.description 
         });
-        let updatedGroup = updateRes.data || updateRes as any;
+        let updatedGroup: Group = updateRes.data || (updateRes as unknown as Group);
 
         if (avatarFile) {
           const avatarRes = await groupsService.uploadAvatar(editingGroup.id, avatarFile);
-          updatedGroup = avatarRes.data || avatarRes as any;
+          updatedGroup = avatarRes.data || (avatarRes as unknown as Group);
         }
 
         toast.success('Group updated successfully');
@@ -125,7 +131,7 @@ export function TeacherGroupManager() {
           title: groupForm.title, 
           description: groupForm.description 
         });
-        const newGroup = createRes.data || createRes as any;
+        const newGroup: Group = createRes.data || (createRes as unknown as Group);
 
         if (avatarFile && newGroup?.id) {
           await groupsService.uploadAvatar(newGroup.id, avatarFile);
@@ -135,7 +141,7 @@ export function TeacherGroupManager() {
       }
       setIsGroupModalOpen(false);
       fetchGroups();
-    } catch (error) {
+    } catch {
       toast.error('Failed to save group');
     }
   };
@@ -152,7 +158,7 @@ export function TeacherGroupManager() {
           toast.success('Group deleted');
           if (selectedGroup?.id === groupId) setSelectedGroup(null);
           fetchGroups();
-        } catch (error) {
+        } catch {
           toast.error('Failed to delete group');
         }
       }
@@ -167,8 +173,9 @@ export function TeacherGroupManager() {
       toast.success('Member added');
       setMemberIdentifier('');
       fetchMembers(selectedGroup.id);
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to add member');
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : 'Failed to add member';
+      toast.error(msg);
     }
   };
 
@@ -183,7 +190,7 @@ export function TeacherGroupManager() {
           await groupsService.removeMember(selectedGroup.id, userId);
           toast.success('Member removed');
           fetchMembers(selectedGroup.id);
-        } catch (error) {
+        } catch {
           toast.error('Failed to remove member');
         }
       }
@@ -219,6 +226,7 @@ export function TeacherGroupManager() {
                    <div className="flex items-center gap-4 p-3 bg-slate-50 border border-slate-100 rounded-xl">
                      <div className="relative group flex-shrink-0">
                        {avatarPreview ? (
+                         // eslint-disable-next-line @next/next/no-img-element
                          <img 
                            src={avatarPreview} 
                            alt="Avatar preview" 
@@ -291,6 +299,7 @@ export function TeacherGroupManager() {
             </button>
             <div className="flex items-center gap-4">
               {selectedGroup.avatar ? (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img 
                   src={selectedGroup.avatar} 
                   alt={selectedGroup.title} 
@@ -354,17 +363,34 @@ export function TeacherGroupManager() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-slate-50/50 rounded-2xl p-5 border border-slate-100">
-                <div className="flex items-center justify-between mb-4">
-                  <h4 className="font-bold text-slate-800 flex items-center gap-2">
-                    <FileText className="text-blue-500" size={18} />
-                    Exams
-                  </h4>
+              <div className="bg-slate-50/50 rounded-2xl p-5 border border-slate-100 flex flex-col justify-between h-full">
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="font-bold text-slate-800 flex items-center gap-2">
+                      <FileText className="text-blue-500" size={18} />
+                      Exams
+                    </h4>
+                  </div>
+                  <p className="text-sm text-slate-500 mb-6">
+                    Create customized exams with synonym, listening, spelling, and situational questions using Cambridge pronunciation audio.
+                  </p>
                 </div>
-                <div className="p-6 text-center border-2 border-dashed border-slate-200 rounded-xl bg-white">
-                  <p className="text-sm text-slate-500 font-medium">Coming soon</p>
+                <div className="flex gap-2">
+                  <button 
+                    onClick={() => router.push(`/dashboard/exams?groupId=${selectedGroup.id}`)}
+                    className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition-colors border border-slate-200"
+                  >
+                    View Library
+                  </button>
+                  <button 
+                    onClick={() => setIsCreateExamOpen(true)}
+                    className="flex-1 py-2.5 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-xl text-xs shadow-md shadow-blue-200 transition-colors"
+                  >
+                    + Create Exam
+                  </button>
                 </div>
               </div>
+
               <div className="bg-slate-50/50 rounded-2xl p-5 border border-slate-100 flex flex-col justify-between h-full">
                 <div>
                   <div className="flex items-center justify-between mb-4">
@@ -385,7 +411,7 @@ export function TeacherGroupManager() {
                     View Library
                   </button>
                   <button 
-                    onClick={() => router.push(`/dashboard/vocabulary?groupId=${selectedGroup.id}&create=true`)}
+                    onClick={() => setIsCreateSetOpen(true)}
                     className="flex-1 py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl text-xs shadow-md shadow-orange-200 transition-colors"
                   >
                     + Create Set
@@ -426,7 +452,7 @@ export function TeacherGroupManager() {
                     <button 
                       onClick={(e) => {
                         e.stopPropagation();
-                        const targetId = member.uuid || (member as any).user_id || (member as any).id;
+                        const targetId = member.uuid || (member as GroupMember & { user_id?: string }).user_id || member.uuid;
                         handleRemoveMember(targetId);
                       }}
                       className="text-rose-500 hover:text-white p-2 rounded-lg bg-rose-50 hover:bg-rose-500 transition-all flex items-center justify-center shadow-sm hover:shadow active:scale-95"
@@ -455,6 +481,26 @@ export function TeacherGroupManager() {
           title={confirmState.title}
           message={confirmState.message}
           type={confirmState.type}
+        />
+
+        {/* Inline Exam Create Wizard */}
+        <ExamCreateWizard
+          isOpen={isCreateExamOpen}
+          onClose={() => setIsCreateExamOpen(false)}
+          onCreated={() => setIsCreateExamOpen(false)}
+          groups={groups}
+          defaultGroupId={selectedGroup.id}
+        />
+
+        {/* Inline Create Vocabulary Set Modal */}
+        <CreateSetModal
+          isOpen={isCreateSetOpen}
+          onClose={() => setIsCreateSetOpen(false)}
+          onCreate={async (groupId, title, desc) => {
+            await flashcardService.createSet(groupId, title, desc);
+            setIsCreateSetOpen(false);
+          }}
+          defaultGroupId={selectedGroup.id}
         />
       </div>
     );
@@ -583,6 +629,7 @@ export function TeacherGroupManager() {
               
               <div className="flex gap-4 items-start mb-4 pr-10">
                 {group.avatar ? (
+                  // eslint-disable-next-line @next/next/no-img-element
                   <img 
                     src={group.avatar} 
                     alt={group.title} 
