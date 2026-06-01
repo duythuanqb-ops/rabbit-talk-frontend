@@ -2,7 +2,7 @@
 
 import { DashboardLayout } from '@/features/dashboard/components';
 import { TeacherGroupManager } from '@/features/dashboard/components';
-import { Users, GraduationCap, Loader2, X, Calendar, BookOpen, User } from 'lucide-react';
+import { Users, GraduationCap, Loader2, X, Calendar, BookOpen, User, FileText } from 'lucide-react';
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import { getProfile } from '@/features/auth/services/auth.service';
@@ -144,20 +144,31 @@ export default function GroupsPage() {
                            </div>
                          </div>
 
-                         <div className="flex justify-between items-center mt-3 pt-3 border-t border-slate-100">
-                           <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
-                             Joined {new Date(g.created_at).toLocaleDateString()}
-                           </p>
-                           <button 
-                             onClick={(e) => { 
-                               e.stopPropagation(); 
-                               router.push(`/dashboard/vocabulary?groupId=${g.id}`); 
-                             }}
-                             className="text-xs font-bold text-emerald-600 hover:text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-2.5 py-1.5 rounded-xl transition-colors flex items-center gap-1"
-                           >
-                             Learn Words &rarr;
-                           </button>
-                         </div>
+                          <div className="flex justify-between items-center mt-3 pt-3 border-t border-slate-100">
+                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                              Joined {new Date(g.created_at).toLocaleDateString()}
+                            </p>
+                            <div className="flex gap-2">
+                              <button 
+                                onClick={(e) => { 
+                                  e.stopPropagation(); 
+                                  router.push(`/dashboard/vocabulary?groupId=${g.id}`); 
+                                }}
+                                className="text-xs font-bold text-orange-600 hover:text-orange-700 bg-orange-50 hover:bg-orange-100 px-2.5 py-1.5 rounded-xl transition-colors flex items-center gap-1"
+                              >
+                                Words
+                              </button>
+                              <button 
+                                onClick={(e) => { 
+                                  e.stopPropagation(); 
+                                  router.push(`/dashboard/exams?groupId=${g.id}`); 
+                                }}
+                                className="text-xs font-bold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-2.5 py-1.5 rounded-xl transition-colors flex items-center gap-1"
+                              >
+                                Exams
+                              </button>
+                            </div>
+                          </div>
                        </div>
                      );
                    })}
@@ -254,21 +265,30 @@ export default function GroupsPage() {
               )}
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex gap-2.5">
               <button 
                 onClick={() => setSelectedGroup(null)}
-                className="flex-1 py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl text-sm transition-colors"
+                className="px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl text-xs transition-colors"
               >
-                Close Info
+                Close
               </button>
               <button 
                 onClick={() => {
                   setSelectedGroup(null);
                   router.push(`/dashboard/vocabulary?groupId=${selectedGroup.id}`);
                 }}
-                className="flex-[2] py-3.5 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-2xl text-sm shadow-lg shadow-orange-200 transition-colors flex items-center justify-center gap-2"
+                className="flex-1 py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-2xl text-xs shadow-lg shadow-orange-200 transition-colors flex items-center justify-center gap-1.5"
               >
-                <BookOpen size={16} /> Learn Vocabulary &rarr;
+                <BookOpen size={14} /> Vocabulary
+              </button>
+              <button 
+                onClick={() => {
+                  setSelectedGroup(null);
+                  router.push(`/dashboard/exams?groupId=${selectedGroup.id}`);
+                }}
+                className="flex-1 py-3 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-2xl text-xs shadow-lg shadow-blue-200 transition-colors flex items-center justify-center gap-1.5"
+              >
+                <FileText size={14} /> Exams
               </button>
             </div>
 

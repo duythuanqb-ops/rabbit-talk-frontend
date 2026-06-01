@@ -16,6 +16,7 @@ import {
   School,
   ChevronUp,
   UserPlus,
+  FileText,
 } from 'lucide-react';
 import { cn } from '@/shared/utils/cn';
 import { logout, getProfile } from '@/features/auth/services/auth.service';
@@ -33,6 +34,7 @@ const studentNav = [
   { name: 'Dashboard', icon: LayoutDashboard, href: '/dashboard' },
   { name: 'My Groups', icon: Users, href: '/dashboard/groups' },
   { name: 'Vocabulary', icon: BookOpen, href: '/dashboard/vocabulary' },
+  { name: 'Exams', icon: FileText, href: '/dashboard/exams' },
   { name: 'Friends', icon: UserPlus, href: '/dashboard/friends' },
   { name: 'Leaderboard', icon: Trophy, href: '/dashboard/leaderboard' },
   { name: 'Profile', icon: UserCircle, href: '/dashboard/profile' },
