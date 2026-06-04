@@ -15,6 +15,7 @@ function VerifyEmailContent() {
 
   useEffect(() => {
     if (!token) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setStatus('error');
       setMessage('No verification token found. Please use the link from your email.');
       return;
@@ -22,9 +23,11 @@ function VerifyEmailContent() {
 
     const verify = async () => {
       try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const res: any = await apiCall(`/auth/verify-email?token=${token}`, { method: 'GET' });
         setStatus('success');
         setMessage(res?.message || 'Your email has been verified successfully!');
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (err: any) {
         setStatus('error');
         setMessage(err.message || 'Verification failed. The link may have expired.');

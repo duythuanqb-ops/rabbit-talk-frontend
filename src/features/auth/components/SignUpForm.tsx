@@ -5,6 +5,7 @@ import { userAPI } from '@/features/user/services/user.service';
 import { EyeIcon, EyeOffIcon, GoogleIcon } from '@/shared/icons';
 import { googleLogin } from '@/features/auth/services/auth.service';
 import { useGoogleLogin } from '@react-oauth/google';
+import { Button } from '@/components/ui/Button';
 
 interface Props {
   onSuccess?: () => void;
@@ -23,6 +24,7 @@ export default function SignUpForm({ onSuccess }: Props) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error'; visible: boolean }>({
     message: '',
     type: 'success',
@@ -30,11 +32,15 @@ export default function SignUpForm({ onSuccess }: Props) {
   });
   const router = useRouter();
 
-  const inputClass =
-    'mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100 pr-12';
+  const getInputClass = (fieldName: string) => {
+    return `mt-2 w-full rounded-2xl border ${fieldErrors[fieldName] ? 'border-red-500 bg-red-50/50 focus:ring-red-500' : 'border-none bg-surface-hover focus:ring-ring'} px-4 py-3 text-sm text-foreground shadow-inner outline-none transition-all focus:bg-surface focus:ring-2 focus:shadow-md ${fieldName.includes('password') ? 'pr-12' : ''}`;
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    if (fieldErrors[e.target.name]) {
+      setFieldErrors({ ...fieldErrors, [e.target.name]: '' });
+    }
   };
 
   const showMessage = (message: string, type: 'success' | 'error' = 'success') => {
@@ -52,6 +58,7 @@ export default function SignUpForm({ onSuccess }: Props) {
         } else {
           router.push('/dashboard');
         }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (error: any) {
         showMessage(error.message || 'Google signup failed', 'error');
       } finally {
@@ -63,13 +70,30 @@ export default function SignUpForm({ onSuccess }: Props) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (formData.password !== formData.confirm_password) {
-      showMessage("Passwords don't match!", 'error');
+    
+    // Custom validation
+    const errors: Record<string, string> = {};
+    if (!formData.first_name) errors.first_name = 'Please enter your first name';
+    if (!formData.last_name) errors.last_name = 'Please enter your last name';
+    if (!formData.username) errors.username = 'Please choose a username';
+    if (!formData.email) errors.email = 'Please enter your email';
+    if (!formData.date_of_birth) errors.date_of_birth = 'Please enter your date of birth';
+    if (!formData.password) errors.password = 'Please create a password';
+    
+    if (formData.password && formData.password !== formData.confirm_password) {
+      errors.confirm_password = "Passwords don't match!";
+    } else if (!formData.confirm_password) {
+      errors.confirm_password = 'Please confirm your password';
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
       return;
     }
 
     setIsSubmitting(true);
     try {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { confirm_password, ...submitData } = formData;
       await userAPI.create(submitData);
       showMessage('Account created successfully!', 'success');
@@ -106,7 +130,7 @@ export default function SignUpForm({ onSuccess }: Props) {
         isVisible={toast.visible}
         onClose={() => setToast({ ...toast, visible: false })}
       />
-      <form className="space-y-4" onSubmit={handleSubmit}>
+      <form className="space-y-4" onSubmit={handleSubmit} noValidate>
         <div className="grid grid-cols-2 gap-3">
           <label className="block text-sm font-medium text-slate-700">
             First name
@@ -114,11 +138,11 @@ export default function SignUpForm({ onSuccess }: Props) {
               type="text"
               name="first_name"
               placeholder="First name"
-              className={inputClass}
+              className={getInputClass('first_name')}
               value={formData.first_name}
               onChange={handleChange}
-              required
             />
+            {fieldErrors.first_name && <span className="mt-1 block text-xs text-red-500 font-medium">{fieldErrors.first_name}</span>}
           </label>
           <label className="block text-sm font-medium text-slate-700">
             Last name
@@ -126,11 +150,11 @@ export default function SignUpForm({ onSuccess }: Props) {
               type="text"
               name="last_name"
               placeholder="Last name"
-              className={inputClass}
+              className={getInputClass('last_name')}
               value={formData.last_name}
               onChange={handleChange}
-              required
             />
+            {fieldErrors.last_name && <span className="mt-1 block text-xs text-red-500 font-medium">{fieldErrors.last_name}</span>}
           </label>
         </div>
 
@@ -140,11 +164,11 @@ export default function SignUpForm({ onSuccess }: Props) {
             type="text"
             name="username"
             placeholder="Choose a username"
-            className={inputClass}
+            className={getInputClass('username')}
             value={formData.username}
             onChange={handleChange}
-            required
           />
+          {fieldErrors.username && <span className="mt-1 block text-xs text-red-500 font-medium">{fieldErrors.username}</span>}
         </label>
 
         <label className="block text-sm font-medium text-slate-700">
@@ -153,11 +177,11 @@ export default function SignUpForm({ onSuccess }: Props) {
             type="email"
             name="email"
             placeholder="your@email.com"
-            className={inputClass}
+            className={getInputClass('email')}
             value={formData.email}
             onChange={handleChange}
-            required
           />
+          {fieldErrors.email && <span className="mt-1 block text-xs text-red-500 font-medium">{fieldErrors.email}</span>}
         </label>
 
         <label className="block text-sm font-medium text-slate-700">
@@ -165,11 +189,11 @@ export default function SignUpForm({ onSuccess }: Props) {
           <input
             type="date"
             name="date_of_birth"
-            className={inputClass}
+            className={getInputClass('date_of_birth')}
             value={formData.date_of_birth}
             onChange={handleChange}
-            required
           />
+          {fieldErrors.date_of_birth && <span className="mt-1 block text-xs text-red-500 font-medium">{fieldErrors.date_of_birth}</span>}
         </label>
 
         <label className="block text-sm font-medium text-slate-700 relative">
@@ -179,10 +203,9 @@ export default function SignUpForm({ onSuccess }: Props) {
               type={showPassword ? 'text' : 'password'}
               name="password"
               placeholder="Create a password"
-              className={inputClass}
+              className={getInputClass('password')}
               value={formData.password}
               onChange={handleChange}
-              required
             />
             <button
               type="button"
@@ -192,6 +215,7 @@ export default function SignUpForm({ onSuccess }: Props) {
               {showPassword ? <EyeOffIcon /> : <EyeIcon />}
             </button>
           </div>
+          {fieldErrors.password && <span className="mt-1 block text-xs text-red-500 font-medium">{fieldErrors.password}</span>}
         </label>
 
         <label className="block text-sm font-medium text-slate-700 relative">
@@ -201,10 +225,9 @@ export default function SignUpForm({ onSuccess }: Props) {
               type={showConfirmPassword ? 'text' : 'password'}
               name="confirm_password"
               placeholder="Repeat your password"
-              className={inputClass}
+              className={getInputClass('confirm_password')}
               value={formData.confirm_password}
               onChange={handleChange}
-              required
             />
             <button
               type="button"
@@ -214,30 +237,34 @@ export default function SignUpForm({ onSuccess }: Props) {
               {showConfirmPassword ? <EyeOffIcon /> : <EyeIcon />}
             </button>
           </div>
+          {fieldErrors.confirm_password && <span className="mt-1 block text-xs text-red-500 font-medium">{fieldErrors.confirm_password}</span>}
         </label>
 
-        <button
+        <Button
           type="submit"
           disabled={isSubmitting}
-          className="mt-2 inline-flex w-full items-center justify-center rounded-2xl bg-emerald-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-200 disabled:opacity-50"
+          isLoading={isSubmitting}
+          className="mt-2 w-full"
+          variant="primary"
         >
           {isSubmitting ? 'Creating account...' : 'Create account'}
-        </button>
+        </Button>
 
         <div className="relative flex items-center justify-center text-xs uppercase tracking-[0.3em] text-slate-400 mt-4 mb-4">
           <span className="absolute left-0 right-0 top-1/2 h-px bg-slate-200" />
           <span className="relative bg-white px-3">or</span>
         </div>
 
-        <button
+        <Button
           type="button"
           onClick={() => handleGoogleLogin()}
           disabled={isSubmitting}
-          className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-900 transition hover:border-slate-300 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full"
+          variant="outline"
+          leftIcon={<GoogleIcon />}
         >
-          <GoogleIcon />
           Sign up with Google
-        </button>
+        </Button>
       </form>
     </>
   );

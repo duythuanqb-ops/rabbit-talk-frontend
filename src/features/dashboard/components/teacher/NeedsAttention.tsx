@@ -8,41 +8,48 @@ const mockAlerts = [
 
 export function NeedsAttention() {
   return (
-    <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="font-bold text-slate-900 flex items-center gap-2 text-lg">
-          <AlertTriangle className="text-rose-500" size={20} />
-          Needs Attention
-        </h3>
-        <span className="flex items-center justify-center bg-rose-100 text-rose-600 text-xs font-bold w-6 h-6 rounded-full">
-          {mockAlerts.length}
-        </span>
-      </div>
+    <div className="double-bezel">
+      <div className="double-bezel-inner bg-surface p-6 hover:shadow-lg transition-fluid">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="font-bold text-foreground flex items-center gap-2 text-lg">
+            <div className="w-8 h-8 rounded-xl bg-rose-500/10 flex items-center justify-center text-rose-500 ring-1 ring-rose-500/20">
+              <AlertTriangle size={18} strokeWidth={2} />
+            </div>
+            Needs Attention
+          </h3>
+          <span className="flex items-center justify-center bg-rose-500 text-white text-xs font-bold w-6 h-6 rounded-full shadow-sm">
+            {mockAlerts.length}
+          </span>
+        </div>
 
-      <div className="space-y-3">
-        {mockAlerts.map((alert) => (
-          <div key={alert.id} className="flex items-start gap-3 p-4 rounded-xl border border-rose-50 bg-rose-50/40 hover:bg-rose-50/80 transition-colors">
-            <div className="w-10 h-10 rounded-full bg-white border border-rose-100 flex items-center justify-center text-rose-700 font-bold shadow-sm shrink-0">
-              {alert.avatar}
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex justify-between items-start gap-2">
-                <div className="truncate">
-                  <h4 className="font-bold text-slate-800 text-sm truncate">{alert.student}</h4>
-                  <p className="text-xs text-slate-500 truncate">{alert.group}</p>
+        <div className="space-y-4">
+          {mockAlerts.map((alert, index) => (
+            <div key={alert.id} className="group relative" style={{ animationDelay: `${index * 150}ms` }}>
+              <div className="absolute inset-0 bg-gradient-to-r from-rose-500/0 to-rose-500/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="relative flex items-start gap-4 p-4 rounded-2xl border border-border/50 bg-surface-hover/50 hover:bg-surface hover:border-rose-500/30 transition-all hover:shadow-md cursor-pointer">
+                <div className="w-10 h-10 rounded-full bg-surface-hover border border-border flex items-center justify-center text-rose-600 dark:text-rose-400 font-bold shadow-sm shrink-0 group-hover:scale-110 transition-transform">
+                  {alert.avatar}
                 </div>
-                <button className="p-1.5 bg-white text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 rounded-md transition-colors border border-slate-100 shadow-sm shrink-0" title="Message Student">
-                  <MessageCircle size={16} />
-                </button>
-              </div>
-              
-              <div className="mt-2 flex items-center gap-1.5 text-xs font-bold text-rose-600 bg-rose-100/50 w-fit px-2 py-1 rounded-md">
-                <TrendingDown size={14} />
-                <span className="truncate">{alert.issue}</span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex justify-between items-start gap-2">
+                    <div className="truncate">
+                      <h4 className="font-bold text-foreground text-sm truncate group-hover:text-rose-600 dark:group-hover:text-rose-400 transition-colors">{alert.student}</h4>
+                      <p className="text-xs text-muted-foreground truncate mt-0.5">{alert.group}</p>
+                    </div>
+                    <button className="p-1.5 bg-surface-hover text-muted-foreground hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded-lg transition-colors border border-border/50 shadow-sm shrink-0" title="Message Student">
+                      <MessageCircle size={16} />
+                    </button>
+                  </div>
+                  
+                  <div className="mt-3 flex items-center gap-1.5 text-xs font-bold text-rose-600 dark:text-rose-400 bg-rose-500/10 w-fit px-2.5 py-1 rounded-lg">
+                    <TrendingDown size={14} />
+                    <span className="truncate">{alert.issue}</span>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   );

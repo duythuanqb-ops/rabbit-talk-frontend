@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { X, Volume2, CheckCircle2, XCircle } from 'lucide-react';
 import { flashcardService } from '../services/flashcard.service';
+import { getAudioUrl } from '@/shared/utils/audio';
 
 export function StudyModal({ isOpen, onClose, setId, setName }: { isOpen: boolean, onClose: () => void, setId: string, setName: string }) {
   const [cards, setCards] = useState<any[]>([]);
@@ -44,7 +45,7 @@ export function StudyModal({ isOpen, onClose, setId, setName }: { isOpen: boolea
   const playAudio = (e: any) => {
     e.stopPropagation();
     if (currentCard?.audio_url) {
-      new Audio(currentCard.audio_url).play();
+      new Audio(getAudioUrl(currentCard.audio_url)).play();
     }
   };
 

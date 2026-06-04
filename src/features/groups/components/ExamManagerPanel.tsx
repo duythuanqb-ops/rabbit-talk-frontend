@@ -99,10 +99,10 @@ function EditableQuestion({ q, idx, onChange, onDelete, onFetchAudio, onAutoFill
   const meta = TYPE_META[q.type] ?? { label: q.type, emoji: '❓', color: 'bg-slate-50 text-slate-600 border-slate-100', gradient: 'from-slate-400 to-slate-600' };
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-shadow">
+    <div className="bg-white dark:bg-slate-800/80 rounded-2xl border border-slate-200 dark:border-slate-700 p-5 shadow-sm hover:shadow-md transition-shadow">
       <div className="flex items-start justify-between gap-3 mb-3">
         <div className="flex items-center gap-2">
-          <span className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-500">
+          <span className="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-xs font-bold text-slate-500 dark:text-slate-300">
             {idx + 1}
           </span>
           <span className={`text-[10px] font-bold px-2 py-0.5 rounded border uppercase tracking-wider ${meta.color}`}>
@@ -116,7 +116,7 @@ function EditableQuestion({ q, idx, onChange, onDelete, onFetchAudio, onAutoFill
           {q.audio_url && (
             <button
               onClick={() => speak(q.word, q.audio_url)}
-              className="p-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors border border-blue-100"
+              className="p-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50 rounded-lg transition-colors border border-blue-100 dark:border-blue-800"
               title="Test audio"
             >
               <Volume2 size={13} />
@@ -124,7 +124,7 @@ function EditableQuestion({ q, idx, onChange, onDelete, onFetchAudio, onAutoFill
           )}
           <button
             onClick={onDelete}
-            className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-colors"
+            className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-lg transition-colors"
             title="Delete question"
           >
             <Trash2 size={13} />
@@ -134,14 +134,14 @@ function EditableQuestion({ q, idx, onChange, onDelete, onFetchAudio, onAutoFill
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3 items-end">
         <div>
-          <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">Target Word</label>
+          <label className="block text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Target Word</label>
           <input type="text" value={q.word} 
             onChange={e => onChange({ ...q, word: e.target.value })} 
             onBlur={() => { if (q.type === 'listening' && q.word?.trim()) onFetchAudio(q.word, idx); }}
-            className="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-800 focus:outline-none focus:border-blue-400" placeholder="e.g. happy" />
+            className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:border-blue-400" placeholder="e.g. happy" />
         </div>
         <div>
-          <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">Question Type (Skill)</label>
+          <label className="block text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Question Type (Skill)</label>
           <select value={q.type} onChange={e => {
             const nextType = e.target.value as ExamQuestion['type'];
             let nextOptions = q.options;
@@ -166,7 +166,7 @@ function EditableQuestion({ q, idx, onChange, onDelete, onFetchAudio, onAutoFill
               nextText = 'Nối từ tiếng Anh với từ đồng nghĩa tiếng Anh (Cambridge synonym) phù hợp:';
             }
             onChange({ ...q, type: nextType, options: nextOptions, question_text: nextText });
-          }} className="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-800 focus:outline-none focus:border-blue-400 cursor-pointer">
+          }} className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:border-blue-400 cursor-pointer">
             <option value="listening">🎧 Listening ( Cambridge Pronunciation )</option>
             <option value="synonym">🔗 Synonym ( Word Meaning )</option>
             <option value="spelling">✏️ Spelling ( Written Test )</option>
@@ -175,7 +175,7 @@ function EditableQuestion({ q, idx, onChange, onDelete, onFetchAudio, onAutoFill
           </select>
         </div>
         <div className="flex gap-2 w-full">
-          <button type="button" onClick={() => onAutoFillAI(q.word, idx, q.type)} className="w-full py-1.5 bg-purple-50 hover:bg-purple-100 text-purple-600 rounded-lg text-[10px] font-extrabold border border-purple-100 flex items-center justify-center gap-1 whitespace-nowrap" title="Generate context with AI">
+          <button type="button" onClick={() => onAutoFillAI(q.word, idx, q.type)} className="w-full py-1.5 bg-purple-50 dark:bg-purple-900/30 hover:bg-purple-100 dark:hover:bg-purple-900/50 text-purple-600 dark:text-purple-400 rounded-lg text-[10px] font-extrabold border border-purple-100 dark:border-purple-800/50 flex items-center justify-center gap-1 whitespace-nowrap" title="Generate context with AI">
             <Sparkles size={11} /> AI Auto-Fill
           </button>
         </div>
@@ -183,27 +183,27 @@ function EditableQuestion({ q, idx, onChange, onDelete, onFetchAudio, onAutoFill
 
       <div className="space-y-3">
         <div>
-          <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">Question Text</label>
+          <label className="block text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Question Text</label>
           <input
             type="text"
             value={q.question_text}
             onChange={e => onChange({ ...q, question_text: e.target.value })}
-            className="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-800 focus:outline-none focus:border-blue-400"
+            className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:border-blue-400"
           />
         </div>
 
         {q.type === 'matching' ? (
           <div>
-            <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">Pairs</label>
-            <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 grid grid-cols-2 gap-2 text-xs font-medium text-slate-700">
+            <label className="block text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Pairs</label>
+            <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg p-3 grid grid-cols-2 gap-2 text-xs font-medium text-slate-700 dark:text-slate-200">
               {(() => {
                 try {
                   const pairs = JSON.parse(q.correct_answer);
                   return Object.entries(pairs).map(([w, s], i) => (
                     <div key={i} className="col-span-2 flex items-center gap-2">
-                      <span className="flex-1 bg-white border border-slate-200 px-3 py-1.5 rounded-lg">{w}</span>
-                      <span className="text-slate-400">→</span>
-                      <span className="flex-1 bg-emerald-50 border border-emerald-100 text-emerald-700 px-3 py-1.5 rounded-lg">{String(s)}</span>
+                      <span className="flex-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 px-3 py-1.5 rounded-lg">{w}</span>
+                      <span className="text-slate-400 dark:text-slate-500">→</span>
+                      <span className="flex-1 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800/50 text-emerald-700 dark:text-emerald-400 px-3 py-1.5 rounded-lg">{String(s)}</span>
                     </div>
                   ));
                 } catch {
@@ -216,7 +216,7 @@ function EditableQuestion({ q, idx, onChange, onDelete, onFetchAudio, onAutoFill
           <>
             {q.options && (
               <div>
-                <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">Options (Correct option must match answer precisely)</label>
+                <label className="block text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Options (Correct option must match answer precisely)</label>
                 <div className="grid grid-cols-2 gap-2">
                   {q.options.map((opt, oIdx) => (
                     <input
@@ -230,8 +230,8 @@ function EditableQuestion({ q, idx, onChange, onDelete, onFetchAudio, onAutoFill
                       }}
                       className={`px-3 py-1.5 border rounded-lg text-xs font-medium focus:outline-none focus:ring-1 ${
                         opt === q.correct_answer
-                          ? 'bg-emerald-50 border-emerald-200 text-emerald-800 focus:border-emerald-400 focus:ring-emerald-100'
-                          : 'bg-slate-50 border-slate-200 text-slate-700 focus:border-blue-400 focus:ring-blue-100'
+                          ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800/50 text-emerald-800 dark:text-emerald-400 focus:border-emerald-400 focus:ring-emerald-100 dark:focus:ring-emerald-900'
+                          : 'bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 focus:border-blue-400 focus:ring-blue-100 dark:focus:ring-blue-900'
                       }`}
                     />
                   ))}
@@ -240,12 +240,12 @@ function EditableQuestion({ q, idx, onChange, onDelete, onFetchAudio, onAutoFill
             )}
 
             <div>
-              <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">Correct Answer</label>
+              <label className="block text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Correct Answer</label>
               <input
                 type="text"
                 value={q.correct_answer}
                 onChange={e => onChange({ ...q, correct_answer: e.target.value })}
-                className="w-full px-3 py-1.5 bg-emerald-50/50 border border-emerald-100 rounded-lg text-xs font-bold text-emerald-800 focus:outline-none focus:border-emerald-400"
+                className="w-full px-3 py-1.5 bg-emerald-50/50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800/50 rounded-lg text-xs font-bold text-emerald-800 dark:text-emerald-400 focus:outline-none focus:border-emerald-400"
               />
             </div>
           </>
@@ -278,7 +278,7 @@ function QuestionView({ q, answer, onAnswer }: { q: ExamQuestion; answer: string
         <div className={`w-7 h-7 rounded-lg bg-gradient-to-br ${gradient} flex items-center justify-center text-white`}>
           {TYPE_ICON[q.type]}
         </div>
-        <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">{TYPE_META[q.type]?.label ?? q.type}</span>
+        <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{TYPE_META[q.type]?.label ?? q.type}</span>
       </div>
 
       <div className={`p-5 rounded-2xl bg-gradient-to-br ${gradient} text-white shadow-lg`}>
@@ -298,7 +298,7 @@ function QuestionView({ q, answer, onAnswer }: { q: ExamQuestion; answer: string
       {q.type === 'matching' ? (
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <h4 className="text-[10px] font-bold text-slate-400 uppercase">Words</h4>
+            <h4 className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase">Words</h4>
             {(() => {
               try {
                 const answerMap: Record<string, string> = answer ? JSON.parse(answer) : {};
@@ -312,14 +312,14 @@ function QuestionView({ q, answer, onAnswer }: { q: ExamQuestion; answer: string
                       onClick={() => setSelectedMatchWord(w)}
                       className={`w-full p-3 rounded-xl border-2 text-left text-sm font-bold transition-all flex items-center justify-between ${
                         selectedMatchWord === w
-                          ? 'border-purple-500 bg-purple-50 text-purple-700'
+                          ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400'
                           : hasMatch
-                            ? 'border-slate-200 bg-slate-50 text-slate-500'
-                            : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
+                            ? 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400'
+                            : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600'
                       }`}
                     >
                       {w}
-                      {hasMatch && <span className="text-[10px] text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded-lg border border-emerald-200 truncate max-w-[100px]">{answerMap[w]}</span>}
+                      {hasMatch && <span className="text-[10px] text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/30 px-2 py-0.5 rounded-lg border border-emerald-200 dark:border-emerald-800/50 truncate max-w-[100px]">{answerMap[w]}</span>}
                     </button>
                   );
                 });
@@ -329,7 +329,7 @@ function QuestionView({ q, answer, onAnswer }: { q: ExamQuestion; answer: string
             })()}
           </div>
           <div className="space-y-2">
-            <h4 className="text-[10px] font-bold text-slate-400 uppercase">Synonyms</h4>
+            <h4 className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase">Synonyms</h4>
             {q.options?.map((opt, idx) => {
               try {
                 const answerMap: Record<string, string> = answer ? JSON.parse(answer) : {};
@@ -347,10 +347,10 @@ function QuestionView({ q, answer, onAnswer }: { q: ExamQuestion; answer: string
                     }}
                     className={`w-full p-3 rounded-xl border-2 text-left text-sm font-bold transition-all ${
                       isMatched
-                        ? 'border-slate-100 bg-slate-50 text-slate-300 cursor-not-allowed'
+                        ? 'border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-300 dark:text-slate-600 cursor-not-allowed'
                         : selectedMatchWord
-                          ? 'border-purple-200 bg-purple-50 hover:bg-purple-100 hover:border-purple-400 text-purple-700 cursor-pointer animate-pulse'
-                          : 'border-slate-200 bg-white text-slate-600'
+                          ? 'border-purple-200 dark:border-purple-800 bg-purple-50 dark:bg-purple-900/30 hover:bg-purple-100 dark:hover:bg-purple-900/50 hover:border-purple-400 dark:hover:border-purple-500 text-purple-700 dark:text-purple-400 cursor-pointer animate-pulse'
+                          : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700'
                     }`}
                   >
                     {opt}
@@ -364,25 +364,25 @@ function QuestionView({ q, answer, onAnswer }: { q: ExamQuestion; answer: string
         </div>
       ) : q.type === 'spelling' ? (
         <div>
-          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Type the correct spelling:</label>
+          <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Type the correct spelling:</label>
           <input ref={inputRef} type="text" value={answer} onChange={e => onAnswer(e.target.value)}
             placeholder="Type your spelling..." autoComplete="off" autoCorrect="off" spellCheck={false}
-            className="w-full px-5 py-4 bg-white border-2 border-slate-200 rounded-2xl text-lg font-bold text-slate-800 text-center focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100 transition-all" />
+            className="w-full px-5 py-4 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-2xl text-lg font-bold text-slate-800 dark:text-slate-200 text-center focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100 dark:focus:ring-amber-900/50 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-600" />
           <p className="text-[10px] text-slate-400 font-semibold flex items-center justify-center gap-1 mt-2">
             ⚠️ Not case-sensitive.
           </p>
         </div>
       ) : (
         <div className="space-y-2.5">
-          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Choose the correct answer:</label>
+          <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">Choose the correct answer:</label>
           {(shuffledOptions.length ? shuffledOptions : q.options ?? []).map((opt, i) => (
             <button key={i} onClick={() => onAnswer(opt)}
               className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl border-2 text-left transition-all font-semibold text-sm group ${
                 answer === opt
                   ? `border-transparent bg-gradient-to-r ${gradient} text-white shadow-lg scale-[1.01]`
-                  : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50'
+                  : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-900/50'
               }`}>
-              <span className={`w-7 h-7 rounded-xl flex items-center justify-center text-xs font-black flex-shrink-0 ${answer === opt ? 'bg-white/20' : 'bg-slate-100 text-slate-500'}`}>
+              <span className={`w-7 h-7 rounded-xl flex items-center justify-center text-xs font-black flex-shrink-0 ${answer === opt ? 'bg-white/20' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'}`}>
                 {String.fromCharCode(65 + i)}
               </span>
               <span className="flex-1">{opt}</span>
@@ -586,7 +586,7 @@ function ExamTakerModal({ exam, onClose }: { exam: Exam; onClose: () => void }) 
 
   return (
     <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-      <div className={`bg-white rounded-3xl shadow-2xl w-full ${result ? 'max-w-3xl' : 'max-w-xl'} max-h-[92vh] flex flex-col overflow-hidden transition-all duration-300`}>
+      <div className={`bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full ${result ? 'max-w-3xl' : 'max-w-xl'} max-h-[92vh] flex flex-col overflow-hidden transition-all duration-300`}>
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
           <div className="flex-1 min-w-0 mr-4">
             <h2 className="font-black text-slate-900 text-lg truncate">{exam.title}</h2>
@@ -879,7 +879,7 @@ function ExamEditorModal({ exam, onClose, onSaved }: ExamEditorModalProps) {
 
   return (
     <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-6xl max-h-[92vh] flex flex-col overflow-hidden transition-all duration-300">
+      <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-6xl max-h-[92vh] flex flex-col overflow-hidden transition-all duration-300">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100 bg-gradient-to-r from-blue-500 to-blue-700 rounded-t-3xl text-white">
           <div>
@@ -994,24 +994,24 @@ function ExamEditorModal({ exam, onClose, onSaved }: ExamEditorModalProps) {
       {/* Add Vocabulary via AI Modal Overlay */}
       {showAddWordsDialog && (
         <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border border-slate-100 flex flex-col p-6 space-y-4 animate-in scale-in duration-200 text-slate-800">
+          <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border border-slate-100 dark:border-slate-700 flex flex-col p-6 space-y-4 animate-in scale-in duration-200 text-slate-800 dark:text-white">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-black text-slate-800 flex items-center gap-2">
+              <h3 className="text-lg font-black text-slate-800 dark:text-white flex items-center gap-2">
                 <Sparkles className="text-purple-500" size={18} /> Add Vocabulary via AI
               </h3>
-              <button onClick={() => { setShowAddWordsDialog(false); setNewWordsInput(''); }} className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-lg transition-colors">
+              <button onClick={() => { setShowAddWordsDialog(false); setNewWordsInput(''); }} className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-lg transition-colors">
                 <X size={16} />
               </button>
             </div>
             
             <div>
-              <label className="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wider">New Target Words</label>
+              <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">New Target Words</label>
               <textarea
                 rows={4}
                 value={newWordsInput}
                 onChange={e => setNewWordsInput(e.target.value)}
                 placeholder="Enter words separated by commas or new lines, e.g. genius, brave, wisdom"
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-700 resize-none focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100"
+                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm font-medium text-slate-700 dark:text-white resize-none focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100"
               />
               <p className="text-[10px] text-slate-400 mt-1">
                 Existing words in the exam will be automatically identified and skipped.
@@ -1035,7 +1035,7 @@ function ExamEditorModal({ exam, onClose, onSaved }: ExamEditorModalProps) {
                   setNewWordsInput('');
                   toast.success('Added new empty question!');
                 }}
-                className="flex-1 py-2 border border-slate-200 hover:bg-slate-50 text-slate-600 font-bold rounded-xl text-xs transition-all flex items-center justify-center gap-1.5"
+                className="flex-1 py-2 border border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold rounded-xl text-xs transition-all flex items-center justify-center gap-1.5"
               >
                 <Plus size={13} /> Add Empty Card
               </button>
@@ -1043,7 +1043,7 @@ function ExamEditorModal({ exam, onClose, onSaved }: ExamEditorModalProps) {
                 type="button"
                 disabled={addingWords || !newWordsInput.trim()}
                 onClick={handleAIAddWords}
-                className="flex-1 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-slate-200 disabled:cursor-not-allowed text-white font-bold rounded-xl text-xs transition-all shadow-md shadow-purple-200 flex items-center justify-center gap-1.5"
+                className="flex-1 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-slate-200 dark:disabled:bg-slate-600 disabled:cursor-not-allowed text-white font-bold rounded-xl text-xs transition-all shadow-md shadow-purple-200 dark:shadow-none flex items-center justify-center gap-1.5"
               >
                 {addingWords ? <Loader2 size={13} className="animate-spin" /> : <Sparkles size={13} />}
                 {addingWords ? 'Generating...' : 'Generate with AI'}
@@ -1380,10 +1380,10 @@ export function ExamManagerPanel({ groupId }: Props) {
       {/* ─── Create Wizard Modal ─── */}
       {showWizard && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
+          <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
 
             {/* Wizard header */}
-            <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100 bg-gradient-to-r from-blue-500 to-blue-700 rounded-t-3xl">
+            <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100 dark:border-slate-700 bg-gradient-to-r from-blue-500 to-blue-700 rounded-t-3xl">
               <div>
                 <h2 className="text-xl font-black text-white flex items-center gap-2">
                   <Sparkles size={20} /> Create AI Exam
@@ -1398,7 +1398,7 @@ export function ExamManagerPanel({ groupId }: Props) {
             </div>
 
             {/* Step tabs */}
-            <div className="flex border-b border-slate-100 px-6 pt-3 pb-0 gap-6">
+            <div className="flex border-b border-slate-100 dark:border-slate-700 px-6 pt-3 pb-0 gap-6">
               {(['input', 'review'] as const).map((s, i) => (
                 <button key={s} onClick={() => step === 'review' && s === 'input' && setStep('input')}
                   className={`pb-3 text-xs font-bold border-b-2 transition-colors ${step === s ? 'border-blue-500 text-blue-600' : 'border-transparent text-slate-400'}`}>
@@ -1412,22 +1412,22 @@ export function ExamManagerPanel({ groupId }: Props) {
               {step === 'input' && (
                 <>
                   <div>
-                    <label className="block text-xs font-bold text-slate-600 mb-1">Exam Title *</label>
+                    <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">Exam Title *</label>
                     <input type="text" value={examTitle} onChange={e => setExamTitle(e.target.value)}
                       placeholder="e.g. Unit 5 Vocabulary Quiz"
-                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-200" />
+                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm font-semibold text-slate-800 dark:text-white focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-200" />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-600 mb-1">Description (optional)</label>
+                    <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">Description (optional)</label>
                     <input type="text" value={examDesc} onChange={e => setExamDesc(e.target.value)}
                       placeholder="e.g. Covers Unit 5 adjectives"
-                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-800 focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-200" />
+                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm font-medium text-slate-800 dark:text-white focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-200" />
                   </div>
-                  <div className="border-t border-slate-100 pt-4">
-                    <label className="block text-xs font-bold text-slate-600 mb-1.5">Enter Words *</label>
+                  <div className="border-t border-slate-100 dark:border-slate-700 pt-4">
+                    <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">Enter Words *</label>
                     <textarea rows={6} value={wordInput} onChange={e => setWordInput(e.target.value)}
                       placeholder={`Enter words separated by commas or new lines:\nhappy, hungry, tired\ngenius\nattack`}
-                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-700 resize-none focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-200" />
+                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm font-medium text-slate-700 dark:text-white resize-none focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-200" />
                     <p className="text-[11px] text-slate-400 mt-1.5">
                       🎧 Listening questions will use <strong>Cambridge Dictionary</strong> audio (not AI voice).
                     </p>
@@ -1439,7 +1439,7 @@ export function ExamManagerPanel({ groupId }: Props) {
                 <>
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="font-bold text-slate-800">{questions.length} Questions Generated</h3>
+                      <h3 className="font-bold text-slate-800 dark:text-white">{questions.length} Questions Generated</h3>
                       <p className="text-xs text-slate-500 mt-0.5">
                         {listeningCount > 0 && (
                           <span className={cambridgeCount === listeningCount ? 'text-emerald-600' : 'text-amber-600'}>
@@ -1449,7 +1449,7 @@ export function ExamManagerPanel({ groupId }: Props) {
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <button onClick={() => setStep('input')} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors">
+                      <button onClick={() => setStep('input')} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-white bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-xl transition-colors">
                         <RefreshCw size={13} /> Regenerate
                       </button>
                       <button type="button" onClick={() => setWizardShowAddWords(true)} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-emerald-500 hover:bg-emerald-600 rounded-xl transition-colors shadow-sm">
@@ -1471,7 +1471,7 @@ export function ExamManagerPanel({ groupId }: Props) {
                   </div>
 
                   {/* Unique Vocabulary List Chip Container */}
-                  <div className="bg-slate-50 border border-slate-200/60 rounded-2xl p-3.5 flex flex-wrap items-center gap-1.5 flex-shrink-0">
+                  <div className="bg-slate-50 dark:bg-slate-700/50 border border-slate-200/60 dark:border-slate-600 rounded-2xl p-3.5 flex flex-wrap items-center gap-1.5 flex-shrink-0">
                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mr-1">Vocab list:</span>
                     {Array.from(
                       new Set(
@@ -1481,7 +1481,7 @@ export function ExamManagerPanel({ groupId }: Props) {
                           .filter(Boolean)
                       )
                     ).map((word, wIdx) => (
-                      <span key={wIdx} className="text-xs font-bold px-3 py-1 bg-white border border-slate-200 text-slate-700 rounded-xl shadow-sm hover:border-blue-400 hover:text-blue-500 transition-all select-none">
+                      <span key={wIdx} className="text-xs font-bold px-3 py-1 bg-white dark:bg-slate-600 border border-slate-200 dark:border-slate-500 text-slate-700 dark:text-slate-100 rounded-xl shadow-sm hover:border-blue-400 hover:text-blue-500 transition-all select-none">
                         {word}
                       </span>
                     ))}
@@ -1496,7 +1496,7 @@ export function ExamManagerPanel({ groupId }: Props) {
                         onAutoFillAI={handleWizardAutoFillAI}
                       />
                     ))}
-                    <button type="button" onClick={() => setWizardShowAddWords(true)} className="w-full py-3 bg-slate-50 hover:bg-slate-100 border-2 border-dashed border-slate-200 hover:border-slate-300 rounded-2xl text-xs font-bold text-slate-500 hover:text-slate-600 transition-colors flex items-center justify-center gap-1.5">
+                    <button type="button" onClick={() => setWizardShowAddWords(true)} className="w-full py-3 bg-slate-50 dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 border-2 border-dashed border-slate-200 dark:border-slate-600 hover:border-slate-300 dark:hover:border-slate-500 rounded-2xl text-xs font-bold text-slate-500 dark:text-slate-300 hover:text-slate-600 dark:hover:text-white transition-colors flex items-center justify-center gap-1.5">
                       <Plus size={14} /> Add Another Question
                     </button>
                   </div>
@@ -1505,19 +1505,19 @@ export function ExamManagerPanel({ groupId }: Props) {
             </div>
 
             {/* Footer */}
-            <div className="flex items-center justify-between px-6 py-4 border-t border-slate-100 bg-slate-50/50">
-              <button onClick={resetWizard} className="px-4 py-2 text-sm font-bold text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-colors">
+            <div className="flex items-center justify-between px-6 py-4 border-t border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/80">
+              <button onClick={resetWizard} className="px-4 py-2 text-sm font-bold text-slate-500 hover:text-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition-colors">
                 Cancel
               </button>
               {step === 'input' ? (
-                <button onClick={handleGenerate} disabled={generating}
-                  className="flex items-center gap-2 px-6 py-2.5 bg-blue-500 hover:bg-blue-600 disabled:bg-slate-200 disabled:cursor-not-allowed text-white font-bold rounded-xl text-sm transition-all shadow-md shadow-blue-200">
+                  <button onClick={handleGenerate} disabled={generating}
+                  className="flex items-center gap-2 px-6 py-2.5 bg-blue-500 hover:bg-blue-600 disabled:bg-slate-200 dark:disabled:bg-slate-600 disabled:cursor-not-allowed text-white font-bold rounded-xl text-sm transition-all shadow-md shadow-blue-200 dark:shadow-none">
                   {generating ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
                   {generating ? 'Generating + Fetching Cambridge Audio...' : 'Generate Questions'}
                 </button>
               ) : (
                 <button onClick={handleSave} disabled={saving || !questions.length}
-                  className="flex items-center gap-2 px-6 py-2.5 bg-emerald-500 hover:bg-emerald-600 disabled:bg-slate-200 disabled:cursor-not-allowed text-white font-bold rounded-xl text-sm transition-all shadow-md shadow-emerald-200">
+                  className="flex items-center gap-2 px-6 py-2.5 bg-emerald-500 hover:bg-emerald-600 disabled:bg-slate-200 dark:disabled:bg-slate-600 disabled:cursor-not-allowed text-white font-bold rounded-xl text-sm transition-all shadow-md shadow-emerald-200 dark:shadow-none">
                   {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
                   {saving ? 'Publishing...' : 'Publish Exam'}
                 </button>
@@ -1542,12 +1542,12 @@ export function ExamManagerPanel({ groupId }: Props) {
       {/* ─── Delete confirm ─── */}
       {deletingId && (
         <div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl">
-            <h3 className="font-black text-slate-900 mb-2">Delete Exam?</h3>
+          <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 w-full max-w-sm shadow-2xl">
+            <h3 className="font-black text-slate-900 dark:text-white mb-2">Delete Exam?</h3>
             <p className="text-sm text-slate-500 mb-6">This action cannot be undone. All student attempts will also be removed.</p>
             <div className="flex gap-3">
-              <button onClick={() => setDeletingId(null)} className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-sm transition-colors">Cancel</button>
-              <button onClick={() => handleDelete(deletingId)} className="flex-1 py-2.5 bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-xl text-sm transition-colors shadow-md shadow-rose-200">Delete</button>
+              <button onClick={() => setDeletingId(null)} className="flex-1 py-2.5 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-bold rounded-xl text-sm transition-colors">Cancel</button>
+              <button onClick={() => handleDelete(deletingId)} className="flex-1 py-2.5 bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-xl text-sm transition-colors shadow-md shadow-rose-200 dark:shadow-none">Delete</button>
             </div>
           </div>
         </div>
@@ -1556,24 +1556,24 @@ export function ExamManagerPanel({ groupId }: Props) {
       {/* Inline Wizard Add Vocabulary via AI Modal Overlay */}
       {wizardShowAddWords && (
         <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border border-slate-100 flex flex-col p-6 space-y-4 animate-in scale-in duration-200 text-slate-800">
+          <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border border-slate-100 dark:border-slate-700 flex flex-col p-6 space-y-4 animate-in scale-in duration-200 text-slate-800 dark:text-white">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-black text-slate-800 flex items-center gap-2">
+              <h3 className="text-lg font-black text-slate-800 dark:text-white flex items-center gap-2">
                 <Sparkles className="text-purple-500" size={18} /> Add Vocabulary via AI
               </h3>
-              <button onClick={() => { setWizardShowAddWords(false); setWizardNewWords(''); }} className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-lg transition-colors">
+              <button onClick={() => { setWizardShowAddWords(false); setWizardNewWords(''); }} className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-lg transition-colors">
                 <X size={16} />
               </button>
             </div>
             
             <div>
-              <label className="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wider">New Target Words</label>
+              <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">New Target Words</label>
               <textarea
                 rows={4}
                 value={wizardNewWords}
                 onChange={e => setWizardNewWords(e.target.value)}
                 placeholder="Enter words separated by commas or new lines, e.g. genius, brave, wisdom"
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-700 resize-none focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100"
+                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm font-medium text-slate-700 dark:text-white resize-none focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100"
               />
               <p className="text-[10px] text-slate-400 mt-1">
                 Existing words in the exam will be automatically identified and skipped.
@@ -1597,7 +1597,7 @@ export function ExamManagerPanel({ groupId }: Props) {
                   setWizardNewWords('');
                   toast.success('Added new empty question!');
                 }}
-                className="flex-1 py-2 border border-slate-200 hover:bg-slate-50 text-slate-600 font-bold rounded-xl text-xs transition-all flex items-center justify-center gap-1.5"
+                className="flex-1 py-2 border border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold rounded-xl text-xs transition-all flex items-center justify-center gap-1.5"
               >
                 <Plus size={13} /> Add Empty Card
               </button>
@@ -1605,7 +1605,7 @@ export function ExamManagerPanel({ groupId }: Props) {
                 type="button"
                 disabled={wizardAddingWords || !wizardNewWords.trim()}
                 onClick={handleWizardAIAddWords}
-                className="flex-1 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-slate-200 disabled:cursor-not-allowed text-white font-bold rounded-xl text-xs transition-all shadow-md shadow-purple-200 flex items-center justify-center gap-1.5"
+                className="flex-1 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-slate-200 dark:disabled:bg-slate-600 disabled:cursor-not-allowed text-white font-bold rounded-xl text-xs transition-all shadow-md shadow-purple-200 dark:shadow-none flex items-center justify-center gap-1.5"
               >
                 {wizardAddingWords ? <Loader2 size={13} className="animate-spin" /> : <Sparkles size={13} />}
                 {wizardAddingWords ? 'Generating...' : 'Generate with AI'}

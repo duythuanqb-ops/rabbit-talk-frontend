@@ -19,35 +19,37 @@ import { friendsService } from '../services/friends.service';
 import { Friend, PendingRequest, SearchUserResult } from '../types/friends.types';
 import { getProfile } from '@/features/auth/services/auth.service';
 
+// ─── Types ────────────────────────────────────────────────────────────────────
+type Tab = 'friends' | 'pending' | 'find';
+
+type Notification = {
+  type: 'success' | 'error';
+  message: string;
+};
+
+type ConfirmModal = {
+  isOpen: boolean;
+  friendUuid: string;
+  friendName: string;
+};
+
 export function FriendsPage() {
-  // Tabs: 'friends' | 'pending' | 'find'
-  const [activeTab, setActiveTab] = useState<'friends' | 'pending' | 'find'>('friends');
-  
-  // Data States
-  const [friends, setFriends] = useState<Friend[]>([]);
+  // ─── State ────────────────────────────────────────────────────────────────
+  const [activeTab, setActiveTab] = useState<Tab>('friends');
+
+  const [friends, setFriends]               = useState<Friend[]>([]);
   const [pendingRequests, setPendingRequests] = useState<PendingRequest[]>([]);
-  const [searchResults, setSearchResults] = useState<SearchUserResult[]>([]);
-  
-  // UI states
-  const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isSearching, setIsSearching] = useState(false);
+  const [searchResults, setSearchResults]   = useState<SearchUserResult[]>([]);
+
+  const [loading, setLoading]               = useState(true);
+  const [searchQuery, setSearchQuery]       = useState('');
+  const [isSearching, setIsSearching]       = useState(false);
   const [directAddQuery, setDirectAddQuery] = useState('');
   const [directAddLoading, setDirectAddLoading] = useState(false);
-  const [currentUserId, setCurrentUserId] = useState<string>('');
-  
-  // Notification states
-  const [notification, setNotification] = useState<{
-    type: 'success' | 'error';
-    message: string;
-  } | null>(null);
+  const [currentUserId, setCurrentUserId]   = useState<string>('');
 
-  // Modal state
-  const [confirmModal, setConfirmModal] = useState<{
-    isOpen: boolean;
-    friendUuid: string;
-    friendName: string;
-  } | null>(null);
+  const [notification, setNotification] = useState<Notification | null>(null);
+  const [confirmModal, setConfirmModal]  = useState<ConfirmModal | null>(null);
 
   // Load initial data
   useEffect(() => {
@@ -194,33 +196,33 @@ export function FriendsPage() {
       )}
 
       {/* Header Banner */}
-      <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-500 p-8 md:p-10 rounded-3xl text-white shadow-xl shadow-emerald-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative overflow-hidden">
+      <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-500 dark:from-emerald-800 dark:via-teal-800 dark:to-emerald-700 p-8 md:p-10 rounded-3xl text-white shadow-xl shadow-emerald-200/50 dark:shadow-emerald-900/30 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative overflow-hidden">
         <div className="relative z-10 space-y-2">
           <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-xs font-bold uppercase tracking-wider">
             <Sparkles size={12} /> Peer Connection
           </div>
-          <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">Friends & Connections</h1>
+          <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">Friends &amp; Connections</h1>
           <p className="text-white/80 max-w-lg text-sm md:text-base">
-            Build your studying circle, keep track of classmates' progress, and challenge each other in Live Vocab Battles!
+            Build your studying circle, keep track of classmates&apos; progress, and challenge each other in Live Vocab Battles!
           </p>
         </div>
 
         {/* Direct Add Friend Form */}
         <form onSubmit={handleDirectAdd} className="w-full md:w-auto relative z-10 flex gap-2">
           <div className="relative w-full md:w-72">
-            <UserPlus className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-600" size={18} />
+            <UserPlus className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-600 dark:text-emerald-400" size={18} />
             <input 
               type="text" 
               placeholder="Username or email..." 
               value={directAddQuery}
               onChange={(e) => setDirectAddQuery(e.target.value)}
-              className="w-full pl-11 pr-4 py-3 bg-white text-slate-800 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-emerald-400 focus:outline-none placeholder-slate-400 shadow-lg border border-slate-100/50"
+              className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-900/80 text-slate-800 dark:text-slate-100 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-emerald-400 focus:outline-none placeholder-slate-400 dark:placeholder-slate-500 shadow-lg border border-slate-100/50 dark:border-slate-700/50"
             />
           </div>
           <button 
             type="submit"
             disabled={directAddLoading}
-            className="px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl text-sm font-bold transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2 shrink-0 disabled:opacity-50"
+            className="px-6 py-3 bg-slate-900 dark:bg-slate-950 hover:bg-slate-800 dark:hover:bg-slate-800 text-white rounded-2xl text-sm font-bold transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2 shrink-0 disabled:opacity-50"
           >
             {directAddLoading ? <Loader2 className="animate-spin" size={16} /> : 'Add'}
           </button>
@@ -232,13 +234,13 @@ export function FriendsPage() {
       </div>
 
       {/* Tabs Menu */}
-      <div className="flex border-b border-slate-200 gap-1.5 p-1 bg-slate-100 rounded-2xl max-w-xl">
+      <div className="flex border-b border-slate-200 dark:border-slate-700 gap-1.5 p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl max-w-xl">
         <button
           onClick={() => setActiveTab('friends')}
           className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-sm font-bold whitespace-nowrap transition-all ${
             activeTab === 'friends'
-              ? 'bg-white text-slate-900 shadow-sm'
-              : 'text-slate-500 hover:text-slate-900 hover:bg-white/50'
+              ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
+              : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-700/50'
           }`}
         >
           <Users size={16} />
@@ -253,8 +255,8 @@ export function FriendsPage() {
           onClick={() => setActiveTab('pending')}
           className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-sm font-bold whitespace-nowrap transition-all ${
             activeTab === 'pending'
-              ? 'bg-white text-slate-900 shadow-sm'
-              : 'text-slate-500 hover:text-slate-900 hover:bg-white/50'
+              ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
+              : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-700/50'
           }`}
         >
           <Clock size={16} />
@@ -269,8 +271,8 @@ export function FriendsPage() {
           onClick={() => setActiveTab('find')}
           className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-sm font-bold whitespace-nowrap transition-all ${
             activeTab === 'find'
-              ? 'bg-white text-slate-900 shadow-sm'
-              : 'text-slate-500 hover:text-slate-900 hover:bg-white/50'
+              ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
+              : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-700/50'
           }`}
         >
           <Search size={16} />
@@ -284,16 +286,16 @@ export function FriendsPage() {
           /* Loading State Skeletons */
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-4 animate-pulse">
+              <div key={i} className="bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm space-y-4 animate-pulse">
                 <div className="flex gap-4 items-center">
-                  <div className="w-14 h-14 bg-slate-200 rounded-full shrink-0" />
+                  <div className="w-14 h-14 bg-slate-200 dark:bg-slate-700 rounded-full shrink-0" />
                   <div className="flex-1 space-y-2">
-                    <div className="h-4 bg-slate-200 rounded w-2/3" />
-                    <div className="h-3 bg-slate-200 rounded w-1/2" />
+                    <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-2/3" />
+                    <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-1/2" />
                   </div>
                 </div>
-                <div className="h-3 bg-slate-200 rounded w-full" />
-                <div className="h-9 bg-slate-100 rounded-xl w-full" />
+                <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-full" />
+                <div className="h-9 bg-slate-100 dark:bg-slate-700 rounded-xl w-full" />
               </div>
             ))}
           </div>
@@ -302,13 +304,13 @@ export function FriendsPage() {
             {/* TAB 1: MY FRIENDS */}
             {activeTab === 'friends' && (
               friends.length === 0 ? (
-                <div className="text-center py-20 bg-white rounded-3xl border border-slate-100 shadow-sm max-w-xl mx-auto p-8 space-y-6">
-                  <div className="w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-500 mx-auto shadow-inner">
+                <div className="text-center py-20 bg-white dark:bg-slate-800 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm max-w-xl mx-auto p-8 space-y-6">
+                  <div className="w-16 h-16 bg-emerald-50 dark:bg-emerald-900/30 rounded-2xl flex items-center justify-center text-emerald-500 mx-auto shadow-inner">
                     <Users size={32} />
                   </div>
                   <div className="space-y-2">
-                    <h3 className="text-xl font-bold text-slate-900">Your Friend List is Empty</h3>
-                    <p className="text-slate-500 text-sm max-w-sm mx-auto">
+                    <h3 className="text-xl font-bold text-slate-900 dark:text-white">Your Friend List is Empty</h3>
+                    <p className="text-slate-500 dark:text-slate-400 text-sm max-w-sm mx-auto">
                       Studying is always better with others! Search for your classmates, add them, and grow your vocabulary together.
                     </p>
                   </div>
@@ -324,7 +326,7 @@ export function FriendsPage() {
                   {friends.map((friend) => (
                     <div 
                       key={friend.uuid}
-                      className="bg-white rounded-3xl border border-slate-100/80 p-6 shadow-sm hover:shadow-xl hover:-translate-y-1 hover:border-emerald-100 transition-all duration-300 group flex flex-col justify-between"
+                      className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-100/80 dark:border-slate-700 p-6 shadow-sm hover:shadow-xl hover:-translate-y-1 hover:border-emerald-100 dark:hover:border-emerald-800 transition-all duration-300 group flex flex-col justify-between"
                     >
                       <div className="space-y-4">
                         <div className="flex gap-4 items-center">
@@ -345,31 +347,31 @@ export function FriendsPage() {
                           </div>
 
                           <div className="min-w-0">
-                            <h4 className="font-extrabold text-slate-900 group-hover:text-emerald-600 transition truncate">
+                            <h4 className="font-extrabold text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition truncate">
                               {friend.first_name} {friend.last_name}
                             </h4>
-                            <p className="text-xs text-slate-400 truncate">@{friend.username}</p>
-                            <span className="inline-block mt-1 bg-slate-50 text-slate-500 text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                            <p className="text-xs text-slate-400 dark:text-slate-500 truncate">@{friend.username}</p>
+                            <span className="inline-block mt-1 bg-slate-50 dark:bg-slate-700 text-slate-500 dark:text-slate-400 text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider">
                               {friend.role}
                             </span>
                           </div>
                         </div>
 
-                        <p className="text-slate-500 text-xs line-clamp-2 italic min-h-[2rem]">
+                        <p className="text-slate-500 dark:text-slate-400 text-xs line-clamp-2 italic min-h-[2rem]">
                           {friend.bio ? `"${friend.bio}"` : '“No bio provided yet.”'}
                         </p>
                       </div>
 
-                      <div className="mt-6 pt-4 border-t border-slate-50 flex gap-2">
+                      <div className="mt-6 pt-4 border-t border-slate-50 dark:border-slate-700 flex gap-2">
                         <button 
                           onClick={() => showNotification('success', `Starting battle with ${friend.first_name}...`)}
-                          className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold rounded-xl text-xs transition-colors"
+                          className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 bg-emerald-50 dark:bg-emerald-900/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400 font-bold rounded-xl text-xs transition-colors"
                         >
                           <MessageSquare size={13} /> Chat
                         </button>
                         <button 
                           onClick={() => handleUnfriendClick(friend.uuid, `${friend.first_name} ${friend.last_name}`)}
-                          className="px-3 py-2.5 bg-slate-50 hover:bg-rose-50 text-slate-400 hover:text-rose-600 rounded-xl transition-colors"
+                          className="px-3 py-2.5 bg-slate-50 dark:bg-slate-700 hover:bg-rose-50 dark:hover:bg-rose-900/30 text-slate-400 hover:text-rose-600 rounded-xl transition-colors"
                           title="Unfriend"
                         >
                           <UserX size={15} />
@@ -384,12 +386,12 @@ export function FriendsPage() {
             {/* TAB 2: PENDING REQUESTS */}
             {activeTab === 'pending' && (
               pendingRequests.length === 0 ? (
-                <div className="text-center py-20 bg-white rounded-3xl border border-slate-100 shadow-sm max-w-xl mx-auto p-8 space-y-4">
-                  <div className="w-16 h-16 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-500 mx-auto shadow-inner">
+                <div className="text-center py-20 bg-white dark:bg-slate-800 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm max-w-xl mx-auto p-8 space-y-4">
+                  <div className="w-16 h-16 bg-amber-50 dark:bg-amber-900/20 rounded-2xl flex items-center justify-center text-amber-500 mx-auto shadow-inner">
                     <Clock size={32} />
                   </div>
-                  <h3 className="text-xl font-bold text-slate-900">No Pending Requests</h3>
-                  <p className="text-slate-500 text-sm max-w-sm mx-auto">
+                  <h3 className="text-xl font-bold text-slate-900 dark:text-white">No Pending Requests</h3>
+                  <p className="text-slate-500 dark:text-slate-400 text-sm max-w-sm mx-auto">
                     When someone sends you a friend request, it will appear here. Share your username so friends can find you!
                   </p>
                 </div>
@@ -398,7 +400,7 @@ export function FriendsPage() {
                   {pendingRequests.map((request) => (
                     <div 
                       key={request.request_id}
-                      className="bg-white rounded-3xl border border-slate-100 p-6 shadow-sm flex flex-col justify-between"
+                      className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-100 dark:border-slate-700 p-6 shadow-sm flex flex-col justify-between"
                     >
                       <div className="space-y-4">
                         <div className="flex gap-4 items-center">
@@ -418,22 +420,22 @@ export function FriendsPage() {
                           </div>
 
                           <div className="min-w-0">
-                            <h4 className="font-extrabold text-slate-900 truncate">
+                            <h4 className="font-extrabold text-slate-900 dark:text-white truncate">
                               {request.first_name} {request.last_name}
                             </h4>
-                            <p className="text-xs text-slate-400 truncate">@{request.username}</p>
-                            <span className="text-[10px] text-slate-400 font-medium">
+                            <p className="text-xs text-slate-400 dark:text-slate-500 truncate">@{request.username}</p>
+                            <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">
                               {request.direction === 'incoming' ? 'Received ' : 'Sent '} {new Date(request.created_at).toLocaleDateString()}
                             </span>
                           </div>
                         </div>
 
-                        <p className="text-slate-500 text-xs line-clamp-2 italic min-h-[2rem]">
+                        <p className="text-slate-500 dark:text-slate-400 text-xs line-clamp-2 italic min-h-[2rem]">
                           {request.bio ? `"${request.bio}"` : '“Hey there! I want to study together.”'}
                         </p>
                       </div>
 
-                      <div className="mt-6 pt-4 border-t border-slate-50 flex gap-2">
+                      <div className="mt-6 pt-4 border-t border-slate-50 dark:border-slate-700 flex gap-2">
                         {request.direction === 'incoming' ? (
                           <>
                             <button 
@@ -444,7 +446,7 @@ export function FriendsPage() {
                             </button>
                             <button 
                               onClick={() => handleRespondRequest(request.request_id, false)}
-                              className="flex-1 flex items-center justify-center gap-1.5 px-4 py-3 bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-600 font-bold rounded-xl text-xs transition active:scale-95"
+                              className="flex-1 flex items-center justify-center gap-1.5 px-4 py-3 bg-slate-100 dark:bg-slate-700 hover:bg-rose-50 dark:hover:bg-rose-900/30 text-slate-600 dark:text-slate-400 hover:text-rose-600 font-bold rounded-xl text-xs transition active:scale-95"
                             >
                               <X size={14} /> Decline
                             </button>
@@ -452,7 +454,7 @@ export function FriendsPage() {
                         ) : (
                           <button 
                             onClick={() => handleUnfriendClick(request.uuid, `${request.first_name} ${request.last_name}`)}
-                            className="w-full flex items-center justify-center gap-1.5 px-4 py-3 bg-slate-50 hover:bg-rose-50 text-slate-400 hover:text-rose-600 font-bold rounded-xl text-xs transition-colors active:scale-95"
+                            className="w-full flex items-center justify-center gap-1.5 px-4 py-3 bg-slate-50 dark:bg-slate-700 hover:bg-rose-50 dark:hover:bg-rose-900/30 text-slate-400 hover:text-rose-600 font-bold rounded-xl text-xs transition-colors active:scale-95"
                           >
                             <Clock size={14} className="text-amber-500" /> Cancel Request
                           </button>
@@ -476,7 +478,7 @@ export function FriendsPage() {
                     placeholder="Search by exact username or email..." 
                     value={searchQuery}
                     onChange={(e) => handleSearchUsers(e.target.value)}
-                    className="w-full pl-12 pr-10 py-4 bg-white text-slate-800 rounded-2xl text-sm font-semibold focus:ring-2 focus:ring-emerald-400 focus:outline-none placeholder-slate-400 shadow-md border border-slate-100"
+                    className="w-full pl-12 pr-10 py-4 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-2xl text-sm font-semibold focus:ring-2 focus:ring-emerald-400 focus:outline-none placeholder-slate-400 dark:placeholder-slate-500 shadow-md border border-slate-100 dark:border-slate-700"
                   />
                   {isSearching && (
                     <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 animate-spin text-emerald-500" size={18} />
@@ -485,18 +487,18 @@ export function FriendsPage() {
 
                 {/* Search Results */}
                 {searchQuery.trim() === '' ? (
-                  <div className="text-center py-20 bg-slate-50 rounded-3xl border border-dashed border-slate-200 max-w-xl mx-auto p-8 space-y-4">
+                  <div className="text-center py-20 bg-slate-50 dark:bg-slate-800/50 rounded-3xl border border-dashed border-slate-200 dark:border-slate-700 max-w-xl mx-auto p-8 space-y-4">
                     <Search className="mx-auto text-slate-300" size={40} />
-                    <h4 className="font-bold text-slate-700">Find classmates and teachers</h4>
-                    <p className="text-slate-500 text-xs max-w-xs mx-auto">
+                    <h4 className="font-bold text-slate-700 dark:text-slate-300">Find classmates and teachers</h4>
+                    <p className="text-slate-500 dark:text-slate-400 text-xs max-w-xs mx-auto">
                       Enter an exact username or email address to find and connect with people you know.
                     </p>
                   </div>
                 ) : searchResults.length === 0 ? (
-                  <div className="text-center py-20 bg-white rounded-3xl border border-slate-100 shadow-sm max-w-xl mx-auto p-8 space-y-3">
+                  <div className="text-center py-20 bg-white dark:bg-slate-800 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm max-w-xl mx-auto p-8 space-y-3">
                     <AlertCircle className="mx-auto text-rose-400" size={40} />
-                    <h4 className="font-bold text-slate-900 text-lg">No matches found</h4>
-                    <p className="text-slate-500 text-xs max-w-xs mx-auto">
+                    <h4 className="font-bold text-slate-900 dark:text-white text-lg">No matches found</h4>
+                    <p className="text-slate-500 dark:text-slate-400 text-xs max-w-xs mx-auto">
                       We couldn't find an exact match for "{searchQuery}". Make sure to enter their full username or email.
                     </p>
                   </div>
@@ -510,7 +512,7 @@ export function FriendsPage() {
                       return (
                         <div 
                           key={user.uuid}
-                          className="bg-white rounded-3xl border border-slate-100 p-6 shadow-sm flex flex-col justify-between hover:shadow-md transition-all duration-300"
+                          className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-100 dark:border-slate-700 p-6 shadow-sm flex flex-col justify-between hover:shadow-md transition-all duration-300"
                         >
                           <div className="space-y-4">
                             <div className="flex gap-4 items-center">
@@ -530,26 +532,26 @@ export function FriendsPage() {
                               </div>
 
                               <div className="min-w-0">
-                                <h4 className="font-extrabold text-slate-900 truncate">
+                                <h4 className="font-extrabold text-slate-900 dark:text-white truncate">
                                   {user.first_name} {user.last_name}
                                 </h4>
-                                <p className="text-xs text-slate-400 truncate">@{user.username}</p>
-                                <span className="inline-block mt-1 bg-indigo-50 text-indigo-600 text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                                <p className="text-xs text-slate-400 dark:text-slate-500 truncate">@{user.username}</p>
+                                <span className="inline-block mt-1 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider">
                                   {user.role}
                                 </span>
                               </div>
                             </div>
 
-                            <p className="text-slate-500 text-xs line-clamp-2 italic min-h-[2rem]">
+                            <p className="text-slate-500 dark:text-slate-400 text-xs line-clamp-2 italic min-h-[2rem]">
                               {user.bio ? `"${user.bio}"` : '“No bio yet.”'}
                             </p>
                           </div>
 
-                          <div className="mt-6 pt-4 border-t border-slate-50">
+                          <div className="mt-6 pt-4 border-t border-slate-50 dark:border-slate-700">
                             {isFriend ? (
                               <button 
                                 onClick={() => handleUnfriendClick(user.uuid, `${user.first_name} ${user.last_name}`)}
-                                className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-600 font-bold rounded-xl text-xs transition-colors"
+                                className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 bg-slate-100 dark:bg-slate-700 hover:bg-rose-50 dark:hover:bg-rose-900/30 text-slate-600 dark:text-slate-400 hover:text-rose-600 font-bold rounded-xl text-xs transition-colors"
                               >
                                 <UserCheck size={14} className="text-emerald-500" /> Friends (Click to Unfriend)
                               </button>
@@ -557,7 +559,7 @@ export function FriendsPage() {
                               iSentIt ? (
                                 <button 
                                   onClick={() => handleUnfriendClick(user.uuid, `${user.first_name} ${user.last_name}`)}
-                                  className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 bg-slate-50 hover:bg-rose-50 text-slate-400 hover:text-rose-600 font-bold rounded-xl text-xs transition-colors"
+                                  className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 bg-slate-50 dark:bg-slate-700 hover:bg-rose-50 dark:hover:bg-rose-900/30 text-slate-400 hover:text-rose-600 font-bold rounded-xl text-xs transition-colors"
                                 >
                                   <Clock size={14} className="text-amber-500" /> Request Sent (Cancel)
                                 </button>
@@ -594,19 +596,19 @@ export function FriendsPage() {
       {/* Confirm Modal */}
       {confirmModal?.isOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200 p-4">
-          <div className="bg-white rounded-3xl p-6 md:p-8 max-w-sm w-full mx-auto shadow-2xl animate-in zoom-in-95 duration-200 relative overflow-hidden">
+          <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 md:p-8 max-w-sm w-full mx-auto shadow-2xl animate-in zoom-in-95 duration-200 relative overflow-hidden border border-slate-100 dark:border-slate-700">
             <div className="absolute top-0 left-0 w-full h-1.5 bg-rose-500" />
-            <div className="w-16 h-16 bg-rose-50 rounded-2xl flex items-center justify-center text-rose-500 mx-auto mb-4 border border-rose-100 shadow-sm">
+            <div className="w-16 h-16 bg-rose-50 dark:bg-rose-900/20 rounded-2xl flex items-center justify-center text-rose-500 mx-auto mb-4 border border-rose-100 dark:border-rose-800/50 shadow-sm">
               <UserX size={32} />
             </div>
-            <h3 className="text-xl font-extrabold text-center text-slate-900 mb-2">Are you sure?</h3>
-            <p className="text-center text-slate-500 text-sm mb-8 px-2">
-              Do you really want to unfriend or cancel the request for <strong className="text-slate-800">{confirmModal.friendName}</strong>?
+            <h3 className="text-xl font-extrabold text-center text-slate-900 dark:text-white mb-2">Are you sure?</h3>
+            <p className="text-center text-slate-500 dark:text-slate-400 text-sm mb-8 px-2">
+              Do you really want to unfriend or cancel the request for <strong className="text-slate-800 dark:text-white">{confirmModal.friendName}</strong>?
             </p>
             <div className="flex gap-3">
               <button 
                 onClick={() => setConfirmModal(null)}
-                className="flex-1 px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl text-sm transition-colors active:scale-95"
+                className="flex-1 px-4 py-3 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 font-bold rounded-2xl text-sm transition-colors active:scale-95"
               >
                 Keep
               </button>

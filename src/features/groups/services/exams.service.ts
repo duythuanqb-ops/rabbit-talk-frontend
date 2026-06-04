@@ -16,6 +16,7 @@ export interface Exam {
   teacher_id: string;
   title: string;
   description: string | null;
+  is_published?: boolean;
   created_at: string;
   question_count?: number;
   student_count?: number;
@@ -63,6 +64,12 @@ export const examsService = {
     apiCall<Exam>(`/exams/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),
+    }),
+
+  updatePublishStatus: (id: string, isPublished: boolean) =>
+    apiCall<{ success: boolean; is_published: boolean }>(`/exams/${id}/publish`, {
+      method: 'PUT',
+      body: JSON.stringify({ isPublished }),
     }),
 
   getMyExams: () =>
