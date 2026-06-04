@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { X, Wand2, Plus, Pencil, Trash2, Volume2, Save, Undo, Loader2, Camera, Image as ImageIcon, Sparkles } from 'lucide-react';
 import { flashcardService } from '../services/flashcard.service';
+import { getAudioUrl } from '@/shared/utils/audio';
 
 export interface Flashcard {
   id: string;
@@ -272,22 +273,22 @@ export function AddCardModal({ isOpen, onClose, setId, onAdded }: { isOpen: bool
 
   const playAudio = (url: string) => {
     if (url) {
-      new Audio(url).play().catch(e => console.log('Audio playback failed', e));
+      new Audio(getAudioUrl(url)).play().catch(e => console.log('Audio playback failed', e));
     }
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-      <div className="bg-white rounded-3xl max-w-4xl w-full shadow-2xl relative max-h-[90vh] flex flex-col overflow-hidden">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/60 dark:bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+      <div className="bg-white dark:bg-slate-800 rounded-3xl max-w-4xl w-full shadow-2xl relative max-h-[90vh] flex flex-col overflow-hidden">
         
         {/* Header */}
-        <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+        <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/80">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-indigo-50 border border-indigo-100 rounded-xl flex items-center justify-center text-indigo-500">
               <Wand2 size={20} />
             </div>
             <div>
-              <h2 className="text-xl font-black text-slate-900 tracking-tight">Manage Vocabulary Set</h2>
+              <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">Manage Vocabulary Set</h2>
               <p className="text-xs font-semibold text-slate-500">Add, edit, or delete cards within this study set.</p>
             </div>
           </div>
@@ -303,7 +304,7 @@ export function AddCardModal({ isOpen, onClose, setId, onAdded }: { isOpen: bool
         <div className="flex-1 flex flex-col md:flex-row overflow-hidden min-h-0">
           
           {/* Left panel: Add or Edit form */}
-          <div className="w-full md:w-[38%] p-6 border-r border-slate-100 overflow-y-auto bg-slate-50/20">
+          <div className="w-full md:w-[38%] p-6 border-r border-slate-100 dark:border-slate-700 overflow-y-auto bg-slate-50/20 dark:bg-slate-800/20">
             {editingCard ? (
               // Edit Mode Form
               <div className="space-y-4">
@@ -399,7 +400,7 @@ export function AddCardModal({ isOpen, onClose, setId, onAdded }: { isOpen: bool
               // Add Mode Form
               <div className="space-y-5">
                 {/* Tab Switcher */}
-                <div className="flex bg-slate-100 p-1 rounded-2xl border border-slate-200/50">
+                <div className="flex bg-slate-100 dark:bg-slate-700 p-1 rounded-2xl border border-slate-200/50 dark:border-slate-600/50">
                   <button
                     onClick={() => {
                       setAddMode('single');
@@ -407,8 +408,8 @@ export function AddCardModal({ isOpen, onClose, setId, onAdded }: { isOpen: bool
                     }}
                     className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 ${
                       addMode === 'single'
-                        ? 'bg-white text-indigo-600 shadow-sm'
-                        : 'text-slate-500 hover:text-slate-800'
+                        ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white'
                     }`}
                   >
                     <Wand2 size={14} />
@@ -421,8 +422,8 @@ export function AddCardModal({ isOpen, onClose, setId, onAdded }: { isOpen: bool
                     }}
                     className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 ${
                       addMode === 'scan'
-                        ? 'bg-white text-indigo-600 shadow-sm'
-                        : 'text-slate-500 hover:text-slate-800'
+                        ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white'
                     }`}
                   >
                     <Camera size={14} />
@@ -448,7 +449,7 @@ export function AddCardModal({ isOpen, onClose, setId, onAdded }: { isOpen: bool
                             if (errorMsg) setErrorMsg('');
                           }}
                           onKeyDown={e => e.key === 'Enter' && handleAdd()}
-                          className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-md font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                          className="w-full px-4 py-3 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-md font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
                           autoFocus
                         />
                         {errorMsg && (
@@ -466,7 +467,7 @@ export function AddCardModal({ isOpen, onClose, setId, onAdded }: { isOpen: bool
                         {loading ? <Loader2 size={16} className="animate-spin" /> : <><Plus size={16} /> Add with AI</>}
                       </button>
                       
-                      <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 text-[11px] text-slate-500 leading-relaxed font-semibold">
+                      <div className="bg-slate-50 dark:bg-slate-700 border border-slate-100 dark:border-slate-600 rounded-xl p-3 text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed font-semibold">
                         💡 Our AI will automatically contact dictionary definitions to fetch phonetic spellings, parts of speech, translations, and audio pronunciation tracks!
                       </div>
                     </div>
@@ -709,10 +710,10 @@ export function AddCardModal({ isOpen, onClose, setId, onAdded }: { isOpen: bool
                 <span className="text-xs font-bold">Loading cards...</span>
               </div>
             ) : cards.length === 0 ? (
-              <div className="flex-1 flex flex-col items-center justify-center text-center p-8 border border-dashed border-slate-100 rounded-2xl bg-slate-50/20 py-12">
-                <Wand2 className="text-slate-300 mb-3" size={32} />
-                <p className="text-xs font-bold text-slate-500">No words in this set yet</p>
-                <p className="text-[10px] text-slate-400 mt-0.5">Use the left panel to populate your vocabulary card deck.</p>
+              <div className="flex-1 flex flex-col items-center justify-center text-center p-8 border border-dashed border-slate-100 dark:border-slate-700 rounded-2xl bg-slate-50/20 dark:bg-slate-800/20 py-12">
+                <Wand2 className="text-slate-300 dark:text-slate-600 mb-3" size={32} />
+                <p className="text-xs font-bold text-slate-500 dark:text-slate-400">No words in this set yet</p>
+                <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">Use the left panel to populate your vocabulary card deck.</p>
               </div>
             ) : (
               <div className="space-y-3 pr-1">
@@ -724,8 +725,8 @@ export function AddCardModal({ isOpen, onClose, setId, onAdded }: { isOpen: bool
                   return (
                     <div 
                       key={card.id} 
-                      className={`p-4 rounded-2xl border border-slate-100 hover:border-slate-200 transition-all flex items-start gap-3 bg-white ${
-                        editingCard?.id === card.id ? 'ring-2 ring-indigo-500 border-transparent bg-indigo-50/5' : ''
+                      className={`p-4 rounded-2xl border border-slate-100 dark:border-slate-700 hover:border-slate-200 dark:hover:border-slate-600 transition-all flex items-start gap-3 bg-white dark:bg-slate-800 ${
+                        editingCard?.id === card.id ? 'ring-2 ring-indigo-500 border-transparent bg-indigo-50/5 dark:bg-indigo-900/10' : ''
                       }`}
                     >
                       {/* Avatar initial */}
@@ -736,7 +737,7 @@ export function AddCardModal({ isOpen, onClose, setId, onAdded }: { isOpen: bool
                       {/* Card Content details */}
                       <div className="flex-1 min-w-0">
                         <div className="flex flex-wrap items-center gap-1.5">
-                          <span className="font-bold text-slate-900 text-sm">{card.word}</span>
+                          <span className="font-bold text-slate-900 dark:text-white text-sm">{card.word}</span>
                           
                           {card.part_of_speech && (
                             <span className="text-[9px] font-black uppercase tracking-wider text-indigo-600 bg-indigo-50 border border-indigo-100 px-1.5 py-0.5 rounded-md">
@@ -749,8 +750,8 @@ export function AddCardModal({ isOpen, onClose, setId, onAdded }: { isOpen: bool
                           )}
                         </div>
 
-                        <p className="text-xs text-slate-700 font-semibold mt-1 leading-snug truncate" title={card.meaning}>
-                          {card.meaning || <span className="text-slate-300 italic font-medium">No definition provided</span>}
+                        <p className="text-xs text-slate-700 dark:text-slate-300 font-semibold mt-1 leading-snug truncate" title={card.meaning}>
+                          {card.meaning || <span className="text-slate-300 dark:text-slate-500 italic font-medium">No definition provided</span>}
                         </p>
 
                         {card.synonyms && (

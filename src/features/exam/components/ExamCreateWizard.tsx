@@ -82,24 +82,37 @@ function EditableQuestion({ q, idx, onChange, onDelete, onFetchAudio, onAutoFill
   onFetchAudio: (word: string, index: number) => void;
   onAutoFillAI: (word: string, index: number, type: string) => void;
 }) {
-  const meta = TYPE_META[q.type] ?? { label: q.type, emoji: '❓', color: 'bg-slate-50 text-slate-600 border-slate-100' };
+  const meta = TYPE_META[q.type] ?? { label: q.type, emoji: '❓', color: 'bg-slate-50 text-slate-600 border-slate-100', gradient: 'from-slate-400 to-slate-600' };
+
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-shadow">
+    <div className="bg-white dark:bg-slate-800/80 rounded-2xl border border-slate-200 dark:border-slate-700 p-5 shadow-sm hover:shadow-md transition-shadow">
       <div className="flex items-start justify-between gap-3 mb-3">
         <div className="flex items-center gap-2">
-          <span className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-500">{idx + 1}</span>
-          <span className={`text-[10px] font-bold px-2 py-0.5 rounded border uppercase tracking-wider ${meta.color}`}>{meta.emoji} {meta.label}</span>
+          <span className="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-xs font-bold text-slate-500 dark:text-slate-300">
+            {idx + 1}
+          </span>
+          <span className={`text-[10px] font-bold px-2 py-0.5 rounded border uppercase tracking-wider ${meta.color}`}>
+            {meta.emoji} {meta.label}
+          </span>
           {q.audio_url && (
             <span className="text-[10px] text-emerald-600 font-bold bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-lg flex items-center gap-1">🎧 Audio Linked</span>
           )}
         </div>
         <div className="flex items-center gap-1">
           {q.audio_url && (
-            <button onClick={() => speak(q.word, q.audio_url)} className="p-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors border border-blue-100" title="Test audio">
+            <button
+              onClick={() => speak(q.word, q.audio_url)}
+              className="p-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50 rounded-lg transition-colors border border-blue-100 dark:border-blue-800"
+              title="Test audio"
+            >
               <Volume2 size={13} />
             </button>
           )}
-          <button onClick={onDelete} className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-colors" title="Delete question">
+          <button
+            onClick={onDelete}
+            className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-lg transition-colors"
+            title="Delete question"
+          >
             <Trash2 size={13} />
           </button>
         </div>
@@ -107,14 +120,14 @@ function EditableQuestion({ q, idx, onChange, onDelete, onFetchAudio, onAutoFill
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3 items-end">
         <div>
-          <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">Target Word</label>
+          <label className="block text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Target Word</label>
           <input type="text" value={q.word} 
             onChange={e => onChange({ ...q, word: e.target.value })} 
             onBlur={() => { if (q.type === 'listening' && q.word?.trim()) onFetchAudio(q.word, idx); }}
-            className="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-800 focus:outline-none focus:border-blue-400" placeholder="e.g. happy" />
+            className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:border-blue-400" placeholder="e.g. happy" />
         </div>
         <div>
-          <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">Question Type (Skill)</label>
+          <label className="block text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Question Type (Skill)</label>
           <select value={q.type} onChange={e => {
             const nextType = e.target.value as ExamQuestion['type'];
             let nextOptions = q.options;
@@ -139,8 +152,8 @@ function EditableQuestion({ q, idx, onChange, onDelete, onFetchAudio, onAutoFill
               nextText = 'Nối từ tiếng Anh với từ đồng nghĩa tiếng Anh (Cambridge synonym) phù hợp:';
             }
             onChange({ ...q, type: nextType, options: nextOptions, question_text: nextText });
-          }} className="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-800 focus:outline-none focus:border-blue-400 cursor-pointer">
-            <option value="listening">🎧 Listening ( Cambridge Audio )</option>
+          }} className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:border-blue-400 cursor-pointer">
+            <option value="listening">🎧 Listening ( Cambridge Pronunciation )</option>
             <option value="synonym">🔗 Synonym ( Word Meaning )</option>
             <option value="spelling">✏️ Spelling ( Written Test )</option>
             <option value="situation">🌍 Situation ( Contextual Clue )</option>
@@ -148,7 +161,7 @@ function EditableQuestion({ q, idx, onChange, onDelete, onFetchAudio, onAutoFill
           </select>
         </div>
         <div className="flex gap-2 w-full">
-          <button type="button" onClick={() => onAutoFillAI(q.word, idx, q.type)} className="w-full py-1.5 bg-purple-50 hover:bg-purple-100 text-purple-600 rounded-lg text-[10px] font-extrabold border border-purple-100 flex items-center justify-center gap-1 whitespace-nowrap" title="Generate context with AI">
+          <button type="button" onClick={() => onAutoFillAI(q.word, idx, q.type)} className="w-full py-1.5 bg-purple-50 dark:bg-purple-900/30 hover:bg-purple-100 dark:hover:bg-purple-900/50 text-purple-600 dark:text-purple-400 rounded-lg text-[10px] font-extrabold border border-purple-100 dark:border-purple-800/50 flex items-center justify-center gap-1 whitespace-nowrap" title="Generate context with AI">
             <Sparkles size={11} /> AI Auto-Fill
           </button>
         </div>
@@ -156,21 +169,27 @@ function EditableQuestion({ q, idx, onChange, onDelete, onFetchAudio, onAutoFill
 
       <div className="space-y-3">
         <div>
-          <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">Question Text</label>
-          <input type="text" value={q.question_text} onChange={e => onChange({ ...q, question_text: e.target.value })} className="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-800 focus:outline-none focus:border-blue-400" />
+          <label className="block text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Question Text</label>
+          <input
+            type="text"
+            value={q.question_text}
+            onChange={e => onChange({ ...q, question_text: e.target.value })}
+            className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:border-blue-400"
+          />
         </div>
+
         {q.type === 'matching' ? (
           <div>
-            <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">Pairs</label>
-            <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 grid grid-cols-2 gap-2 text-xs font-medium text-slate-700">
+            <label className="block text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Pairs</label>
+            <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg p-3 grid grid-cols-2 gap-2 text-xs font-medium text-slate-700 dark:text-slate-200">
               {(() => {
                 try {
                   const pairs = JSON.parse(q.correct_answer);
                   return Object.entries(pairs).map(([w, s], i) => (
                     <div key={i} className="col-span-2 flex items-center gap-2">
-                      <span className="flex-1 bg-white border border-slate-200 px-3 py-1.5 rounded-lg">{w}</span>
-                      <span className="text-slate-400">→</span>
-                      <span className="flex-1 bg-emerald-50 border border-emerald-100 text-emerald-700 px-3 py-1.5 rounded-lg">{String(s)}</span>
+                      <span className="flex-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 px-3 py-1.5 rounded-lg text-slate-800 dark:text-white">{w}</span>
+                      <span className="text-slate-400 dark:text-slate-500">→</span>
+                      <span className="flex-1 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800/50 text-emerald-700 dark:text-emerald-400 px-3 py-1.5 rounded-lg">{String(s)}</span>
                     </div>
                   ));
                 } catch {
@@ -183,19 +202,37 @@ function EditableQuestion({ q, idx, onChange, onDelete, onFetchAudio, onAutoFill
           <>
             {q.options && (
               <div>
-                <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">Options</label>
+                <label className="block text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Options (Correct option must match answer precisely)</label>
                 <div className="grid grid-cols-2 gap-2">
                   {q.options.map((opt, oIdx) => (
-                    <input key={oIdx} type="text" value={opt} onChange={e => { const next = [...q.options!]; next[oIdx] = e.target.value; onChange({ ...q, options: next }); }}
-                      className={`px-3 py-1.5 border rounded-lg text-xs font-medium focus:outline-none focus:ring-1 ${opt === q.correct_answer ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-slate-50 border-slate-200 text-slate-700'}`}
+                    <input
+                      key={oIdx}
+                      type="text"
+                      value={opt}
+                      onChange={e => {
+                        const next = [...q.options!];
+                        next[oIdx] = e.target.value;
+                        onChange({ ...q, options: next });
+                      }}
+                      className={`px-3 py-1.5 border rounded-lg text-xs font-medium focus:outline-none focus:ring-1 ${
+                        opt === q.correct_answer
+                          ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800/50 text-emerald-800 dark:text-emerald-400 focus:border-emerald-400 focus:ring-emerald-100 dark:focus:ring-emerald-900'
+                          : 'bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 focus:border-blue-400 focus:ring-blue-100 dark:focus:ring-blue-900'
+                      }`}
                     />
                   ))}
                 </div>
               </div>
             )}
+
             <div>
-              <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">Correct Answer</label>
-              <input type="text" value={q.correct_answer} onChange={e => onChange({ ...q, correct_answer: e.target.value })} className="w-full px-3 py-1.5 bg-emerald-50/50 border border-emerald-100 rounded-lg text-xs font-bold text-emerald-800 focus:outline-none focus:border-emerald-400" />
+              <label className="block text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Correct Answer</label>
+              <input
+                type="text"
+                value={q.correct_answer}
+                onChange={e => onChange({ ...q, correct_answer: e.target.value })}
+                className="w-full px-3 py-1.5 bg-emerald-50/50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800/50 rounded-lg text-xs font-bold text-emerald-800 dark:text-emerald-400 focus:outline-none focus:border-emerald-400"
+              />
             </div>
           </>
         )}
@@ -436,7 +473,7 @@ export function ExamCreateWizard({ isOpen, onClose, onCreated, groups, defaultGr
 
   return (
     <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-      <div className={`bg-white rounded-3xl shadow-2xl w-full ${step === 'review' ? 'max-w-6xl' : 'max-w-2xl'} max-h-[92vh] flex flex-col overflow-hidden transition-all duration-300`}>
+      <div className={`bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full ${step === 'review' ? 'max-w-6xl' : 'max-w-2xl'} max-h-[92vh] flex flex-col overflow-hidden transition-all duration-300`}>
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100 bg-gradient-to-r from-blue-500 to-blue-700 rounded-t-3xl text-white">
           <div>
@@ -469,7 +506,7 @@ export function ExamCreateWizard({ isOpen, onClose, onCreated, groups, defaultGr
                   <div className="relative">
                     <Users className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={15} />
                     <select value={wizardGroupId} onChange={e => setWizardGroupId(e.target.value)}
-                      className="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100 appearance-none cursor-pointer">
+                      className="w-full pl-9 pr-4 py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm font-semibold text-slate-800 dark:text-white focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100 appearance-none cursor-pointer">
                       <option value="" disabled>Select a class...</option>
                       {groups.map(g => <option key={g.id} value={g.id}>{g.title}</option>)}
                     </select>
@@ -479,19 +516,19 @@ export function ExamCreateWizard({ isOpen, onClose, onCreated, groups, defaultGr
               <div>
                 <label className="block text-xs font-black text-slate-600 mb-1">Exam Title *</label>
                 <input type="text" value={examTitle} onChange={e => setExamTitle(e.target.value)} placeholder="e.g. Unit 2 Adjectives Quiz"
-                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100" />
+                  className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm font-semibold text-slate-800 dark:text-white focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100" />
               </div>
             </div>
             <div>
               <label className="block text-xs font-black text-slate-600 mb-1">Description (Optional)</label>
               <input type="text" value={examDesc} onChange={e => setExamDesc(e.target.value)} placeholder="e.g. Synonyms, listening, situational context"
-                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-800 focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100" />
+                className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm font-medium text-slate-800 dark:text-white focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100" />
             </div>
             <div className="border-t border-slate-100 pt-4">
               <label className="block text-xs font-black text-slate-600 mb-1.5">Enter Word List *</label>
               <textarea rows={6} value={wordInput} onChange={e => setWordInput(e.target.value)}
                 placeholder={`Enter vocabulary words separated by commas or new lines:\ne.g. happy, excited, intelligent, generous`}
-                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-700 resize-none focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100" />
+                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm font-medium text-slate-700 dark:text-white resize-none focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100" />
               <p className="text-[11px] text-slate-400 mt-2 leading-relaxed">
                 🎧 Listening questions are guaranteed to use correct **Cambridge Dictionary** pronunciation audio instead of AI-synthesized robotic speech.
               </p>
@@ -532,7 +569,7 @@ export function ExamCreateWizard({ isOpen, onClose, onCreated, groups, defaultGr
               </div>
 
               {/* Unique Vocabulary List Chip Container */}
-              <div className="bg-slate-50 border border-slate-200/60 rounded-2xl p-3.5 flex flex-wrap items-center gap-1.5 flex-shrink-0">
+              <div className="bg-slate-50 dark:bg-slate-700/50 border border-slate-200/60 dark:border-slate-600 rounded-2xl p-3.5 flex flex-wrap items-center gap-1.5 flex-shrink-0">
                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mr-1">Vocab list:</span>
                 {Array.from(
                   new Set(
@@ -542,7 +579,7 @@ export function ExamCreateWizard({ isOpen, onClose, onCreated, groups, defaultGr
                       .filter(Boolean)
                   )
                 ).map((word, wIdx) => (
-                  <span key={wIdx} className="text-xs font-bold px-3 py-1 bg-white border border-slate-200 text-slate-700 rounded-xl shadow-sm hover:border-blue-400 hover:text-blue-500 transition-all select-none">
+                  <span key={wIdx} className="text-xs font-bold px-3 py-1 bg-white dark:bg-slate-600 border border-slate-200 dark:border-slate-500 text-slate-700 dark:text-slate-100 rounded-xl shadow-sm hover:border-blue-400 hover:text-blue-500 transition-all select-none">
                     {word}
                   </span>
                 ))}
@@ -566,7 +603,7 @@ export function ExamCreateWizard({ isOpen, onClose, onCreated, groups, defaultGr
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between px-6 py-4 border-t border-slate-100 bg-slate-50/50">
+        <div className="flex items-center justify-between px-6 py-4 border-t border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/80">
           <button onClick={reset} className="px-4 py-2 text-sm font-bold text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-colors">Cancel</button>
           {step === 'input' ? (
             <button onClick={handleGenerate} disabled={generating || !examTitle || !wordInput || !wizardGroupId}
@@ -587,9 +624,9 @@ export function ExamCreateWizard({ isOpen, onClose, onCreated, groups, defaultGr
       {/* Add Vocabulary via AI Modal Overlay */}
       {showAddWordsDialog && (
         <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border border-slate-100 flex flex-col p-6 space-y-4 animate-in scale-in duration-200 text-slate-800">
+          <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border border-slate-100 dark:border-slate-700 flex flex-col p-6 space-y-4 animate-in scale-in duration-200 text-slate-800 dark:text-white">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-black text-slate-800 flex items-center gap-2">
+              <h3 className="text-lg font-black text-slate-800 dark:text-white flex items-center gap-2">
                 <Sparkles className="text-purple-500" size={18} /> Add Vocabulary via AI
               </h3>
               <button onClick={() => { setShowAddWordsDialog(false); setNewWordsInput(''); }} className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-lg transition-colors">
@@ -604,7 +641,7 @@ export function ExamCreateWizard({ isOpen, onClose, onCreated, groups, defaultGr
                 value={newWordsInput}
                 onChange={e => setNewWordsInput(e.target.value)}
                 placeholder="Enter words separated by commas or new lines, e.g. genius, brave, wisdom"
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-700 resize-none focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100"
+                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm font-medium text-slate-700 dark:text-white resize-none focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100"
               />
               <p className="text-[10px] text-slate-400 mt-1">
                 Existing words in the exam will be automatically identified and skipped.

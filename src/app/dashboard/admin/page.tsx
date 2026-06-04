@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { DashboardLayout } from '@/features/dashboard/components';
 import { ShieldAlert, Loader2, CheckCircle, XCircle, GraduationCap, Video, FileText, User } from 'lucide-react';
 import { getProfile } from '@/features/auth/services/auth.service';
 import { getTeacherRequests, approveTeacherRequest, rejectTeacherRequest } from '@/features/auth/services/admin.service';
@@ -70,26 +69,26 @@ export default function AdminPage() {
 
   if (loading) {
     return (
-      <DashboardLayout>
-        <div className="flex justify-center items-center py-20">
+    <>
+      <div className="flex justify-center items-center py-20">
           <Loader2 className="animate-spin text-emerald-500" size={32} />
         </div>
-      </DashboardLayout>
-    );
+    </>
+  );
   }
 
   if (!isAdmin) {
     return (
-      <DashboardLayout>
-        <div className="max-w-2xl mx-auto mt-12 p-8 bg-white border border-rose-100 rounded-2xl shadow-sm text-center">
+    <>
+      <div className="max-w-2xl mx-auto mt-12 p-8 bg-white border border-rose-100 rounded-2xl shadow-sm text-center">
           <div className="w-16 h-16 bg-rose-50 text-rose-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <ShieldAlert size={32} />
           </div>
           <h1 className="text-2xl font-bold text-slate-900 mb-2">Access Denied</h1>
           <p className="text-slate-500">You do not have administrator privileges to view this page.</p>
         </div>
-      </DashboardLayout>
-    );
+    </>
+  );
   }
 
   const pendingCount = requests.filter((r) => r.status === 'pending').length;
@@ -97,7 +96,7 @@ export default function AdminPage() {
   const rejectedCount = requests.filter((r) => r.status === 'rejected').length;
 
   return (
-    <DashboardLayout>
+    <>
       <div className="max-w-6xl mx-auto w-full pb-12">
         {/* Header */}
         <div className="mb-8 flex items-start gap-4">
@@ -217,7 +216,7 @@ export default function AdminPage() {
           </div>
         </div>
       </div>
-    </DashboardLayout>
+    </>
   );
 }
 

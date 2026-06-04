@@ -8,6 +8,7 @@ export { DailyQuests } from './widgets/DailyQuests';
 export { VocabularyWidget } from './widgets/VocabularyWidget';
 export { UpcomingAssignments } from './widgets/UpcomingAssignments';
 export { Leaderboard } from './widgets/Leaderboard';
+export { TeacherClassesWidget } from './widgets/TeacherClassesWidget';
 
 // Teacher components
 export { TeacherGroupManager } from './teacher/TeacherGroupManager';

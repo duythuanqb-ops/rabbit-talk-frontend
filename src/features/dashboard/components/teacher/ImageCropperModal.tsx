@@ -40,7 +40,7 @@ export default function ImageCropperModal({ imageSrc, onClose, onCropComplete }:
       <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm" onClick={!isProcessing ? onClose : undefined} />
       
       {/* Modal */}
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+      <div className="relative bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
           <h3 className="text-lg font-semibold text-slate-900">Crop Profile Photo</h3>

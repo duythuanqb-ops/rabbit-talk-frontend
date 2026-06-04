@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import Link from 'next/link';
@@ -65,6 +66,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const [userName, setUserName] = useState('');
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -75,7 +77,8 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         setUserName(user.first_name || user.username || 'User');
         setAvatarUrl(user.avatar_url || null);
       })
-      .catch(() => setRole('student'));
+      .catch(() => setRole('student'))
+      .finally(() => setIsLoading(false));
   }, []);
 
   // Close menu when clicking outside
@@ -93,6 +96,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
   // Close menu on route change
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setShowUserMenu(false);
   }, [pathname]);
 
@@ -105,7 +109,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     }
   };
 
-  const navItems = role === 'admin' ? adminNav : role === 'teacher' ? teacherNav : studentNav;
+  const navItems = role === 'admin' ? adminNav : role === 'teacher' ? teacherNav : role === 'student' ? studentNav : [];
   const badge = role ? roleBadge[role] : null;
   const initials = userName ? userName.charAt(0).toUpperCase() : 'U';
 
@@ -120,64 +124,77 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       )}
 
       <aside className={cn(
-        "w-64 h-screen bg-white border-r border-slate-100 flex flex-col fixed left-0 top-0 z-50 transition-transform duration-300 ease-in-out lg:translate-x-0",
+        "w-64 h-screen bg-surface/90 dark:bg-[#050505]/90 backdrop-blur-2xl shadow-[4px_0_24px_rgba(0,0,0,0.02)] flex flex-col fixed left-0 top-0 z-50 transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] lg:translate-x-0 border-r border-white/10 dark:border-white/[0.05]",
         isOpen ? "translate-x-0" : "-translate-x-full"
       )}>
         {/* Logo */}
-        <div className="p-6 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center text-white">
-              <GraduationCap size={24} />
+        <div className="p-8 flex items-center justify-between pb-4">
+          <Link href="/dashboard" className="flex items-center gap-3 group cursor-pointer">
+            <div className="w-10 h-10 rounded-[12px] flex items-center justify-center text-white bg-emerald-500 shadow-[inset_0_1px_0_rgba(255,255,255,0.4)] group-hover:scale-105 transition-fluid">
+              <GraduationCap size={22} strokeWidth={1.5} />
             </div>
-            <span className="text-xl font-bold text-slate-900 tracking-tight">RibbitTalk</span>
-          </div>
+            <span className="text-xl font-bold text-foreground tracking-tight group-hover:text-emerald-500 transition-colors">RibbitTalk</span>
+          </Link>
           <button
             onClick={onClose}
-            className="lg:hidden p-2 text-slate-400 hover:bg-slate-100 rounded-lg transition-colors"
+            className="lg:hidden p-2 text-muted-foreground hover:bg-surface-hover rounded-lg transition-colors"
           >
             <X size={20} />
           </button>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-4 space-y-1 overflow-y-auto mt-2">
-          {navItems.map((item) => {
-            const isActive = pathname === item.href;
-            const isAdminItem = item.href === '/dashboard/admin';
-            return (
-              <Link
-                key={item.name}
-                href={item.href}
-                onClick={() => {
-                  if (window.innerWidth < 1024) onClose();
-                }}
-                className={cn(
-                  "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group",
-                  isActive
-                    ? isAdminItem
-                      ? "bg-indigo-50 text-indigo-600 font-medium"
-                      : "bg-emerald-50 text-emerald-600 font-medium"
-                    : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
-                )}
-              >
-                <item.icon size={20} className={cn(
-                  "transition-colors",
-                  isActive
-                    ? isAdminItem ? "text-indigo-600" : "text-emerald-600"
-                    : "text-slate-400 group-hover:text-slate-900"
-                )} />
-                {item.name}
-              </Link>
-            );
-          })}
+        <nav className="flex-1 px-4 space-y-1.5 overflow-y-auto mt-4">
+          {isLoading ? (
+            <div className="flex flex-col gap-2 py-2">
+              {[1, 2, 3, 4, 5].map(i => (
+                <div key={i} className="h-11 bg-slate-100 dark:bg-white/5 rounded-2xl animate-pulse" />
+              ))}
+            </div>
+          ) : (
+            navItems.map((item, index) => {
+              const isActive = pathname === item.href;
+              const isAdminItem = item.href === '/dashboard/admin';
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  onClick={() => {
+                    if (window.innerWidth < 1024) onClose();
+                  }}
+                  style={{ animationDelay: `${index * 50}ms` }}
+                  className={cn(
+                    "flex items-center gap-3 px-4 py-3 rounded-2xl transition-fluid group relative",
+                    isActive
+                      ? isAdminItem
+                        ? "bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 font-semibold"
+                        : "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 font-semibold"
+                      : "text-muted-foreground font-medium hover:bg-surface-hover hover:text-foreground active:scale-[0.98]"
+                  )}
+                >
+                  {/* Active Indicator Bar */}
+                  {isActive && (
+                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-emerald-500 rounded-r-full shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                  )}
+                  <item.icon size={20} strokeWidth={isActive ? 2 : 1.5} className={cn(
+                    "transition-colors z-10",
+                    isActive
+                      ? isAdminItem ? "text-indigo-600 dark:text-indigo-400" : "text-emerald-500 dark:text-emerald-400"
+                      : "text-muted-foreground group-hover:text-emerald-400"
+                  )} />
+                  <span className="z-10">{item.name}</span>
+                </Link>
+              );
+            })
+          )}
         </nav>
 
         {/* Bottom: User profile card with popup menu */}
-        <div className="p-4 border-t border-slate-100" ref={menuRef}>
+        <div className="p-4 border-t border-border" ref={menuRef}>
 
           {/* Popup menu — slides up when open */}
           {showUserMenu && (
-            <div className="mb-2 bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden animate-in slide-in-from-bottom-2 fade-in duration-150">
+            <div className="mb-3 glass rounded-2xl shadow-2xl overflow-hidden animate-in slide-in-from-bottom-2 fade-in duration-300">
               {role !== 'admin' && (
                 <Link
                   href="/dashboard/settings"
@@ -186,63 +203,69 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                     if (window.innerWidth < 1024) onClose();
                   }}
                   className={cn(
-                    "flex items-center gap-3 px-4 py-3 text-sm font-medium transition-colors border-b border-slate-100",
+                    "flex items-center gap-3 px-4 py-3 text-sm font-medium transition-colors border-b border-border/50",
                     pathname === '/dashboard/settings'
-                      ? "bg-emerald-50 text-emerald-600"
-                      : "text-slate-700 hover:bg-slate-50"
+                      ? "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400"
+                      : "text-foreground hover:bg-surface-hover"
                   )}
                 >
-                  <Settings size={16} className={pathname === '/dashboard/settings' ? "text-emerald-500" : "text-slate-400"} />
+                  <Settings size={16} strokeWidth={1.5} className={pathname === '/dashboard/settings' ? "text-emerald-500" : "text-muted-foreground"} />
                   Settings
                 </Link>
               )}
               <button
                 onClick={handleLogout}
-                className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-rose-500 hover:bg-rose-50 transition-colors"
+                className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors"
               >
-                <LogOut size={16} />
+                <LogOut size={16} strokeWidth={1.5} />
                 Logout
               </button>
             </div>
           )}
 
           {/* User card — click to toggle popup */}
-          {role && (
-            <button
-              onClick={() => setShowUserMenu((prev) => !prev)}
-              className={cn(
-                "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl border transition-all duration-200",
-                showUserMenu
-                  ? "border-emerald-200 bg-emerald-50"
-                  : "border-slate-100 bg-slate-50 hover:bg-slate-100 hover:border-slate-200"
-              )}
-            >
-              {/* Avatar */}
-              <div className="w-9 h-9 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold text-sm shrink-0 overflow-hidden ring-2 ring-white">
-                {avatarUrl ? (
-                  <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" />
-                ) : initials}
-              </div>
-
-              {/* Name + badge */}
-              <div className="min-w-0 flex-1 text-left">
-                <p className="text-sm font-semibold text-slate-800 truncate">{userName}</p>
-                {badge && (
-                  <span className={cn("text-[10px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wider", badge.color)}>
-                    {badge.label}
-                  </span>
-                )}
-              </div>
-
-              {/* Chevron — rotates when open */}
-              <ChevronUp
-                size={16}
+          {isLoading ? (
+             <div className="h-[68px] w-full bg-slate-100 dark:bg-white/5 rounded-[20px] animate-pulse" />
+          ) : role && (
+            <div className="double-bezel cursor-pointer group" onClick={() => setShowUserMenu((prev) => !prev)}>
+              <button
                 className={cn(
-                  "text-slate-400 transition-transform duration-200 shrink-0",
-                  showUserMenu ? "rotate-0" : "rotate-180"
+                  "w-full flex items-center gap-3 px-3 py-3 double-bezel-inner transition-fluid",
+                  showUserMenu
+                    ? "ring-1 ring-emerald-500/50 bg-emerald-50/50 dark:bg-emerald-900/10"
+                    : "group-hover:bg-surface-hover"
                 )}
-              />
-            </button>
+              >
+                {/* Avatar */}
+                <div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center text-emerald-700 dark:text-emerald-400 font-bold text-sm shrink-0 overflow-hidden ring-2 ring-white dark:ring-[#050505]">
+                  {avatarUrl ? (
+                    <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" />
+                  ) : initials}
+                </div>
+
+                {/* Name + badge */}
+                <div className="min-w-0 flex-1 text-left">
+                  <p className="text-sm font-semibold text-foreground truncate">{userName}</p>
+                  {badge && (
+                    <span className={cn("text-[10px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wider", badge.color)}>
+                      {badge.label}
+                    </span>
+                  )}
+                </div>
+
+                {/* Chevron — rotates when open */}
+                <div className="w-6 h-6 rounded-full bg-surface-hover flex items-center justify-center group-hover:bg-emerald-100 dark:group-hover:bg-emerald-900/30 transition-colors">
+                  <ChevronUp
+                    size={14}
+                    strokeWidth={2}
+                    className={cn(
+                      "transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] shrink-0",
+                      showUserMenu ? "rotate-0 text-emerald-500" : "rotate-180 text-muted-foreground group-hover:text-emerald-500"
+                    )}
+                  />
+                </div>
+              </button>
+            </div>
           )}
         </div>
       </aside>
