@@ -8,7 +8,6 @@ import { StatCard } from '@/features/dashboard/components';
 import { Leaderboard } from '@/features/dashboard/components';
 import { AttendanceTracker } from '@/features/dashboard/components';
 import { VocabularyWidget } from '@/features/dashboard/components';
-import { TeacherGroupManager } from '@/features/dashboard/components';
 import { DailyQuests } from '@/features/dashboard/components';
 import { UpcomingAssignments } from '@/features/dashboard/components';
 import { NeedsAttention } from '@/features/dashboard/components';
@@ -24,6 +23,18 @@ import {
   Loader2
 } from 'lucide-react';
 import { getProfile } from '@/features/auth/services/auth.service';
+import { dashboardService } from '@/features/dashboard/services/dashboard.service';
+
+interface DashboardStats {
+  totalStudents?: number;
+  avgProgress?: number;
+  pendingExams?: number;
+  weeklyEngagement?: number;
+  totalXp?: number;
+  wordsLearned?: number;
+  currentRank?: number;
+  dayStreak?: number;
+}
 
 const mockLeaderboard = [
   { id: '1', name: 'Leo Chen', points: 2450, rank: 1 },
@@ -38,6 +49,20 @@ export default function DashboardPage() {
   const [role, setRole] = useState<'student' | 'teacher' | null>(null);
   const [userName, setUserName] = useState('');
   const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [leaderboard, setLeaderboard] = useState<{ id: string; name: string; points: number; rank: number }[]>([]);
+
+  const fetchStats = () => {
+    getProfile().then(res => {
+      const user = res.data || res;
+      if (user.role === 'teacher') {
+        dashboardService.getTeacherStats().then(res => setStats(res.data)).catch(console.error);
+      } else {
+        dashboardService.getStudentStats().then(res => setStats(res.data)).catch(console.error);
+      }
+      dashboardService.getLeaderboard().then(res => setLeaderboard(res.data)).catch(console.error);
+    }).catch(console.error);
+  };
 
   useEffect(() => {
     getProfile()
@@ -48,6 +73,14 @@ export default function DashboardPage() {
         } else {
           setRole(user.role || 'student');
           setUserName(user.first_name || user.username || 'User');
+          
+          if (user.role === 'teacher') {
+            dashboardService.getTeacherStats().then(res => setStats(res.data)).catch(console.error);
+          } else {
+            dashboardService.getStudentStats().then(res => setStats(res.data)).catch(console.error);
+          }
+          dashboardService.getLeaderboard().then(res => setLeaderboard(res.data)).catch(console.error);
+          
           setLoading(false);
         }
       })
@@ -57,6 +90,10 @@ export default function DashboardPage() {
         setUserName('User');
         setLoading(false);
       });
+
+    const handleQuestUpdate = () => fetchStats();
+    window.addEventListener('questUpdate', handleQuestUpdate);
+    return () => window.removeEventListener('questUpdate', handleQuestUpdate);
   }, [router]);
 
   if (loading) {
@@ -80,7 +117,7 @@ export default function DashboardPage() {
             </h1>
             <p className="text-sm md:text-base text-slate-500 dark:text-slate-400 mt-1">
               {role === 'student' 
-                ? "You're on an 18-day streak! Keep up the great work." 
+                ? stats?.dayStreak && stats.dayStreak > 0 ? `You're on an ${stats.dayStreak}-day streak! Keep up the great work.` : "Ready to learn? Let's start your streak today!"
                 : "Here's what's happening with your classes today."}
             </p>
           </div>
@@ -89,17 +126,17 @@ export default function DashboardPage() {
         <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {role === 'student' ? (
             <>
-              <StatCard title="Total XP" value="12,450" icon={Star} color="orange" trend="+12% this week" trendType="up" />
-              <StatCard title="Words Learned" value="842" icon={BookOpen} color="emerald" trend="+45 today" trendType="up" />
-              <StatCard title="Current Rank" value="#4" icon={Trophy} color="blue" trend="Top 5%" trendType="up" />
-              <StatCard title="Day Streak" value="18" icon={Flame} color="purple" trend="New record!" trendType="up" />
+              <StatCard title="Total XP" value={stats?.totalXp?.toLocaleString() || "0"} icon={Star} color="orange" trend="Keep it up!" trendType="up" />
+              <StatCard title="Words Learned" value={stats?.wordsLearned?.toString() || "0"} icon={BookOpen} color="emerald" trend="Great job!" trendType="up" />
+              <StatCard title="Current Rank" value={`#${stats?.currentRank || 1}`} icon={Trophy} color="blue" trend="Top 5%" trendType="up" />
+              <StatCard title="Day Streak" value={stats?.dayStreak?.toString() || "0"} icon={Flame} color="purple" trend="Keep learning!" trendType="up" />
             </>
           ) : (
             <>
-              <StatCard title="Total Students" value="28" icon={Users} color="blue" />
-              <StatCard title="Avg. Progress" value="76%" icon={Star} color="emerald" trend="+2% today" trendType="up" />
-              <StatCard title="Pending Exams" value="3" icon={FileText} color="orange" />
-              <StatCard title="Weekly Engagement" value="85%" icon={Clock} color="purple" trendType="neutral" />
+              <StatCard title="Total Students" value={stats?.totalStudents?.toString() || "0"} icon={Users} color="blue" />
+              <StatCard title="Avg. Progress" value={`${stats?.avgProgress || 0}%`} icon={Star} color="emerald" trend="+2% today" trendType="up" />
+              <StatCard title="Pending Exams" value={stats?.pendingExams?.toString() || "0"} icon={FileText} color="orange" />
+              <StatCard title="Weekly Engagement" value={`${stats?.weeklyEngagement || 0}%`} icon={Clock} color="purple" trendType="neutral" />
             </>
           )}
         </motion.div>
@@ -129,24 +166,11 @@ export default function DashboardPage() {
             <motion.div variants={itemVariants}>
               <Leaderboard 
                 title={role === 'student' ? "Friend Leaderboard" : "Top Students"} 
-                items={mockLeaderboard} 
+                items={leaderboard.length > 0 ? leaderboard : mockLeaderboard} 
               />
             </motion.div>
             
-            <motion.div 
-              variants={itemVariants}
-              whileHover={{ scale: 1.02 }}
-              className="bg-gradient-to-br from-emerald-500 to-lime-400 p-6 rounded-2xl text-white shadow-lg shadow-emerald-200 relative overflow-hidden"
-            >
-              <div className="relative z-10">
-                <h4 className="font-bold text-lg mb-2">Upgrade to Pro</h4>
-                <p className="text-white/80 text-sm mb-4">Get unlimited exams and advanced AI vocabulary coaching.</p>
-                <button className="bg-white text-emerald-600 px-4 py-2 rounded-xl text-sm font-bold hover:bg-emerald-50 transition-colors">
-                  Learn More
-                </button>
-              </div>
-              <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-white/10 rounded-full blur-2xl" />
-            </motion.div>
+
           </div>
         </div>
       </motion.div>

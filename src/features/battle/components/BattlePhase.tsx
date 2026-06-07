@@ -5,14 +5,24 @@ import { WordItem, Player } from '../types/battle.types';
 import { mockPlayers } from '../constants/battle.constants';
 
 export function BattlePhase({
-  words, timeLimit, groupName, onEnd
+  words, timeLimit, groupName, members = [], onEnd
 }: {
-  words: WordItem[]; timeLimit: number; groupName: string; onEnd: (players: Player[]) => void;
+  words: WordItem[]; timeLimit: number; groupName: string; members?: any[]; onEnd: (players: Player[]) => void;
 }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [timeLeft, setTimeLeft] = useState(timeLimit);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [players, setPlayers] = useState<Player[]>(mockPlayers);
+  
+  const [players, setPlayers] = useState<Player[]>(() => {
+    if (members.length === 0) return [];
+    return members.map(m => ({
+      name: `${m.first_name} ${m.last_name}`.trim() || m.username,
+      initials: (m.first_name?.[0] || m.username?.[0] || 'U').toUpperCase(),
+      score: 0,
+      answered: false,
+      correct: false,
+    }));
+  });
   
   const currentWord = words[currentIndex];
   const timerRef = useRef<NodeJS.Timeout | null>(null);

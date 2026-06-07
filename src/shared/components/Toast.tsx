@@ -12,9 +12,12 @@ interface ToastProps {
 export default function Toast({ message, isVisible, type = 'success', onClose }: ToastProps) {
   const [shouldRender, setShouldRender] = useState(isVisible);
 
+  if (isVisible && !shouldRender) {
+    setShouldRender(true);
+  }
+
   useEffect(() => {
     if (isVisible) {
-      setShouldRender(true);
       const timer = setTimeout(() => {
         onClose();
       }, 5000); // 5 seconds for errors might be better to read

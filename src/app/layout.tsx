@@ -29,6 +29,8 @@ export const metadata: Metadata = {
   },
 };
 
+import { Toaster } from 'react-hot-toast';
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -50,6 +52,7 @@ export default function RootLayout({
           <GoogleOAuthProvider clientId={config.google.clientId}>
             <SessionManager />
             {children}
+            <Toaster position="top-center" />
           </GoogleOAuthProvider>
         </ThemeProvider>
       </body>

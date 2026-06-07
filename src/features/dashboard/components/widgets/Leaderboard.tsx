@@ -4,7 +4,8 @@ import { cn } from '@/shared/utils/cn';
 interface LeaderboardItem {
   id: string;
   name: string;
-  points: number;
+  points?: number;
+  xp?: number;
   avatar?: string;
   rank: number;
 }
@@ -39,7 +40,7 @@ export function Leaderboard({ title, items }: LeaderboardProps) {
                 </div>
                 <div className="w-10 h-10 rounded-full bg-surface-hover overflow-hidden ring-2 ring-transparent group-hover:ring-emerald-500/30 transition-all">
                   {item.avatar ? (
-                    <Image src={item.avatar} alt={item.name} width={40} height={40} className="object-cover" />
+                    <img src={item.avatar} alt={item.name} className="w-10 h-10 object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-muted-foreground font-bold bg-surface-hover">
                       {item.name[0]}
@@ -48,7 +49,7 @@ export function Leaderboard({ title, items }: LeaderboardProps) {
                 </div>
                 <div>
                   <p className="font-semibold text-foreground text-sm group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">{item.name}</p>
-                  <p className="text-xs text-muted-foreground font-medium">{item.points.toLocaleString()} XP</p>
+                  <p className="text-xs text-muted-foreground font-medium">{(item.points ?? item.xp ?? 0).toLocaleString()} XP</p>
                 </div>
               </div>
               <Award className={cn("transition-transform group-hover:scale-110 group-hover:-rotate-12", item.rank <= 3 ? "text-emerald-500" : "text-muted-foreground/30")} size={20} strokeWidth={1.5} />

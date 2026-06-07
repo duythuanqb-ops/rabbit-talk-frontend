@@ -12,6 +12,7 @@ import { StudyModal } from '@/features/flashcard/components/StudyModal';
 import { Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { containerVariants, itemVariants } from '@/shared/utils/motion';
+import toast from 'react-hot-toast';
 
 function VocabularyPageContent() {
   const searchParams = useSearchParams();
@@ -76,7 +77,7 @@ function VocabularyPageContent() {
       loadData();
     } catch (e) {
       console.error(e);
-      alert('Failed to update set');
+      toast.error('Failed to update set');
     }
   };
 
@@ -92,7 +93,7 @@ function VocabularyPageContent() {
       loadData();
     } catch (e) {
       console.error(e);
-      alert('Failed to delete set');
+      toast.error('Failed to delete set');
     }
   };
 
@@ -102,7 +103,7 @@ function VocabularyPageContent() {
       loadData();
     } catch (e) {
       console.error(e);
-      alert('Failed to update publish status');
+      toast.error('Failed to update publish status');
     }
   };
 

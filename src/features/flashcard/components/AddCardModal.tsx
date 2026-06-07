@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { X, Wand2, Plus, Pencil, Trash2, Volume2, Save, Undo, Loader2, Camera, Image as ImageIcon, Sparkles } from 'lucide-react';
 import { flashcardService } from '../services/flashcard.service';
 import { getAudioUrl } from '@/shared/utils/audio';
+import toast from 'react-hot-toast';
 
 export interface Flashcard {
   id: string;
@@ -248,7 +249,7 @@ export function AddCardModal({ isOpen, onClose, setId, onAdded }: { isOpen: bool
       onAdded();
     } catch (e) {
       console.error(e);
-      alert('Failed to save changes');
+      toast.error('Failed to save changes');
     } finally {
       setSavingEdit(false);
     }
@@ -267,7 +268,7 @@ export function AddCardModal({ isOpen, onClose, setId, onAdded }: { isOpen: bool
       onAdded();
     } catch (e) {
       console.error(e);
-      alert('Failed to delete word');
+      toast.error('Failed to delete word');
     }
   };
 

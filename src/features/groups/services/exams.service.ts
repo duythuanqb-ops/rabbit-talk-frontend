@@ -22,6 +22,12 @@ export interface Exam {
   student_count?: number;
   attempt_count?: number;
   max_score?: number;
+  dueDate?: string;
+  due_date?: string;
+  start_date?: string;
+  startDate?: string;
+  allow_retry?: boolean;
+  allowRetry?: boolean;
   questions?: ExamQuestion[];
 }
 
@@ -54,13 +60,13 @@ export const examsService = {
       body: JSON.stringify({ items }),
     }),
 
-  createExam: (data: { groupId: string; title: string; description?: string; questions: ExamQuestion[] }) =>
+  createExam: (data: { groupId: string; title: string; description?: string; dueDate?: string; startDate?: string; allowRetry?: boolean; questions: ExamQuestion[] }) =>
     apiCall<Exam>('/exams', {
       method: 'POST',
       body: JSON.stringify(data),
     }),
 
-  updateExam: (id: string, data: { title: string; description?: string; questions: ExamQuestion[] }) =>
+  updateExam: (id: string, data: { title: string; description?: string; dueDate?: string; startDate?: string; allowRetry?: boolean; questions: ExamQuestion[] }) =>
     apiCall<Exam>(`/exams/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),

@@ -90,7 +90,7 @@ export default function SignInForm() {
               if (fieldErrors.identifier) setFieldErrors({ ...fieldErrors, identifier: undefined });
             }}
             placeholder="Email or username"
-            className={`mt-3 w-full rounded-2xl border ${fieldErrors.identifier ? 'border-red-500 bg-red-50/50 focus:ring-red-500' : 'border-none bg-surface-hover focus:ring-ring'} px-4 py-3 text-sm text-foreground shadow-inner outline-none transition-all focus:bg-surface focus:ring-2 focus:shadow-md`}
+            className={`mt-3 w-full rounded-2xl border ${fieldErrors.identifier ? 'border-red-500 bg-red-50/50 focus:ring-red-500' : 'border-slate-200 dark:border-white/10 bg-white/50 dark:bg-black/50 focus:ring-emerald-500/50'} px-4 py-3 text-sm text-foreground shadow-sm backdrop-blur-sm outline-none transition-all focus:bg-white dark:focus:bg-black focus:ring-2 focus:shadow-md`}
           />
           {fieldErrors.identifier && (
             <span className="mt-2 block text-xs text-red-500 font-medium">{fieldErrors.identifier}</span>
@@ -108,7 +108,7 @@ export default function SignInForm() {
                 if (fieldErrors.password) setFieldErrors({ ...fieldErrors, password: undefined });
               }}
               placeholder="Password"
-              className={`w-full rounded-2xl border ${fieldErrors.password ? 'border-red-500 bg-red-50/50 focus:ring-red-500' : 'border-none bg-surface-hover focus:ring-ring'} px-4 py-3 text-sm text-foreground shadow-inner outline-none transition-all focus:bg-surface focus:ring-2 focus:shadow-md pr-12`}
+              className={`w-full rounded-2xl border ${fieldErrors.password ? 'border-red-500 bg-red-50/50 focus:ring-red-500' : 'border-slate-200 dark:border-white/10 bg-white/50 dark:bg-black/50 focus:ring-emerald-500/50'} px-4 py-3 text-sm text-foreground shadow-sm backdrop-blur-sm outline-none transition-all focus:bg-white dark:focus:bg-black focus:ring-2 focus:shadow-md pr-12`}
             />
             <button
               type="button"
@@ -126,9 +126,13 @@ export default function SignInForm() {
 
       <div className="flex items-center justify-between text-sm text-slate-500">
         <span />
-        <a href="#" className="font-medium text-emerald-600 hover:text-emerald-700">
+        <button
+          type="button"
+          onClick={() => router.push('/forgot-password')}
+          className="font-medium text-emerald-600 hover:text-emerald-700"
+        >
           Forgot password?
-        </a>
+        </button>
       </div>
 
       <div className="space-y-4">
@@ -143,8 +147,8 @@ export default function SignInForm() {
         </Button>
 
         <div className="relative flex items-center justify-center text-xs uppercase tracking-[0.3em] text-slate-400">
-          <span className="absolute left-0 right-0 top-1/2 h-px bg-slate-200" />
-          <span className="relative bg-white px-3">or</span>
+          <span className="absolute left-0 right-0 top-1/2 h-px bg-slate-200 dark:bg-slate-800" />
+          <span className="relative bg-white/80 dark:bg-black/80 backdrop-blur-sm px-3 rounded-full">or</span>
         </div>
 
         <Button

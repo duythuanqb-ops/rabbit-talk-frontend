@@ -45,7 +45,7 @@ export default function AuthView() {
   );
 
   return (
-    <main className="relative min-h-screen lg:h-screen flex flex-col lg:block overflow-x-hidden bg-background text-foreground selection:bg-primary/20 selection:text-primary">
+    <main className="relative min-h-screen lg:h-screen flex flex-col lg:block overflow-x-hidden bg-gradient-to-br from-emerald-50 to-teal-100 dark:from-neutral-950 dark:to-emerald-950/20 text-foreground selection:bg-primary/20 selection:text-primary">
       {/* ========== MOBILE HEADER (< lg) ========== */}
       <div className="lg:hidden flex flex-col items-center px-6 pt-10 pb-6 z-10 relative">
         <motion.img
@@ -125,8 +125,9 @@ export default function AuthView() {
             {/* Mascot glow effect */}
             <div className="absolute inset-0 bg-white/20 blur-3xl rounded-full scale-50 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
             <motion.img
+              animate={{ y: [0, -15, 0] }}
+              transition={{ repeat: Infinity, duration: 4, ease: 'easeInOut' }}
               whileHover={{ scale: 1.05, rotate: [0, -2, 2, -2, 0] }}
-              transition={{ duration: 0.5 }}
               src="/rabbit-mascot.png"
               alt="RibbitTalk rabbit mascot"
               className="relative h-[380px] w-auto drop-shadow-[0_20px_40px_rgba(0,0,0,0.4)] cursor-pointer z-10"
@@ -144,7 +145,7 @@ export default function AuthView() {
 
       {/* ========== SHARED FORM PANEL ========== */}
       <motion.section
-        className="flex-1 flex flex-col items-center lg:absolute lg:top-0 lg:h-full lg:justify-center overflow-y-auto bg-background px-6 pb-10 lg:px-12 lg:py-12 z-10 relative w-full lg:w-[45%]"
+        className="flex-1 flex flex-col items-center lg:absolute lg:top-0 lg:h-full lg:justify-center overflow-y-auto bg-white/70 dark:bg-black/60 backdrop-blur-lg px-6 pb-10 lg:px-12 lg:py-12 z-10 relative w-full lg:w-[45%] shadow-[-10px_0_30px_rgba(0,0,0,0.1)] dark:shadow-[-10px_0_30px_rgba(0,0,0,0.5)] border-l border-white/20 dark:border-white/5"
         initial={false}
         animate={{
           left: isDesktop ? (panelIsSignUp ? '0%' : '55%') : '0%',
