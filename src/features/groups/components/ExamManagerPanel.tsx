@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { examsService, Exam, ExamQuestion, ExamAttempt } from '../services/exams.service';
 import toast from 'react-hot-toast';
+import { SharedExamTakerModal } from "@/features/exams/components/SharedExamTakerModal";
 
 // ─── Cambridge-first speak helper ─────────────────────────────────────────────
 function buildGoogleTtsProxyUrl(text: string): string {
@@ -255,404 +256,6 @@ function EditableQuestion({ q, idx, onChange, onDelete, onFetchAudio, onAutoFill
   );
 }
 
-// ─── Question view during exam ────────────────────────────────────────────────
-function QuestionView({ q, answer, onAnswer }: { q: ExamQuestion; answer: string; onAnswer: (v: string) => void }) {
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [shuffledOptions, setShuffledOptions] = useState<string[]>([]);
-  const [selectedMatchWord, setSelectedMatchWord] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (q.type === 'spelling' && inputRef.current) inputRef.current.focus();
-  }, [q]);
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (q.options) setShuffledOptions([...q.options].sort(() => Math.random() - 0.5));
-  }, [q.id, q.options]);
-
-  const gradient = TYPE_META[q.type]?.gradient ?? 'from-slate-400 to-slate-600';
-
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-2">
-        <div className={`w-7 h-7 rounded-lg bg-gradient-to-br ${gradient} flex items-center justify-center text-white`}>
-          {TYPE_ICON[q.type]}
-        </div>
-        <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{TYPE_META[q.type]?.label ?? q.type}</span>
-      </div>
-
-      <div className={`p-5 rounded-2xl bg-gradient-to-br ${gradient} text-white shadow-lg`}>
-        {q.type === 'listening' ? (
-          <div className="flex flex-col items-center gap-4 py-2">
-            <p className="text-sm font-semibold text-white/80">{q.question_text}</p>
-            <button onClick={() => speak(q.word, q.audio_url)}
-              className="flex items-center gap-2 px-6 py-3 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white font-bold rounded-2xl text-sm transition-all hover:scale-105 active:scale-95 border border-white/30 shadow-lg">
-              <Volume2 size={20} className="animate-pulse" /> Play Pronunciation
-            </button>
-          </div>
-        ) : (
-          <p className="text-lg font-bold leading-relaxed">{q.question_text}</p>
-        )}
-      </div>
-
-      {q.type === 'matching' ? (
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <h4 className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase">Words</h4>
-            {(() => {
-              try {
-                const answerMap: Record<string, string> = answer ? JSON.parse(answer) : {};
-                const correctMap = JSON.parse(q.correct_answer);
-                const words = Object.keys(correctMap);
-                return words.map((w, idx) => {
-                  const hasMatch = !!answerMap[w];
-                  return (
-                    <button
-                      key={idx}
-                      onClick={() => setSelectedMatchWord(w)}
-                      className={`w-full p-3 rounded-xl border-2 text-left text-sm font-bold transition-all flex items-center justify-between ${
-                        selectedMatchWord === w
-                          ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400'
-                          : hasMatch
-                            ? 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400'
-                            : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600'
-                      }`}
-                    >
-                      {w}
-                      {hasMatch && <span className="text-[10px] text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/30 px-2 py-0.5 rounded-lg border border-emerald-200 dark:border-emerald-800/50 truncate max-w-[100px]">{answerMap[w]}</span>}
-                    </button>
-                  );
-                });
-              } catch {
-                return null;
-              }
-            })()}
-          </div>
-          <div className="space-y-2">
-            <h4 className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase">Synonyms</h4>
-            {q.options?.map((opt, idx) => {
-              try {
-                const answerMap: Record<string, string> = answer ? JSON.parse(answer) : {};
-                const isMatched = Object.values(answerMap).includes(opt);
-                return (
-                  <button
-                    key={idx}
-                    disabled={isMatched}
-                    onClick={() => {
-                      if (selectedMatchWord) {
-                        const newMap = { ...answerMap, [selectedMatchWord]: opt };
-                        onAnswer(JSON.stringify(newMap));
-                        setSelectedMatchWord(null);
-                      }
-                    }}
-                    className={`w-full p-3 rounded-xl border-2 text-left text-sm font-bold transition-all ${
-                      isMatched
-                        ? 'border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-300 dark:text-slate-600 cursor-not-allowed'
-                        : selectedMatchWord
-                          ? 'border-purple-200 dark:border-purple-800 bg-purple-50 dark:bg-purple-900/30 hover:bg-purple-100 dark:hover:bg-purple-900/50 hover:border-purple-400 dark:hover:border-purple-500 text-purple-700 dark:text-purple-400 cursor-pointer animate-pulse'
-                          : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700'
-                    }`}
-                  >
-                    {opt}
-                  </button>
-                );
-              } catch {
-                return null;
-              }
-            })}
-          </div>
-        </div>
-      ) : q.type === 'spelling' ? (
-        <div>
-          <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Type the correct spelling:</label>
-          <input ref={inputRef} type="text" value={answer} onChange={e => onAnswer(e.target.value)}
-            placeholder="Type your spelling..." autoComplete="off" autoCorrect="off" spellCheck={false}
-            className="w-full px-5 py-4 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-2xl text-lg font-bold text-slate-800 dark:text-slate-200 text-center focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100 dark:focus:ring-amber-900/50 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-600" />
-          <p className="text-[10px] text-slate-400 font-semibold flex items-center justify-center gap-1 mt-2">
-            ⚠️ Not case-sensitive.
-          </p>
-        </div>
-      ) : (
-        <div className="space-y-2.5">
-          <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">Choose the correct answer:</label>
-          {(shuffledOptions.length ? shuffledOptions : q.options ?? []).map((opt, i) => (
-            <button key={i} onClick={() => onAnswer(opt)}
-              className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl border-2 text-left transition-all font-semibold text-sm group ${
-                answer === opt
-                  ? `border-transparent bg-gradient-to-r ${gradient} text-white shadow-lg scale-[1.01]`
-                  : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-900/50'
-              }`}>
-              <span className={`w-7 h-7 rounded-xl flex items-center justify-center text-xs font-black flex-shrink-0 ${answer === opt ? 'bg-white/20' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'}`}>
-                {String.fromCharCode(65 + i)}
-              </span>
-              <span className="flex-1">{opt}</span>
-              {answer === opt && <CheckCircle size={16} className="text-white/80 flex-shrink-0" />}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ─── Results Screen ───────────────────────────────────────────────────────────
-function ResultsScreen({ result, onClose, onRetry }: { result: ExamAttempt; onClose: () => void; onRetry: () => void }) {
-  const pct = result.percentage;
-  const grade = pct >= 90 ? 'Excellent! 🏆' : pct >= 70 ? 'Good Job! 🌟' : pct >= 50 ? 'Keep Practicing! 💪' : 'Try Again! 📚';
-  const ringColor = pct >= 90 ? 'text-emerald-500' : pct >= 70 ? 'text-orange-500' : pct >= 50 ? 'text-amber-500' : 'text-rose-500';
-  const circumference = 2 * Math.PI * 45;
-
-  return (
-    <div className="flex flex-col h-full">
-      {/* Compact Score Header Banner */}
-      <div className="w-full flex items-center justify-between gap-4 p-4 border-b border-slate-100 bg-gradient-to-br from-slate-50 to-white flex-shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="relative w-14 h-14 flex-shrink-0">
-            <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
-              <circle cx="50" cy="50" r="45" fill="none" stroke="#e2e8f0" strokeWidth="8" />
-              <circle cx="50" cy="50" r="45" fill="none" stroke="currentColor" strokeWidth="8"
-                strokeDasharray={circumference} strokeDashoffset={circumference - (pct / 100) * circumference}
-                strokeLinecap="round" className={`${ringColor} transition-all duration-1000`} />
-            </svg>
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-sm font-black text-slate-900">{pct}%</span>
-            </div>
-          </div>
-          <div>
-            <p className="text-sm font-black text-slate-800">{grade}</p>
-            <p className="text-xs text-slate-500 font-bold mt-0.5">{result.score} / {result.total} correct</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="flex-1 overflow-y-auto px-6 py-5 space-y-3">
-        <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Answer Breakdown</h3>
-        {result.gradedQuestions.map((gq, idx) => (
-          <div key={idx} className={`rounded-xl border p-4 flex items-start gap-3.5 transition-all hover:shadow-sm ${gq.isCorrect ? 'border-emerald-100 bg-emerald-50/40' : 'border-rose-100 bg-rose-50/40'}`}>
-            {gq.isCorrect ? (
-              <CheckCircle size={16} className="text-emerald-500 flex-shrink-0 mt-0.5" />
-            ) : (
-              <XCircle size={16} className="text-rose-500 flex-shrink-0 mt-0.5" />
-            )}
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 flex-wrap mb-1">
-                <span className="text-xs font-black text-slate-400">#{idx + 1}</span>
-                <span className="font-bold text-slate-800 text-sm truncate">{gq.word}</span>
-                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md border ${TYPE_META[gq.type]?.color ?? 'bg-slate-50 text-slate-600 border-slate-100'}`}>{TYPE_META[gq.type]?.label ?? gq.type}</span>
-              </div>
-              <p className="text-xs text-slate-600 mt-1 mb-2.5 font-medium italic leading-relaxed">
-                &quot;{gq.question_text}&quot;
-              </p>
-              
-              {gq.type === 'matching' ? (
-                <div className="space-y-1.5 bg-white border border-slate-100 rounded-xl p-3 shadow-sm">
-                  {(() => {
-                    try {
-                      const correctObj = JSON.parse(gq.correctAnswer) as Record<string, string>;
-                      const studentObj = gq.studentAnswer ? (JSON.parse(gq.studentAnswer) as Record<string, string>) : {};
-                      return Object.entries(correctObj).map(([word, correctSyn], wIdx) => {
-                        const studentSyn = studentObj[word] || '(blank)';
-                        const isPairCorrect = studentSyn === correctSyn;
-                        return (
-                          <div key={wIdx} className="text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-1 border-b border-slate-50 pb-1.5 last:border-0 last:pb-0">
-                            <span className="font-semibold text-slate-700">{word} →</span>
-                            <div className="flex flex-col gap-0.5">
-                              {isPairCorrect ? (
-                                <span className="text-emerald-600 font-bold bg-emerald-50 border border-emerald-100/60 px-2 py-0.5 rounded text-[10px] self-start sm:self-end">
-                                  ✓ Student Answer: {studentSyn}
-                                </span>
-                              ) : (
-                                <div className="space-y-0.5">
-                                  <span className="text-rose-500 font-bold bg-rose-50 border border-rose-100/60 px-2 py-0.5 rounded block text-[10px] text-left sm:text-right">
-                                    ✗ Student Answer: {studentSyn}
-                                  </span>
-                                  <span className="text-emerald-600 font-bold bg-emerald-50 border border-emerald-100/60 px-2 py-0.5 rounded block text-[10px] text-left sm:text-right">
-                                    ✓ Correct Answer: {correctSyn}
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        );
-                      });
-                    } catch {
-                      return <span className="text-rose-500 text-[10px]">Invalid matching pairs</span>;
-                    }
-                  })()}
-                </div>
-              ) : (
-                <div className="space-y-1.5 mt-1 text-xs">
-                  {gq.isCorrect ? (
-                    <p className="text-emerald-700 font-bold bg-emerald-50/80 px-3 py-2 rounded-xl flex items-center gap-1.5 border border-emerald-100/60">
-                      <span>✓ Your Answer:</span> 
-                      <strong>{gq.studentAnswer}</strong>
-                    </p>
-                  ) : (
-                    <div className="bg-white border border-slate-100 p-3 rounded-xl space-y-1.5 shadow-sm">
-                      <p className="text-rose-600 font-bold flex items-center gap-1.5">
-                        <span>✗ Your Answer:</span> 
-                        <strong className="line-through">{gq.studentAnswer || '(blank)'}</strong>
-                      </p>
-                      <p className="text-emerald-700 font-bold flex items-center gap-1.5">
-                        <span>✓ Correct Answer:</span> 
-                        <strong>{gq.correctAnswer}</strong>
-                      </p>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div className="px-6 py-4 border-t border-slate-100 flex gap-3">
-        <button onClick={onRetry} className="flex-1 flex items-center justify-center gap-2 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl text-sm transition-colors">
-          <RotateCcw size={15} /> Try Again
-        </button>
-        <button onClick={onClose} className="flex-1 flex items-center justify-center gap-2 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-2xl text-sm transition-colors shadow-lg shadow-emerald-200">
-          <Trophy size={15} /> Done
-        </button>
-      </div>
-    </div>
-  );
-}
-
-// ─── Exam Taker Modal ─────────────────────────────────────────────────────────
-function ExamTakerModal({ exam, onClose }: { exam: Exam; onClose: () => void }) {
-  const [questions, setQuestions] = useState<ExamQuestion[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [currentIdx, setCurrentIdx] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, string>>({});
-  const [submitting, setSubmitting] = useState(false);
-  const [result, setResult] = useState<ExamAttempt | null>(null);
-
-  const loadQuestions = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res: unknown = await examsService.getExamById(exam.id);
-      const data = (res as { data?: Exam }).data ?? (res as Exam);
-      const qList = [...(data?.questions ?? [])];
-      for (let i = qList.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [qList[i], qList[j]] = [qList[j], qList[i]];
-      }
-      setQuestions(qList);
-    } catch {
-      toast.error('Failed to load exam questions');
-    } finally {
-      setLoading(false);
-    }
-  }, [exam.id]);
-
-  // eslint-disable-next-line react-hooks/set-state-in-effect
-  useEffect(() => { void loadQuestions(); }, [loadQuestions]);
-
-  const currentQ = questions[currentIdx];
-  const progress = questions.length > 0 ? (currentIdx / questions.length) * 100 : 0;
-
-  useEffect(() => {
-    if (currentQ?.type === 'listening') {
-      const t = setTimeout(() => speak(currentQ.word, currentQ.audio_url), 400);
-      return () => clearTimeout(t);
-    }
-  }, [currentQ]);
-
-  const handleNext = () => {
-    if (currentIdx < questions.length - 1) {
-      setCurrentIdx(c => c + 1);
-      const next = questions[currentIdx + 1];
-      if (next?.type === 'listening') setTimeout(() => speak(next.word, next.audio_url), 300);
-    }
-  };
-
-  const handleSubmit = async () => {
-    setSubmitting(true);
-    try {
-      const ans: Record<string, string> = {};
-      questions.forEach(q => { if (q.id) ans[q.id] = answers[q.id] ?? ''; });
-      const res: unknown = await examsService.submitAttempt(exam.id, ans);
-      setResult((res as { data?: ExamAttempt }).data ?? (res as ExamAttempt));
-    } catch (e) {
-      const err = e as Error;
-      toast.error(err?.message ?? 'Failed to submit exam');
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const isLast = currentIdx === questions.length - 1;
-  const allAnswered = questions.length > 0 && questions.every(q => q.id && answers[q.id]);
-
-  return (
-    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-      <div className={`bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full ${result ? 'max-w-3xl' : 'max-w-xl'} max-h-[92vh] flex flex-col overflow-hidden transition-all duration-300`}>
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
-          <div className="flex-1 min-w-0 mr-4">
-            <h2 className="font-black text-slate-900 text-lg truncate">{exam.title}</h2>
-            {!result && !loading && <p className="text-xs text-slate-500 font-semibold mt-0.5">Question {currentIdx + 1} of {questions.length}</p>}
-          </div>
-          <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-colors">
-            <X size={20} />
-          </button>
-        </div>
-
-        {!result && !loading && (
-          <div className="h-1.5 bg-slate-100">
-            <div className="h-full bg-gradient-to-r from-blue-400 to-blue-600 transition-all duration-500" style={{ width: `${progress}%` }} />
-          </div>
-        )}
-
-        <div className="flex-1 overflow-hidden flex flex-col min-h-0">
-          {loading ? (
-            <div className="flex-1 flex items-center justify-center">
-              <div className="text-center">
-                <Loader2 className="animate-spin text-blue-500 mx-auto mb-3" size={32} />
-                <p className="text-sm font-semibold text-slate-500">Loading questions...</p>
-              </div>
-            </div>
-          ) : result ? (
-            <ResultsScreen result={result} onClose={onClose} onRetry={() => { setResult(null); setAnswers({}); setCurrentIdx(0); loadQuestions(); }} />
-          ) : (
-            <div className="flex-1 overflow-y-auto px-6 py-5">
-              {currentQ && <QuestionView q={currentQ} answer={currentQ.id ? (answers[currentQ.id] ?? '') : ''} onAnswer={val => { if (currentQ.id) setAnswers(p => ({ ...p, [currentQ.id!]: val })); }} />}
-            </div>
-          )}
-        </div>
-
-        {!result && !loading && questions.length > 0 && (
-          <div className="px-6 py-4 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between gap-3 rounded-b-3xl">
-            <div className="flex items-center gap-1 flex-wrap max-w-[160px]">
-              {questions.map((q, i) => (
-                <button key={i} onClick={() => setCurrentIdx(i)}
-                  className={`w-2.5 h-2.5 rounded-full transition-all ${i === currentIdx ? 'bg-blue-500 scale-125' : q.id && answers[q.id] ? 'bg-emerald-400' : 'bg-slate-300 hover:bg-slate-400'}`} />
-              ))}
-            </div>
-            <div className="flex items-center gap-2">
-              <button onClick={() => currentIdx > 0 && setCurrentIdx(c => c - 1)} disabled={currentIdx === 0}
-                className="p-2.5 rounded-xl bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
-                <ChevronLeft size={18} />
-              </button>
-              {isLast ? (
-                <button onClick={handleSubmit} disabled={submitting || !allAnswered}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-emerald-500 hover:bg-emerald-600 disabled:bg-slate-200 disabled:cursor-not-allowed text-white font-bold rounded-xl text-sm transition-all shadow-md shadow-emerald-200">
-                  {submitting ? <Loader2 size={15} className="animate-spin" /> : <Trophy size={15} />}
-                  {submitting ? 'Submitting...' : 'Submit Exam'}
-                </button>
-              ) : (
-                <button onClick={handleNext}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-xl text-sm transition-all shadow-md shadow-blue-100">
-                  Next <ChevronRight size={18} />
-                </button>
-              )}
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
 // ─── Exam Editor Modal ────────────────────────────────────────────────────────
 interface ExamEditorModalProps {
   exam: Exam;
@@ -661,8 +264,16 @@ interface ExamEditorModalProps {
 }
 
 function ExamEditorModal({ exam, onClose, onSaved }: ExamEditorModalProps) {
+  const formatForDatetimeLocal = (isoString?: string) => {
+    if (!isoString) return '';
+    const d = new Date(isoString);
+    if (isNaN(d.getTime())) return '';
+    return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+  };
+
   const [title, setTitle] = useState(exam.title);
   const [description, setDescription] = useState(exam.description || '');
+  const [dueDate, setDueDate] = useState(formatForDatetimeLocal(exam.dueDate));
   const [questions, setQuestions] = useState<ExamQuestion[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -861,6 +472,7 @@ function ExamEditorModal({ exam, onClose, onSaved }: ExamEditorModalProps) {
       await examsService.updateExam(exam.id, {
         title: title.trim(),
         description: description.trim() || undefined,
+        dueDate: dueDate || undefined,
         questions,
       });
       toast.success('Exam updated successfully! 🎉');
@@ -902,6 +514,11 @@ function ExamEditorModal({ exam, onClose, onSaved }: ExamEditorModalProps) {
               <label className="block text-xs font-black text-slate-600 mb-1">Description (Optional)</label>
               <textarea rows={4} value={description} onChange={e => setDescription(e.target.value)} placeholder="e.g. Synonyms, listening, situational context"
                 className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-800 resize-none focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100" />
+            </div>
+            <div>
+              <label className="block text-xs font-black text-slate-600 mb-1">Due Date (Optional)</label>
+              <input type="datetime-local" value={dueDate} onChange={e => setDueDate(e.target.value)}
+                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-800 focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100" />
             </div>
             <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100 text-xs font-medium text-slate-500 space-y-2 leading-relaxed">
               <h4 className="font-extrabold text-slate-700 mb-1 uppercase tracking-wider text-[10px]">Teacher Quick Guide</h4>
@@ -1065,7 +682,7 @@ export function ExamManagerPanel({ groupId }: Props) {
   const [exams, setExams] = useState<Exam[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeExam, setActiveExam] = useState<Exam | null>(null);
-  const [editingExam, setEditingExam] = useState<Exam | null>(null);
+  const [editingExamId, setEditingExamId] = useState<string | null>(null);
   const [showExamList, setShowExamList] = useState(false);
 
   // Wizard state
@@ -1073,6 +690,9 @@ export function ExamManagerPanel({ groupId }: Props) {
   const [step, setStep] = useState<'input' | 'review'>('input');
   const [examTitle, setExamTitle] = useState('');
   const [examDesc, setExamDesc] = useState('');
+  const [wizardDueDate, setWizardDueDate] = useState('');
+  const [wizardStartDate, setWizardStartDate] = useState('');
+  const [wizardAllowRetry, setWizardAllowRetry] = useState(false);
   const [wordInput, setWordInput] = useState('');
   const [generating, setGenerating] = useState(false);
   const [questions, setQuestions] = useState<ExamQuestion[]>([]);
@@ -1083,6 +703,13 @@ export function ExamManagerPanel({ groupId }: Props) {
   const [wizardShowAddWords, setWizardShowAddWords] = useState(false);
   const [wizardNewWords, setWizardNewWords] = useState('');
   const [wizardAddingWords, setWizardAddingWords] = useState(false);
+
+  const formatForDatetimeLocal = (isoString?: string) => {
+    if (!isoString) return '';
+    const d = new Date(isoString);
+    if (isNaN(d.getTime())) return '';
+    return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+  };
 
   const handleWizardQuestionChange = (updated: ExamQuestion, index: number) => {
     if (updated.type === 'matching' && questions[index]?.type !== 'matching') {
@@ -1162,8 +789,21 @@ export function ExamManagerPanel({ groupId }: Props) {
     if (!questions.length) { toast.error('No questions to save'); return; }
     setSaving(true);
     try {
-      await examsService.createExam({ groupId, title: examTitle.trim(), description: examDesc.trim() || undefined, questions });
-      toast.success('Exam published! 🎉');
+      const payload = {
+        title: examTitle.trim(),
+        description: examDesc.trim() || undefined,
+        dueDate: wizardDueDate ? new Date(wizardDueDate).toISOString() : undefined,
+        startDate: wizardStartDate ? new Date(wizardStartDate).toISOString() : undefined,
+        allowRetry: wizardAllowRetry,
+        questions
+      };
+      if (editingExamId) {
+        await examsService.updateExam(editingExamId, payload);
+        toast.success('Exam updated! 🎉');
+      } else {
+        await examsService.createExam({ groupId, ...payload });
+        toast.success('Exam published! 🎉');
+      }
       resetWizard();
       void loadExams();
     } catch (e) {
@@ -1304,14 +944,19 @@ export function ExamManagerPanel({ groupId }: Props) {
 
   const resetWizard = () => {
     setShowWizard(false);
+    setEditingExamId(null);
     setStep('input');
     setWordInput('');
     setExamTitle('');
     setExamDesc('');
-    setQuestions([]);
+    setWizardDueDate('');
+    setWizardStartDate('');
+    setWizardAllowRetry(false);
+    setWordInput('');
     setWizardShowAddWords(false);
     setWizardNewWords('');
     setWizardAddingWords(false);
+    setQuestions([]);
   };
 
   const listeningCount = questions.filter(q => q.type === 'listening').length;
@@ -1345,7 +990,25 @@ export function ExamManagerPanel({ groupId }: Props) {
                 <p className="text-[11px] text-slate-400 font-medium">{exam.question_count ?? 0} questions</p>
               </div>
               <div className="flex items-center gap-1">
-                <button onClick={() => setEditingExam(exam)}
+                <button onClick={async () => {
+                  try {
+                    const res = await examsService.getExamById(exam.id);
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const fullExam = (res as any).data ?? res;
+                    setEditingExamId(exam.id);
+                    setExamTitle(exam.title);
+                    setExamDesc(exam.description || '');
+                    setWizardDueDate(fullExam.due_date ? formatForDatetimeLocal(fullExam.due_date) : '');
+                    setWizardStartDate(fullExam.start_date ? formatForDatetimeLocal(fullExam.start_date) : '');
+                    setWizardAllowRetry(!!fullExam.allow_retry);
+                    setQuestions(fullExam.questions || []);
+                    setStep('review');
+                    setShowWizard(true);
+                  } catch (error) {
+                    console.error(error);
+                    toast.error('Failed to load exam details');
+                  }
+                }}
                   className="flex items-center gap-1 px-2 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 font-bold rounded-lg text-xs transition-colors">
                   <FileText size={11} /> Edit
                 </button>
@@ -1379,17 +1042,17 @@ export function ExamManagerPanel({ groupId }: Props) {
 
       {/* ─── Create Wizard Modal ─── */}
       {showWizard && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-6xl h-[92vh] flex flex-col overflow-hidden">
 
             {/* Wizard header */}
-            <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100 dark:border-slate-700 bg-gradient-to-r from-blue-500 to-blue-700 rounded-t-3xl">
+            <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100 dark:border-slate-700 bg-gradient-to-r from-blue-500 to-blue-700 text-white shrink-0">
               <div>
                 <h2 className="text-xl font-black text-white flex items-center gap-2">
-                  <Sparkles size={20} /> Create AI Exam
+                  <Sparkles size={20} /> Create AI Vocabulary Exam
                 </h2>
                 <p className="text-blue-100 text-xs mt-0.5">
-                  {step === 'input' ? 'Step 1: Enter words' : 'Step 2: Review questions'}
+                  Configure exam settings and review generated questions all in one place
                 </p>
               </div>
               <button onClick={resetWizard} className="p-2 text-white/70 hover:text-white hover:bg-white/10 rounded-xl transition-colors">
@@ -1397,64 +1060,81 @@ export function ExamManagerPanel({ groupId }: Props) {
               </button>
             </div>
 
-            {/* Step tabs */}
-            <div className="flex border-b border-slate-100 dark:border-slate-700 px-6 pt-3 pb-0 gap-6">
-              {(['input', 'review'] as const).map((s, i) => (
-                <button key={s} onClick={() => step === 'review' && s === 'input' && setStep('input')}
-                  className={`pb-3 text-xs font-bold border-b-2 transition-colors ${step === s ? 'border-blue-500 text-blue-600' : 'border-transparent text-slate-400'}`}>
-                  {i + 1}. {s === 'input' ? 'Enter Words' : 'Review Questions'}
-                </button>
-              ))}
-            </div>
-
-            {/* Body */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-5">
-              {step === 'input' && (
-                <>
+            {/* Split Body */}
+            <div className="flex-1 overflow-hidden flex flex-col lg:flex-row">
+              {/* Left Panel: Settings & Word List */}
+              <div className="w-full lg:w-[40%] flex flex-col border-r border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50">
+                <div className="flex-1 overflow-y-auto p-6 space-y-5">
                   <div>
                     <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">Exam Title *</label>
                     <input type="text" value={examTitle} onChange={e => setExamTitle(e.target.value)}
                       placeholder="e.g. Unit 5 Vocabulary Quiz"
-                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm font-semibold text-slate-800 dark:text-white focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-200" />
+                      className="w-full px-4 py-2.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm font-semibold text-slate-800 dark:text-white focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-200" />
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">Description (optional)</label>
                     <input type="text" value={examDesc} onChange={e => setExamDesc(e.target.value)}
                       placeholder="e.g. Covers Unit 5 adjectives"
-                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm font-medium text-slate-800 dark:text-white focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-200" />
+                      className="w-full px-4 py-2.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm font-medium text-slate-800 dark:text-white focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-200" />
+                  </div>
+                  <div className="flex flex-col gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">Start Date (optional)</label>
+                      <input type="datetime-local" value={wizardStartDate} onChange={e => setWizardStartDate(e.target.value)}
+                        className="w-full px-4 py-2.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm font-medium text-slate-800 dark:text-white focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-200" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">Due Date (optional)</label>
+                      <input type="datetime-local" value={wizardDueDate} onChange={e => setWizardDueDate(e.target.value)}
+                        className="w-full px-4 py-2.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm font-medium text-slate-800 dark:text-white focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-200" />
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 mt-2">
+                    <input 
+                      type="checkbox" 
+                      id="wizardAllowRetry" 
+                      checked={wizardAllowRetry} 
+                      onChange={e => setWizardAllowRetry(e.target.checked)}
+                      className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                    />
+                    <label htmlFor="wizardAllowRetry" className="text-xs font-bold text-slate-600 dark:text-slate-300">
+                      Allow students to retry this exam
+                    </label>
                   </div>
                   <div className="border-t border-slate-100 dark:border-slate-700 pt-4">
                     <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5">Enter Words *</label>
                     <textarea rows={6} value={wordInput} onChange={e => setWordInput(e.target.value)}
                       placeholder={`Enter words separated by commas or new lines:\nhappy, hungry, tired\ngenius\nattack`}
-                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm font-medium text-slate-700 dark:text-white resize-none focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-200" />
+                      className="w-full px-4 py-3 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm font-medium text-slate-700 dark:text-white resize-none focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-200" />
                     <p className="text-[11px] text-slate-400 mt-1.5">
                       🎧 Listening questions will use <strong>Cambridge Dictionary</strong> audio (not AI voice).
                     </p>
                   </div>
-                </>
-              )}
+                </div>
+                
+                {/* Left Panel Footer */}
+                <div className="p-4 border-t border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 shrink-0">
+                  <button onClick={handleGenerate} disabled={generating || !examTitle || !wordInput}
+                    className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-blue-500 hover:bg-blue-600 disabled:bg-slate-200 dark:disabled:bg-slate-600 disabled:cursor-not-allowed text-white font-bold rounded-xl text-sm transition-all shadow-md shadow-blue-200 dark:shadow-none">
+                    {generating ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
+                    {generating ? 'Processing words...' : 'Generate Questions'}
+                  </button>
+                </div>
+              </div>
 
-              {step === 'review' && (
-                <>
+              {/* Right Panel: Review & Modify Questions */}
+              <div className="w-full lg:w-[60%] flex flex-col bg-white dark:bg-slate-800">
+                <div className="flex-1 overflow-y-auto p-6 space-y-5">
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="font-bold text-slate-800 dark:text-white">{questions.length} Questions Generated</h3>
                       <p className="text-xs text-slate-500 mt-0.5">
                         {listeningCount > 0 && (
-                          <span className={cambridgeCount === listeningCount ? 'text-emerald-600' : 'text-amber-600'}>
+                          <span className={cambridgeCount === listeningCount ? 'text-emerald-600 font-bold' : 'text-amber-600 font-bold'}>
                             🎧 {cambridgeCount}/{listeningCount} listening questions have Cambridge audio
                           </span>
                         )}
                       </p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <button onClick={() => setStep('input')} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-white bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-xl transition-colors">
-                        <RefreshCw size={13} /> Regenerate
-                      </button>
-                      <button type="button" onClick={() => setWizardShowAddWords(true)} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-emerald-500 hover:bg-emerald-600 rounded-xl transition-colors shadow-sm">
-                        <Plus size={13} /> Add Question
-                      </button>
                     </div>
                   </div>
 
@@ -1463,7 +1143,7 @@ export function ExamManagerPanel({ groupId }: Props) {
                       const cnt = questions.filter(q => q.type === type).length;
                       if (!cnt) return null;
                       return (
-                        <span key={type} className={`text-[11px] font-bold px-2.5 py-1 rounded-full border ${meta.color}`}>
+                        <span key={type} className={`text-[11px] font-bold px-2.5 py-1 rounded-full border uppercase tracking-wider ${meta.color}`}>
                           {meta.emoji} {meta.label}: {cnt}
                         </span>
                       );
@@ -1487,7 +1167,7 @@ export function ExamManagerPanel({ groupId }: Props) {
                     ))}
                   </div>
 
-                  <div className="space-y-4 max-h-[50vh] overflow-y-auto pr-1">
+                  <div className="space-y-4">
                     {questions.map((q, idx) => (
                       <EditableQuestion key={idx} q={q} idx={idx}
                         onChange={updated => handleWizardQuestionChange(updated, idx)}
@@ -1496,48 +1176,38 @@ export function ExamManagerPanel({ groupId }: Props) {
                         onAutoFillAI={handleWizardAutoFillAI}
                       />
                     ))}
+                    {questions.length === 0 && (
+                      <div className="py-12 flex flex-col items-center justify-center text-slate-400 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl">
+                        <FileText size={48} className="mb-3 opacity-20" />
+                        <p className="text-sm font-medium">No questions generated yet</p>
+                        <p className="text-xs mt-1">Enter a wordlist on the left and click Generate</p>
+                      </div>
+                    )}
                     <button type="button" onClick={() => setWizardShowAddWords(true)} className="w-full py-3 bg-slate-50 dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 border-2 border-dashed border-slate-200 dark:border-slate-600 hover:border-slate-300 dark:hover:border-slate-500 rounded-2xl text-xs font-bold text-slate-500 dark:text-slate-300 hover:text-slate-600 dark:hover:text-white transition-colors flex items-center justify-center gap-1.5">
                       <Plus size={14} /> Add Another Question
                     </button>
                   </div>
-                </>
-              )}
-            </div>
+                </div>
 
-            {/* Footer */}
-            <div className="flex items-center justify-between px-6 py-4 border-t border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/80">
-              <button onClick={resetWizard} className="px-4 py-2 text-sm font-bold text-slate-500 hover:text-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition-colors">
-                Cancel
-              </button>
-              {step === 'input' ? (
-                  <button onClick={handleGenerate} disabled={generating}
-                  className="flex items-center gap-2 px-6 py-2.5 bg-blue-500 hover:bg-blue-600 disabled:bg-slate-200 dark:disabled:bg-slate-600 disabled:cursor-not-allowed text-white font-bold rounded-xl text-sm transition-all shadow-md shadow-blue-200 dark:shadow-none">
-                  {generating ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
-                  {generating ? 'Generating + Fetching Cambridge Audio...' : 'Generate Questions'}
-                </button>
-              ) : (
-                <button onClick={handleSave} disabled={saving || !questions.length}
-                  className="flex items-center gap-2 px-6 py-2.5 bg-emerald-500 hover:bg-emerald-600 disabled:bg-slate-200 dark:disabled:bg-slate-600 disabled:cursor-not-allowed text-white font-bold rounded-xl text-sm transition-all shadow-md shadow-emerald-200 dark:shadow-none">
-                  {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-                  {saving ? 'Publishing...' : 'Publish Exam'}
-                </button>
-              )}
+                {/* Footer */}
+                <div className="flex items-center justify-end px-6 py-4 border-t border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/80 gap-3 shrink-0">
+                  <button onClick={resetWizard} className="px-4 py-2.5 text-sm font-bold text-slate-500 hover:text-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl transition-colors">
+                    Cancel
+                  </button>
+                  <button onClick={handleSave} disabled={saving || !questions.length || !examTitle}
+                    className="flex items-center gap-2 px-8 py-2.5 bg-emerald-500 hover:bg-emerald-600 disabled:bg-slate-200 dark:disabled:bg-slate-600 disabled:cursor-not-allowed text-white font-bold rounded-xl text-sm transition-all shadow-md shadow-emerald-200 dark:shadow-none">
+                    {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+                    {saving ? 'Publishing...' : 'Publish Exam'}
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       )}
 
       {/* ─── Exam Taker Modal ─── */}
-      {activeExam && <ExamTakerModal exam={activeExam} onClose={() => { setActiveExam(null); loadExams(); }} />}
-
-      {/* ─── Exam Editor Modal ─── */}
-      {editingExam && (
-        <ExamEditorModal
-          exam={editingExam}
-          onClose={() => setEditingExam(null)}
-          onSaved={loadExams}
-        />
-      )}
+      {activeExam && <SharedExamTakerModal exam={activeExam} onClose={() => { setActiveExam(null); loadExams(); }} />}
 
       {/* ─── Delete confirm ─── */}
       {deletingId && (

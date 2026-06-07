@@ -16,8 +16,8 @@ export default function SessionManager() {
   const hasRefreshedOnMount = useRef(false);
 
   useEffect(() => {
-    const authRoutes = ['/sign-in', '/sign-up', '/'];
-    const isAuthRoute = authRoutes.some(route => pathname === route || pathname.startsWith('/sign-'));
+    const authRoutes = ['/sign-in', '/sign-up', '/', '/forgot-password', '/verify-email'];
+    const isAuthRoute = authRoutes.some(route => pathname === route || pathname.startsWith('/sign-') || pathname.startsWith('/forgot-password') || pathname.startsWith('/verify-email'));
 
     if (isAuthRoute) {
       // Reset so that when they log in again, we can do a refresh on mount if they reload

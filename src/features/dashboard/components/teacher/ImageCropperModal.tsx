@@ -7,14 +7,24 @@ interface ImageCropperModalProps {
   imageSrc: string;
   onClose: () => void;
   onCropComplete: (file: File) => Promise<void>;
+  aspect?: number;
+  title?: string;
 }
 
-export default function ImageCropperModal({ imageSrc, onClose, onCropComplete }: ImageCropperModalProps) {
+export default function ImageCropperModal({ 
+  imageSrc, 
+  onClose, 
+  onCropComplete, 
+  aspect = 1,
+  title = "Crop Photo"
+}: ImageCropperModalProps) {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const onCropCompleteHandler = useCallback((croppedArea: any, croppedAreaPixels: any) => {
     setCroppedAreaPixels(croppedAreaPixels);
   }, []);
@@ -43,7 +53,7 @@ export default function ImageCropperModal({ imageSrc, onClose, onCropComplete }:
       <div className="relative bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
-          <h3 className="text-lg font-semibold text-slate-900">Crop Profile Photo</h3>
+          <h3 className="text-lg font-semibold text-slate-900">{title}</h3>
           <button
             onClick={onClose}
             disabled={isProcessing}
@@ -59,7 +69,7 @@ export default function ImageCropperModal({ imageSrc, onClose, onCropComplete }:
             image={imageSrc}
             crop={crop}
             zoom={zoom}
-            aspect={1}
+            aspect={aspect}
             cropShape="rect"
             objectFit="cover"
             showGrid={true}

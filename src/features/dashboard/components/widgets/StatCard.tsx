@@ -1,5 +1,6 @@
 import { LucideIcon } from 'lucide-react';
 import { cn } from '@/shared/utils/cn';
+import { motion } from 'framer-motion';
 
 interface StatCardProps {
   title: string;
@@ -19,18 +20,22 @@ const colorMap = {
 
 export function StatCard({ title, value, icon: Icon, trend, trendType = 'neutral', color = 'emerald' }: StatCardProps) {
   return (
-    <div className="double-bezel group hover:-translate-y-1 transition-fluid">
-      <div className="double-bezel-inner p-6 flex flex-col h-full relative overflow-hidden">
+    <motion.div 
+      whileHover={{ y: -5, scale: 1.02 }}
+      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+      className="double-bezel group"
+    >
+      <div className="double-bezel-inner p-6 flex flex-col h-full relative overflow-hidden backdrop-blur-md bg-white/60 dark:bg-slate-900/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(255,255,255,0.01)] border border-white/20 dark:border-slate-700/30 transition-fluid">
         {/* Subtle background glow on hover */}
         <div className={cn(
-          "absolute -right-8 -top-8 w-32 h-32 rounded-full blur-[40px] opacity-0 group-hover:opacity-20 transition-fluid",
+          "absolute -right-8 -top-8 w-32 h-32 rounded-full blur-[40px] opacity-0 group-hover:opacity-20 transition-fluid duration-500",
           color === 'emerald' ? 'bg-emerald-500' :
           color === 'blue' ? 'bg-blue-500' :
           color === 'orange' ? 'bg-orange-500' : 'bg-purple-500'
         )} />
         
         <div className="flex items-center justify-between mb-6 relative z-10">
-          <div className={cn("p-3 rounded-2xl shadow-sm transition-fluid group-hover:scale-110", colorMap[color])}>
+          <div className={cn("p-3 rounded-2xl shadow-sm transition-fluid duration-500 group-hover:scale-110", colorMap[color])}>
             <Icon size={22} strokeWidth={1.5} />
           </div>
           {trend && (
@@ -48,6 +53,6 @@ export function StatCard({ title, value, icon: Icon, trend, trendType = 'neutral
           <h3 className="text-3xl font-bold text-foreground mt-1 tracking-tight">{value}</h3>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

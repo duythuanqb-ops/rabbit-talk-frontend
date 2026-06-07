@@ -185,11 +185,11 @@ export function ProfileSettings() {
 
       <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
         <div>
-          <h2 className="text-xl font-bold text-slate-900">Profile Information</h2>
-          <p className="text-sm text-slate-500 mt-1">Update your photo and personal details here.</p>
+          <h2 className="text-xl font-bold text-slate-900 dark:text-white">Profile Information</h2>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Update your photo and personal details here.</p>
         </div>
 
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 pb-6 border-b border-slate-100">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 pb-6 border-b border-slate-100 dark:border-slate-700">
           <div className="w-24 h-24 shrink-0 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 text-3xl font-bold shadow-inner overflow-hidden relative">
             {avatarUrl ? (
               <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
@@ -214,7 +214,7 @@ export function ProfileSettings() {
               <button 
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploadingAvatar}
-                className="px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 font-medium transition-colors flex items-center gap-2 shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
+                className="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 font-medium transition-colors flex items-center gap-2 shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 <Upload size={18} />
                 Upload new photo
@@ -223,7 +223,7 @@ export function ProfileSettings() {
                 <button 
                   onClick={handleRemoveAvatar}
                   disabled={uploadingAvatar}
-                  className="px-4 py-2 bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-100 font-medium transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                  className="px-4 py-2 bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 rounded-lg hover:bg-rose-100 dark:hover:bg-rose-900/50 font-medium transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   Remove
                 </button>
@@ -235,32 +235,32 @@ export function ProfileSettings() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700">First Name</label>
+            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">First Name</label>
             <input
               type="text"
               value={firstName}
               onChange={e => setFirstName(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+              className="w-full px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/50 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700">Last Name</label>
+            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Last Name</label>
             <input
               type="text"
               value={lastName}
               onChange={e => setLastName(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+              className="w-full px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/50 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
             />
           </div>
 
           <div className="space-y-2 md:col-span-2">
-            <label className="text-sm font-medium text-slate-700">Email Address</label>
+            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Email Address</label>
             <div className="flex flex-col sm:flex-row gap-3">
               <input
                 type="email"
                 value={email}
                 readOnly
-                className="flex-1 px-4 py-2.5 rounded-lg border border-slate-200 text-slate-500 bg-slate-50 cursor-not-allowed select-none focus:outline-none"
+                className="flex-1 px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800 cursor-not-allowed select-none focus:outline-none"
               />
               {isEmailVerified ? (
                 <div className="px-4 py-2.5 bg-emerald-50 text-emerald-600 rounded-lg font-medium whitespace-nowrap border border-emerald-100 flex items-center gap-2">
@@ -280,13 +280,13 @@ export function ProfileSettings() {
           </div>
 
           <div className="space-y-2 md:col-span-2">
-            <label className="text-sm font-medium text-slate-700">Bio</label>
+            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Bio</label>
             <textarea
               rows={4}
               value={bio}
               onChange={e => setBio(e.target.value)}
               placeholder="Tell us a bit about yourself…"
-              className="w-full px-4 py-3 rounded-lg border border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all resize-none"
+              className="w-full px-4 py-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/50 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all resize-none"
             />
           </div>
         </div>
@@ -309,10 +309,10 @@ export function ProfileSettings() {
         </div>
 
         {/* Teacher Registration Section */}
-        <div className="pt-8 border-t border-slate-100">
+        <div className="pt-8 border-t border-slate-100 dark:border-slate-700">
           <div className="flex items-center gap-2 mb-4">
-            <GraduationCap className="text-slate-800" size={22} />
-            <h2 className="text-xl font-bold text-slate-900">Teacher Profile</h2>
+            <GraduationCap className="text-slate-800 dark:text-slate-200" size={22} />
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white">Teacher Profile</h2>
           </div>
           
           {user.role === 'teacher' ? (
@@ -324,11 +324,11 @@ export function ProfileSettings() {
               </div>
             </div>
           ) : (
-            <div className="p-6 border border-slate-200 rounded-xl space-y-5 bg-slate-50/50">
+            <div className="p-6 border border-slate-200 dark:border-slate-700 rounded-xl space-y-5 bg-slate-50/50 dark:bg-slate-800/50">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-slate-700 font-medium">Become a Teacher on RibbitTalk</p>
-                  <p className="text-sm text-slate-500 mt-1">Register to start teaching, creating courses, and earning from your classes.</p>
+                  <p className="text-slate-700 dark:text-slate-200 font-medium">Become a Teacher on RibbitTalk</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Register to start teaching, creating courses, and earning from your classes.</p>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer shrink-0 ml-4">
                   <input 
@@ -342,7 +342,7 @@ export function ProfileSettings() {
               </div>
 
               {isTeacherFormOpen && (
-                <div className="pt-5 border-t border-slate-200 space-y-5 animate-in slide-in-from-top-2 fade-in duration-300">
+                <div className="pt-5 border-t border-slate-200 dark:border-slate-700 space-y-5 animate-in slide-in-from-top-2 fade-in duration-300">
                   {!isEmailVerified ? (
                     <div className="p-4 bg-amber-50 border border-amber-100 text-amber-800 rounded-xl flex items-start gap-3 shadow-sm">
                       <Shield size={20} className="mt-0.5 shrink-0 text-amber-500" />
@@ -362,49 +362,49 @@ export function ProfileSettings() {
                     <div className="space-y-5">
                       <div className="grid grid-cols-1 gap-5">
                         <div className="space-y-2">
-                          <label className="text-sm font-medium text-slate-700">Professional Headline <span className="text-rose-500">*</span></label>
+                          <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Professional Headline <span className="text-rose-500">*</span></label>
                           <input
                             type="text"
                             value={teacherHeadline}
                             onChange={e => setTeacherHeadline(e.target.value)}
                             placeholder="e.g. Native English Speaker with 3 years experience"
-                            className="w-full px-4 py-2.5 rounded-lg border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+                            className="w-full px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/50 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
                           />
                         </div>
                         
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                           <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-700">Experience (Years) <span className="text-rose-500">*</span></label>
+                            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Experience (Years) <span className="text-rose-500">*</span></label>
                             <input
                               type="number"
                               value={teacherExperience}
                               onChange={e => setTeacherExperience(e.target.value)}
                               min="0"
                               placeholder="e.g. 3"
-                              className="w-full px-4 py-2.5 rounded-lg border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+                              className="w-full px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/50 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
                             />
                           </div>
                           
                           <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-700">Video Intro URL (Optional)</label>
+                            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Video Intro URL (Optional)</label>
                             <input
                               type="text"
                               value={teacherVideo}
                               onChange={e => setTeacherVideo(e.target.value)}
                               placeholder="https://youtube.com/..."
-                              className="w-full px-4 py-2.5 rounded-lg border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+                              className="w-full px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/50 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
                             />
                           </div>
                         </div>
                         
                         <div className="space-y-2">
-                          <label className="text-sm font-medium text-slate-700">Certificates (Optional)</label>
+                          <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Certificates (Optional)</label>
                           <textarea
                             rows={2}
                             value={teacherCertificates}
                             onChange={e => setTeacherCertificates(e.target.value)}
                             placeholder="e.g. TEFL, TESOL, CELTA"
-                            className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all resize-none"
+                            className="w-full px-4 py-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/50 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all resize-none"
                           />
                         </div>
                       </div>

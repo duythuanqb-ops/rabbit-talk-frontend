@@ -4,8 +4,8 @@ import { cn } from '@/shared/utils/cn';
 import { WordItem } from '../types/battle.types';
 import { defaultWords, mockPlayers } from '../constants/battle.constants';
 
-export function SetupPhase({ groupName, onStart }: { groupName: string; onStart: (words: WordItem[], timeLimit: number) => void }) {
-  const [words, setWords] = useState<WordItem[]>(defaultWords);
+export function SetupPhase({ groupName, members = [], onStart }: { groupName: string; members?: any[]; onStart: (words: WordItem[], timeLimit: number) => void }) {
+  const [words, setWords] = useState<WordItem[]>([]);
   const [newWord, setNewWord] = useState('');
   const [newHint, setNewHint] = useState('');
   const [timeLimit, setTimeLimit] = useState(30);
@@ -131,13 +131,17 @@ export function SetupPhase({ groupName, onStart }: { groupName: string; onStart:
                 </p>
                 <div className="mt-4 flex items-center gap-2">
                   <div className="flex -space-x-2">
-                    {mockPlayers.slice(0, 3).map((p, i) => (
-                      <div key={i} className="w-8 h-8 rounded-full border-2 border-white bg-indigo-100 flex items-center justify-center text-xs font-bold text-indigo-700 shadow-sm">
-                        {p.initials}
+                    {members.slice(0, 5).map((p, i) => (
+                      <div key={p.uuid || i} className="w-8 h-8 rounded-full border-2 border-white bg-indigo-100 flex items-center justify-center text-xs font-bold text-indigo-700 shadow-sm overflow-hidden">
+                        {p.avatar_url ? (
+                          <img src={p.avatar_url} alt={p.first_name} className="w-full h-full object-cover" />
+                        ) : (
+                          (p.first_name?.[0] || p.username?.[0] || 'U').toUpperCase()
+                        )}
                       </div>
                     ))}
                   </div>
-                  <span className="text-xs font-medium text-blue-800">5 students online</span>
+                  <span className="text-xs font-medium text-blue-800">{members.length} student{members.length !== 1 ? 's' : ''} in group</span>
                 </div>
               </div>
             </div>

@@ -1,12 +1,23 @@
 import { Target, CheckCircle2, Circle } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { dashboardService } from '../../services/dashboard.service';
 
-const mockQuests = [
-  { id: 1, title: 'Learn 10 new words', xp: 50, progress: 10, target: 10, isCompleted: true },
-  { id: 2, title: 'Complete a speaking practice', xp: 100, progress: 0, target: 1, isCompleted: false },
-  { id: 3, title: 'Score 80%+ on any quiz', xp: 150, progress: 0, target: 1, isCompleted: false },
-];
+import { motion } from 'framer-motion';
 
 export function DailyQuests() {
+  const [quests, setQuests] = useState<any[]>([]);
+
+  const fetchQuests = () => {
+    dashboardService.getStudentQuests().then(res => setQuests(res.data)).catch(console.error);
+  };
+
+  useEffect(() => {
+    fetchQuests();
+    const handleQuestUpdate = () => fetchQuests();
+    window.addEventListener('questUpdate', handleQuestUpdate);
+    return () => window.removeEventListener('questUpdate', handleQuestUpdate);
+  }, []);
+
   return (
     <div className="double-bezel">
       <div className="double-bezel-inner bg-surface p-6 hover:shadow-lg transition-fluid">
@@ -21,13 +32,20 @@ export function DailyQuests() {
         </div>
         
         <div className="space-y-4">
-          {mockQuests.map((quest, index) => (
-            <div key={quest.id} className="group relative" style={{ animationDelay: `${index * 150}ms` }}>
+          {quests.map((quest, index) => (
+            <motion.div 
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.1 }}
+              whileHover={{ scale: 1.02 }}
+              key={quest.id} 
+              className="group relative"
+            >
               <div className="absolute inset-0 bg-gradient-to-r from-orange-500/0 to-orange-500/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="relative flex items-center gap-4 p-3.5 rounded-2xl border border-border/50 bg-surface-hover/50 hover:bg-surface hover:border-orange-500/30 transition-all hover:shadow-md cursor-pointer">
+              <div className="relative flex items-center gap-4 p-3.5 rounded-2xl border border-border/50 bg-surface-hover/50 hover:bg-surface hover:border-orange-500/30 transition-all shadow-sm hover:shadow-md cursor-pointer">
                 <div className="shrink-0 transition-transform group-hover:scale-110">
                   {quest.isCompleted ? (
-                    <CheckCircle2 className="text-emerald-500" size={24} strokeWidth={2.5} />
+                    <CheckCircle2 className="text-emerald-500 drop-shadow-sm" size={24} strokeWidth={2.5} />
                   ) : (
                     <Circle className="text-muted-foreground/30" size={24} strokeWidth={2} />
                   )}
@@ -38,21 +56,23 @@ export function DailyQuests() {
                   </h4>
                   <div className="flex items-center gap-3 mt-2">
                     <div className="flex-1 h-2 bg-black/5 dark:bg-white/5 rounded-full overflow-hidden ring-1 ring-inset ring-black/5 dark:ring-white/5">
-                      <div 
-                        className={`h-full rounded-full transition-all duration-1000 ease-out ${quest.isCompleted ? 'bg-emerald-500' : 'bg-gradient-to-r from-orange-400 to-orange-500'}`} 
-                        style={{ width: `${(quest.progress / quest.target) * 100}%` }}
+                      <motion.div 
+                        initial={{ width: 0 }}
+                        animate={{ width: `${(quest.currentValue / quest.targetValue) * 100}%` }}
+                        transition={{ duration: 1, delay: 0.2 + index * 0.1, ease: 'easeOut' }}
+                        className={`h-full rounded-full ${quest.isCompleted ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-gradient-to-r from-orange-400 to-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.4)]'}`} 
                       />
                     </div>
                     <span className="text-[11px] font-bold text-muted-foreground w-8 text-right tabular-nums">
-                      {quest.progress}/{quest.target}
+                      {quest.currentValue}/{quest.targetValue}
                     </span>
                   </div>
                 </div>
                 <div className={`shrink-0 text-xs font-bold px-2.5 py-1 rounded-lg transition-colors ${quest.isCompleted ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-orange-500/10 text-orange-600 dark:text-orange-400'}`}>
-                  +{quest.xp} XP
+                  +{quest.xpReward} XP
                 </div>
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>

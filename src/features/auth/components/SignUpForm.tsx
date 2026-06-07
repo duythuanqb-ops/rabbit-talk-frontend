@@ -33,7 +33,7 @@ export default function SignUpForm({ onSuccess }: Props) {
   const router = useRouter();
 
   const getInputClass = (fieldName: string) => {
-    return `mt-2 w-full rounded-2xl border ${fieldErrors[fieldName] ? 'border-red-500 bg-red-50/50 focus:ring-red-500' : 'border-none bg-surface-hover focus:ring-ring'} px-4 py-3 text-sm text-foreground shadow-inner outline-none transition-all focus:bg-surface focus:ring-2 focus:shadow-md ${fieldName.includes('password') ? 'pr-12' : ''}`;
+    return `mt-2 w-full rounded-2xl border ${fieldErrors[fieldName] ? 'border-red-500 bg-red-50/50 focus:ring-red-500' : 'border-slate-200 dark:border-white/10 bg-white/50 dark:bg-black/50 focus:ring-emerald-500/50'} px-4 py-3 text-sm text-foreground shadow-sm backdrop-blur-sm outline-none transition-all focus:bg-white dark:focus:bg-black focus:ring-2 focus:shadow-md ${fieldName.includes('password') ? 'pr-12' : ''}`;
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -132,7 +132,7 @@ export default function SignUpForm({ onSuccess }: Props) {
       />
       <form className="space-y-4" onSubmit={handleSubmit} noValidate>
         <div className="grid grid-cols-2 gap-3">
-          <label className="block text-sm font-medium text-slate-700">
+          <label className="block text-sm font-medium text-foreground">
             First name
             <input
               type="text"
@@ -144,7 +144,7 @@ export default function SignUpForm({ onSuccess }: Props) {
             />
             {fieldErrors.first_name && <span className="mt-1 block text-xs text-red-500 font-medium">{fieldErrors.first_name}</span>}
           </label>
-          <label className="block text-sm font-medium text-slate-700">
+          <label className="block text-sm font-medium text-foreground">
             Last name
             <input
               type="text"
@@ -158,7 +158,7 @@ export default function SignUpForm({ onSuccess }: Props) {
           </label>
         </div>
 
-        <label className="block text-sm font-medium text-slate-700">
+        <label className="block text-sm font-medium text-foreground">
           Username
           <input
             type="text"
@@ -171,7 +171,7 @@ export default function SignUpForm({ onSuccess }: Props) {
           {fieldErrors.username && <span className="mt-1 block text-xs text-red-500 font-medium">{fieldErrors.username}</span>}
         </label>
 
-        <label className="block text-sm font-medium text-slate-700">
+        <label className="block text-sm font-medium text-foreground">
           Email
           <input
             type="email"
@@ -184,7 +184,7 @@ export default function SignUpForm({ onSuccess }: Props) {
           {fieldErrors.email && <span className="mt-1 block text-xs text-red-500 font-medium">{fieldErrors.email}</span>}
         </label>
 
-        <label className="block text-sm font-medium text-slate-700">
+        <label className="block text-sm font-medium text-foreground">
           Date of birth
           <input
             type="date"
@@ -196,7 +196,7 @@ export default function SignUpForm({ onSuccess }: Props) {
           {fieldErrors.date_of_birth && <span className="mt-1 block text-xs text-red-500 font-medium">{fieldErrors.date_of_birth}</span>}
         </label>
 
-        <label className="block text-sm font-medium text-slate-700 relative">
+        <label className="block text-sm font-medium text-foreground relative">
           Password
           <div className="relative">
             <input
@@ -218,7 +218,7 @@ export default function SignUpForm({ onSuccess }: Props) {
           {fieldErrors.password && <span className="mt-1 block text-xs text-red-500 font-medium">{fieldErrors.password}</span>}
         </label>
 
-        <label className="block text-sm font-medium text-slate-700 relative">
+        <label className="block text-sm font-medium text-foreground relative">
           Confirm password
           <div className="relative">
             <input
@@ -251,8 +251,8 @@ export default function SignUpForm({ onSuccess }: Props) {
         </Button>
 
         <div className="relative flex items-center justify-center text-xs uppercase tracking-[0.3em] text-slate-400 mt-4 mb-4">
-          <span className="absolute left-0 right-0 top-1/2 h-px bg-slate-200" />
-          <span className="relative bg-white px-3">or</span>
+          <span className="absolute left-0 right-0 top-1/2 h-px bg-slate-200 dark:bg-slate-800" />
+          <span className="relative bg-white/80 dark:bg-black/80 backdrop-blur-sm px-3 rounded-full">or</span>
         </div>
 
         <Button

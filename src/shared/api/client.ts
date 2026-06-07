@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, react-hooks/exhaustive-deps */
 import config from '@/config';
 
 const API_URL = config.apiUrl;
@@ -60,7 +61,9 @@ export async function apiCall<T = any>(
   if (!response.ok) {
     const error = await response.json().catch(() => ({ message: 'Unknown error' }));
     const message = Array.isArray(error.message) ? error.message.join(', ') : error.message;
-    throw new Error(message || `HTTP ${response.status}`);
+    const errorMsg = message || `HTTP ${response.status}`;
+    console.error(`[API Error] GET ${endpoint} failed:`, errorMsg);
+    throw new Error(errorMsg);
   }
 
   return response.json();

@@ -1,9 +1,10 @@
 'use client';
 
-import { Suspense, useState } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { DashboardLayout } from '@/features/dashboard/components';
-import { Swords, ArrowLeft, ChevronRight } from 'lucide-react';
+import { Swords, ArrowLeft, ChevronRight, Loader2 } from 'lucide-react';
+import { groupsService } from '@/features/groups/services/groups.service';
 import { cn } from '@/shared/utils/cn';
 import { Phase, WordItem, Player } from '../types/battle.types';
 import { SetupPhase } from '../components/SetupPhase';
@@ -13,12 +14,26 @@ import { ResultsPhase } from '../components/ResultsPhase';
 export function LiveBattlePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const groupName = searchParams.get('group') || 'Beginner English 101';
+  const groupName = searchParams.get('groupName') || searchParams.get('group') || 'Class';
+  const groupId = searchParams.get('groupId');
   
   const [phase, setPhase] = useState<Phase>('setup');
   const [words, setWords] = useState<WordItem[]>([]);
   const [timeLimit, setTimeLimit] = useState(30);
   const [finalPlayers, setFinalPlayers] = useState<Player[]>([]);
+  const [members, setMembers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (groupId) {
+      groupsService.getGroupMembers(groupId)
+        .then(res => setMembers(res.data || []))
+        .catch(console.error)
+        .finally(() => setLoading(false));
+    } else {
+      setLoading(false);
+    }
+  }, [groupId]);
 
   const handleStartBattle = (selectedWords: WordItem[], selectedTime: number) => {
     setWords(selectedWords);
@@ -45,9 +60,15 @@ export function LiveBattlePage() {
           </span>
         </div>
 
-        {phase === 'setup' && <SetupPhase groupName={groupName} onStart={handleStartBattle} />}
-        {phase === 'battle' && <BattlePhase words={words} timeLimit={timeLimit} groupName={groupName} onEnd={handleEndBattle} />}
-        {phase === 'results' && <ResultsPhase players={finalPlayers} groupName={groupName} onRestart={() => setPhase('setup')} />}
+        {loading ? (
+          <div className="flex justify-center p-12"><Loader2 className="animate-spin text-indigo-500" size={40} /></div>
+        ) : (
+          <>
+            {phase === 'setup' && <SetupPhase groupName={groupName} members={members} onStart={handleStartBattle} />}
+            {phase === 'battle' && <BattlePhase words={words} members={members} timeLimit={timeLimit} groupName={groupName} onEnd={handleEndBattle} />}
+            {phase === 'results' && <ResultsPhase players={finalPlayers} groupName={groupName} onRestart={() => setPhase('setup')} />}
+          </>
+        )}
       </div>
     </DashboardLayout>
   );

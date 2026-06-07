@@ -35,6 +35,15 @@ export function StudyModal({ isOpen, onClose, setId, setName }: { isOpen: boolea
   const handleNext = async (status: 'learning' | 'mastered') => {
     if (currentCard) {
       await flashcardService.updateProgress(currentCard.id, status);
+      
+      // Track quest progress for practicing flashcards
+      try {
+        const { dashboardService } = await import('@/features/dashboard/services/dashboard.service');
+        await dashboardService.trackQuestProgress('practice_words', 1);
+        window.dispatchEvent(new Event('questUpdate'));
+      } catch (e) {
+        console.error('Failed to track quest progress:', e);
+      }
     }
     setIsFlipped(false);
     setTimeout(() => {

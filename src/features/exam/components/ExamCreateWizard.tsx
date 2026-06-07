@@ -254,6 +254,7 @@ export function ExamCreateWizard({ isOpen, onClose, onCreated, groups, defaultGr
   const [step, setStep] = useState<'input' | 'review'>('input');
   const [examTitle, setExamTitle] = useState('');
   const [examDesc, setExamDesc] = useState('');
+  const [dueDate, setDueDate] = useState('');
   const [wordInput, setWordInput] = useState('');
   const [wizardGroupId, setWizardGroupId] = useState(defaultGroupId || '');
   const [generating, setGenerating] = useState(false);
@@ -304,6 +305,7 @@ export function ExamCreateWizard({ isOpen, onClose, onCreated, groups, defaultGr
     setStep('input');
     setExamTitle('');
     setExamDesc('');
+    setDueDate('');
     setWordInput('');
     setWizardGroupId(defaultGroupId || '');
     setQuestions([]);
@@ -342,7 +344,13 @@ export function ExamCreateWizard({ isOpen, onClose, onCreated, groups, defaultGr
     if (!questions.length) return;
     setSaving(true);
     try {
-      await examsService.createExam({ groupId: wizardGroupId, title: examTitle.trim(), description: examDesc.trim() || undefined, questions });
+      await examsService.createExam({ 
+        groupId: wizardGroupId, 
+        title: examTitle.trim(), 
+        description: examDesc.trim() || undefined, 
+        dueDate: dueDate || undefined,
+        questions 
+      });
       toast.success('Exam published successfully!');
       onCreated();
       reset();
@@ -519,10 +527,17 @@ export function ExamCreateWizard({ isOpen, onClose, onCreated, groups, defaultGr
                   className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm font-semibold text-slate-800 dark:text-white focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100" />
               </div>
             </div>
-            <div>
-              <label className="block text-xs font-black text-slate-600 mb-1">Description (Optional)</label>
-              <input type="text" value={examDesc} onChange={e => setExamDesc(e.target.value)} placeholder="e.g. Synonyms, listening, situational context"
-                className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm font-medium text-slate-800 dark:text-white focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-black text-slate-600 mb-1">Description (Optional)</label>
+                <input type="text" value={examDesc} onChange={e => setExamDesc(e.target.value)} placeholder="e.g. Synonyms, listening, situational context"
+                  className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm font-medium text-slate-800 dark:text-white focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100" />
+              </div>
+              <div>
+                <label className="block text-xs font-black text-slate-600 mb-1">Due Date (Optional)</label>
+                <input type="datetime-local" value={dueDate} onChange={e => setDueDate(e.target.value)}
+                  className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm font-medium text-slate-800 dark:text-white focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100" />
+              </div>
             </div>
             <div className="border-t border-slate-100 pt-4">
               <label className="block text-xs font-black text-slate-600 mb-1.5">Enter Word List *</label>
