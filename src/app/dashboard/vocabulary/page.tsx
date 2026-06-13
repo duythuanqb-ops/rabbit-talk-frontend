@@ -14,13 +14,24 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { containerVariants, itemVariants } from '@/shared/utils/motion';
 import toast from 'react-hot-toast';
 
+interface FlashcardSet {
+  id: string;
+  title: string;
+  description?: string;
+  is_published?: boolean;
+  group_id?: string;
+  group_name?: string;
+  card_count?: number;
+  mastered_count?: number;
+}
+
 function VocabularyPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const filterGroupId = searchParams ? searchParams.get('groupId') : null;
   const autoCreate = searchParams ? searchParams.get('create') === 'true' : false;
 
-  const [sets, setSets] = useState<any[]>([]);
+  const [sets, setSets] = useState<FlashcardSet[]>([]);
   const [role, setRole] = useState<'student' | 'teacher'>('student');
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -28,7 +39,7 @@ function VocabularyPageContent() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [addCardSetId, setAddCardSetId] = useState<string | null>(null);
   const [studySet, setStudySet] = useState<{ id: string, title: string } | null>(null);
-  const [editingSet, setEditingSet] = useState<any | null>(null);
+  const [editingSet, setEditingSet] = useState<{ id: string, title: string, description?: string } | null>(null);
   const [editSetTitle, setEditSetTitle] = useState('');
   const [editSetDescription, setEditSetDescription] = useState('');
   const [deletingSetId, setDeletingSetId] = useState<string | null>(null);
@@ -36,11 +47,11 @@ function VocabularyPageContent() {
   const loadData = async () => {
     try {
       const profile = await getProfile();
-      const user = profile.data || profile;
+      const user = (profile as { data?: { role?: 'student' | 'teacher' } }).data ?? (profile as { role?: 'student' | 'teacher' });
       setRole(user.role || 'student');
 
       const res = await flashcardService.getMySets();
-      setSets(res.data || res || []);
+      setSets((res as { data?: FlashcardSet[] }).data ?? (res as FlashcardSet[]) ?? []);
     } catch (e) {
       console.error(e);
     } finally {
@@ -49,12 +60,12 @@ function VocabularyPageContent() {
   };
 
   useEffect(() => {
-    loadData();
+    setTimeout(() => loadData(), 0);
   }, []);
 
   useEffect(() => {
     if (autoCreate && role === 'teacher' && !loading) {
-      setIsCreateOpen(true);
+      setTimeout(() => setIsCreateOpen(true), 0);
     }
   }, [autoCreate, role, loading]);
 
@@ -63,7 +74,7 @@ function VocabularyPageContent() {
     loadData();
   };
 
-  const handleStartEditSet = (set: any) => {
+  const handleStartEditSet = (set: FlashcardSet) => {
     setEditingSet(set);
     setEditSetTitle(set.title);
     setEditSetDescription(set.description || '');
@@ -109,7 +120,7 @@ function VocabularyPageContent() {
 
   const filteredSets = sets.filter(s => {
     const matchesSearch = s.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          s.group_name.toLowerCase().includes(searchQuery.toLowerCase());
+                          (s.group_name || '').toLowerCase().includes(searchQuery.toLowerCase());
     if (filterGroupId) {
       return matchesSearch && s.group_id === filterGroupId;
     }
@@ -189,8 +200,10 @@ function VocabularyPageContent() {
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
         >
           {filteredSets.map((set) => {
-            const isComplete = role === 'student' && set.mastered_count === set.card_count && set.card_count > 0;
-            const progress = role === 'student' ? (set.card_count > 0 ? Math.round((set.mastered_count / set.card_count) * 100) : 0) : 0;
+            const cardCount = set.card_count ?? 0;
+            const masteredCount = set.mastered_count ?? 0;
+            const isComplete = role === 'student' && masteredCount === cardCount && cardCount > 0;
+            const progress = role === 'student' ? (cardCount > 0 ? Math.round((masteredCount / cardCount) * 100) : 0) : 0;
             
             return (
               <motion.div variants={itemVariants} whileHover={{ y: -5 }} key={set.id} className="bg-white dark:bg-slate-800 rounded-3xl shadow-[0_2px_12px_rgba(0,0,0,0.03)] dark:shadow-none ring-1 ring-slate-100 dark:ring-slate-700/50 hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] transition-all duration-300 flex flex-col overflow-hidden">
@@ -252,16 +265,16 @@ function VocabularyPageContent() {
                   </p>
 
                   <div 
-                    onClick={() => set.card_count > 0 && setStudySet({ id: set.id, title: set.title })}
+                    onClick={() => cardCount > 0 && setStudySet({ id: set.id, title: set.title })}
                     className={`flex items-center justify-between text-sm font-bold text-slate-700 dark:text-white bg-slate-50 dark:bg-slate-700/50 p-3 rounded-xl border border-slate-100 dark:border-slate-600/50 transition-colors ${
-                      set.card_count > 0 ? 'cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-600 hover:text-orange-600 dark:hover:text-orange-400' : ''
+                      cardCount > 0 ? 'cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-600 hover:text-orange-600 dark:hover:text-orange-400' : ''
                     }`}
-                    title={set.card_count > 0 ? "Click to view words" : undefined}
+                    title={cardCount > 0 ? "Click to view words" : undefined}
                   >
-                    <span className="flex items-center gap-1.5"><BookOpen size={16} className="text-slate-400" /> {set.card_count} Words</span>
+                    <span className="flex items-center gap-1.5"><BookOpen size={16} className="text-slate-400" /> {cardCount} Words</span>
                     {role === 'student' && (
                       <span className={isComplete ? 'text-emerald-500' : 'text-slate-500'}>
-                        {set.mastered_count} Mastered
+                        {masteredCount} Mastered
                       </span>
                     )}
                   </div>
@@ -308,7 +321,7 @@ function VocabularyPageContent() {
         </motion.div>
       )}
 
-      {/* Modals */}
+      {}
       <CreateSetModal 
         isOpen={isCreateOpen} 
         onClose={() => setIsCreateOpen(false)} 

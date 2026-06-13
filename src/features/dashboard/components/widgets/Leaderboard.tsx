@@ -1,6 +1,8 @@
 import { Trophy, Medal, Award } from 'lucide-react';
 import Image from 'next/image';
 import { cn } from '@/shared/utils/cn';
+import { StaggerContainer, StaggerItem } from '@/shared/components/animations/StaggerContainer';
+
 interface LeaderboardItem {
   id: string;
   name: string;
@@ -28,9 +30,9 @@ export function Leaderboard({ title, items }: LeaderboardProps) {
           </h3>
           <button className="text-emerald-600 dark:text-emerald-400 text-sm font-semibold hover:underline decoration-emerald-500/30 underline-offset-4">View All</button>
         </div>
-        <div className="divide-y divide-border/40">
+        <StaggerContainer className="divide-y divide-border/40">
           {items.map((item, index) => (
-            <div key={item.id} className="p-4 flex items-center justify-between hover:bg-surface-hover transition-colors group cursor-pointer" style={{ animationDelay: `${index * 100}ms` }}>
+            <StaggerItem key={item.id} className="p-4 flex items-center justify-between hover:bg-surface-hover transition-colors group cursor-pointer" style={{ animationDelay: `${index * 100}ms` }}>
               <div className="flex items-center gap-4">
                 <div className="w-10 text-center font-bold text-muted-foreground flex justify-center">
                   {item.rank === 1 && <div className="p-1.5 bg-amber-100 dark:bg-amber-900/30 text-amber-500 rounded-lg ring-1 ring-amber-500/20 group-hover:scale-110 transition-transform"><Medal size={18} strokeWidth={2} /></div>}
@@ -40,7 +42,7 @@ export function Leaderboard({ title, items }: LeaderboardProps) {
                 </div>
                 <div className="w-10 h-10 rounded-full bg-surface-hover overflow-hidden ring-2 ring-transparent group-hover:ring-emerald-500/30 transition-all">
                   {item.avatar ? (
-                    <img src={item.avatar} alt={item.name} className="w-10 h-10 object-cover" />
+                    <Image unoptimized src={item.avatar} alt={item.name} width={40} height={40} className="w-10 h-10 object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-muted-foreground font-bold bg-surface-hover">
                       {item.name[0]}
@@ -53,9 +55,9 @@ export function Leaderboard({ title, items }: LeaderboardProps) {
                 </div>
               </div>
               <Award className={cn("transition-transform group-hover:scale-110 group-hover:-rotate-12", item.rank <= 3 ? "text-emerald-500" : "text-muted-foreground/30")} size={20} strokeWidth={1.5} />
-            </div>
+            </StaggerItem>
           ))}
-        </div>
+        </StaggerContainer>
       </div>
     </div>
   );

@@ -17,7 +17,7 @@ import { containerVariants, itemVariants } from '@/shared/utils/motion';
 
 import { SharedExamTakerModal, TYPE_META, speak, mergeQuestions } from "@/features/exams/components/SharedExamTakerModal";
 
-// ─── Editable Question Card (wizard review step) ──────────────────────────────
+
 function EditableQuestion({ q, idx, onChange, onDelete, onFetchAudio, onAutoFillAI }: {
   q: ExamQuestion; idx: number;
   onChange: (u: ExamQuestion) => void;
@@ -184,7 +184,7 @@ function EditableQuestion({ q, idx, onChange, onDelete, onFetchAudio, onAutoFill
   );
 }
 
-// ─── Main ExamsPage Component ───────────────────────────────────────────────────
+
 import { Suspense } from 'react';
 
 function ExamsPageContent() {
@@ -200,7 +200,7 @@ function ExamsPageContent() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedGroupFilter, setSelectedGroupFilter] = useState(filterGroupId || '');
 
-  // Wizard state
+  
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingExamId, setEditingExamId] = useState<string | null>(null);
   const [step, setStep] = useState<'input' | 'review'>('input');
@@ -212,7 +212,7 @@ function ExamsPageContent() {
   const [questions, setQuestions] = useState<ExamQuestion[]>([]);
   const [saving, setSaving] = useState(false);
 
-  // Wizard AI Vocabulary addition states
+  
   const [wizardShowAddWords, setWizardShowAddWords] = useState(false);
   const [wizardNewWords, setWizardNewWords] = useState('');
   const [wizardAddingWords, setWizardAddingWords] = useState(false);
@@ -250,7 +250,7 @@ function ExamsPageContent() {
     setQuestions(qs => qs.map((x, i) => i === index ? updated : x));
   };
 
-  // Active exam / Deleting state
+  
   const [activeExam, setActiveExam] = useState<Exam | null>(null);
   const [deletingExamId, setDeletingExamId] = useState<string | null>(null);
 
@@ -258,15 +258,13 @@ function ExamsPageContent() {
     setLoading(true);
     try {
       const profile = await getProfile();
-      const user = profile.data || profile;
-      setRole(user.role || 'student');
+      const user = ((profile as { data?: { role?: string } }).data ?? profile) as { role?: string };
+      setRole((user.role as 'student' | 'teacher') || 'student');
 
-      // Load user classes/groups
       const groupRes = await groupsService.getGroups();
-      const groupData = groupRes.data || groupRes || [];
-      setGroups(groupData as Group[]);
+      setGroups(groupRes.data ?? []);
 
-      // Fetch exams general
+      
       const examRes = await examsService.getMyExams();
       const data = ((examRes as unknown) as { data?: Exam[] }).data ?? (examRes as Exam[]);
       setExams(data || []);
@@ -331,7 +329,7 @@ function ExamsPageContent() {
       toast.success('Questions generated successfully with Cambridge audio! 🎧');
     } catch {
       toast('Gemini failed or Cambridge limit hit. Using local fallback generation...', { icon: '⚠️' });
-      // Fallback questions
+      
       const localQs = items.map((word, i) => {
         const t = i % 4;
         if (t === 0) {
@@ -391,12 +389,12 @@ function ExamsPageContent() {
     const toastId = toast.loading(`Fetching Cambridge audio for "${word}"...`);
     try {
       const res = await examsService.lookupWord(word.trim());
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const data = (res as any).data ?? res;
-      if (data && data.audioUrl) {
-        setQuestions(qs => qs.map((x, i) => i === index ? { ...x, audio_url: data.audioUrl } : x));
+      const data = (res as { data?: { audioUrl?: string } } & { audioUrl?: string }).data ?? res;
+      const audioUrl = (data as { audioUrl?: string }).audioUrl;
+      if (audioUrl) {
+        setQuestions(qs => qs.map((x, i) => i === index ? { ...x, audio_url: audioUrl } : x));
         toast.success(`Successfully loaded Cambridge pronunciation audio for "${word}"! 🎧`, { id: toastId });
-        speak(word, data.audioUrl);
+        speak(word, audioUrl);
       } else {
         toast.error(`Audio not found for "${word}" in Cambridge Dictionary.`, { id: toastId });
       }
@@ -414,8 +412,7 @@ function ExamsPageContent() {
     const toastId = toast.loading(`Generating question for "${word}"...`);
     try {
       const res = await examsService.generateQuestions([word.trim()]);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const newQs: ExamQuestion[] = Array.isArray(res) ? (res as ExamQuestion[]) : (((res as any).data ?? []) as ExamQuestion[]);
+      const newQs: ExamQuestion[] = Array.isArray(res) ? (res as ExamQuestion[]) : (((res as { data?: ExamQuestion[] }).data ?? []) as ExamQuestion[]);
       if (newQs && newQs.length > 0) {
         const matchedQ = newQs.find(q => q.type === type) || newQs.find(q => q.type !== 'matching') || newQs[0];
         if (matchedQ) {
@@ -433,10 +430,9 @@ function ExamsPageContent() {
       } else {
         toast.error(`AI failed to generate question details for "${word}".`, { id: toastId });
       }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      toast.error(err?.message || `Failed to generate details for "${word}".`, { id: toastId });
+      toast.error((err as { message?: string })?.message || `Failed to generate details for "${word}".`, { id: toastId });
     }
   };
 
@@ -465,8 +461,8 @@ function ExamsPageContent() {
 
     if (duplicates.length > 0) {
       toast(`Skipped ${duplicates.length} duplicate word(s) (${duplicates.join(', ')})`, {
-        icon: '⚠️',
-        duration: 4000,
+         icon: '⚠️',
+         duration: 4000,
       });
     }
 
@@ -479,8 +475,7 @@ function ExamsPageContent() {
     const toastId = toast.loading(`Generating questions for ${newWords.length} new word(s)...`);
     try {
       const res = await examsService.generateQuestions(newWords);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const newQs: ExamQuestion[] = Array.isArray(res) ? (res as ExamQuestion[]) : (((res as any).data ?? []) as ExamQuestion[]);
+      const newQs: ExamQuestion[] = Array.isArray(res) ? (res as ExamQuestion[]) : (((res as { data?: ExamQuestion[] }).data ?? []) as ExamQuestion[]);
       if (newQs && newQs.length > 0) {
         setQuestions(prev => mergeQuestions(prev, newQs));
         toast.success(`Generated questions for ${newWords.length} new word(s) successfully!`, { id: toastId });
@@ -489,10 +484,9 @@ function ExamsPageContent() {
       } else {
         toast.error('Failed to generate questions. No questions returned from AI.', { id: toastId });
       }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      toast.error(err?.message || 'Failed to generate questions with AI.', { id: toastId });
+      toast.error((err as { message?: string })?.message || 'Failed to generate questions with AI.', { id: toastId });
     } finally {
       setWizardAddingWords(false);
     }
@@ -517,7 +511,7 @@ function ExamsPageContent() {
       await examsService.updatePublishStatus(examId, isPublished);
       toast.success(`Exam marked as ${isPublished ? 'Active' : 'Draft'}`);
       
-      // Update local state to immediately reflect the UI change
+      
       setExams(prev => prev.map(e => e.id === examId ? { ...e, is_published: isPublished } : e));
     } catch (e: unknown) {
       const errMessage = e instanceof Error ? e.message : String(e);
@@ -538,7 +532,7 @@ function ExamsPageContent() {
     }
   };
 
-  // Filter exams based on Search & Class filter
+  
   const filteredExams = exams.filter(e => {
     const matchesSearch = e.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
                           (e.description && e.description.toLowerCase().includes(searchQuery.toLowerCase())) ||
@@ -555,7 +549,7 @@ function ExamsPageContent() {
 
   return (
     <>
-      {/* ─── Header: Library Info & Title ─── */}
+      {}
       <motion.div 
         initial="hidden" 
         animate="show" 
@@ -592,7 +586,7 @@ function ExamsPageContent() {
         )}
       </motion.div>
 
-      {/* ─── Filters & Search ─── */}
+      {}
       <div className="flex flex-col md:flex-row gap-4 mb-6">
         <div className="relative flex-1 group">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors" size={16} />
@@ -620,7 +614,7 @@ function ExamsPageContent() {
         </div>
       </div>
 
-      {/* ─── Exams List Grid ─── */}
+      {}
       {loading ? (
         <div className="flex justify-center items-center h-64">
           <Loader2 className="animate-spin text-blue-500" size={32} />
@@ -747,7 +741,7 @@ function ExamsPageContent() {
                   </div>
                 </div>
 
-                {/* Card footer CTAs */}
+                {}
                 <div className="px-6 py-4 bg-slate-50 dark:bg-slate-700/50 border-t border-slate-100 dark:border-slate-700">
                   <button 
                     onClick={() => {
@@ -780,11 +774,11 @@ function ExamsPageContent() {
         </motion.div>
       )}
 
-      {/* ─── Create Exam Wizard Modal (Full Page Overlay) ─── */}
+      {}
       {isCreateOpen && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
           <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-2xl max-h-[92vh] flex flex-col overflow-hidden">
-            {/* Header */}
+            {}
             <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100 dark:border-slate-700 bg-gradient-to-r from-blue-500 to-blue-700 rounded-t-3xl text-white">
               <div>
                 <h2 className="text-xl font-black flex items-center gap-2">
@@ -799,7 +793,7 @@ function ExamsPageContent() {
               </button>
             </div>
 
-            {/* Stepper progress indicator */}
+            {}
             <div className="flex border-b border-slate-100 dark:border-slate-700 px-6 pt-3 pb-0 gap-6">
               {(['input', 'review'] as const).map((s, i) => (
                 <button 
@@ -812,7 +806,7 @@ function ExamsPageContent() {
               ))}
             </div>
 
-            {/* Wizard Body */}
+            {}
             <div className="flex-1 overflow-y-auto p-6 space-y-5">
               {step === 'input' && (
                 <>
@@ -907,7 +901,7 @@ function ExamsPageContent() {
                     })}
                   </div>
 
-                  {/* Unique Vocabulary List Chip Container */}
+                  {}
                   <div className="bg-slate-50 dark:bg-slate-700/50 border border-slate-200/60 dark:border-slate-600 rounded-2xl p-3.5 flex flex-wrap items-center gap-1.5 flex-shrink-0">
                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mr-1">Vocab list:</span>
                     {Array.from(
@@ -944,7 +938,7 @@ function ExamsPageContent() {
               )}
             </div>
 
-            {/* Wizard Footer */}
+            {}
             <div className="flex items-center justify-between px-6 py-4 border-t border-slate-100 bg-slate-50/50">
               <button 
                 onClick={resetWizard} 
@@ -977,7 +971,7 @@ function ExamsPageContent() {
         </div>
       )}
 
-      {/* ─── Active Exam Taker Modal ─── */}
+      {}
       <AnimatePresence>
       {activeExam && (
         <motion.div 
@@ -996,7 +990,7 @@ function ExamsPageContent() {
       )}
       </AnimatePresence>
 
-      {/* ─── Delete Confirmation Modal ─── */}
+      {}
       <AnimatePresence>
       {deletingExamId && (
         <motion.div 
@@ -1036,7 +1030,7 @@ function ExamsPageContent() {
       )}
       </AnimatePresence>
 
-      {/* Inline Wizard Add Vocabulary via AI Modal Overlay */}
+      {}
       {wizardShowAddWords && (
         <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
           <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border border-slate-100 flex flex-col p-6 space-y-4 animate-in scale-in duration-200 text-slate-800">

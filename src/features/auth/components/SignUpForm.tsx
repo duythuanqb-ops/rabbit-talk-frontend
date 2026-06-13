@@ -6,6 +6,7 @@ import { EyeIcon, EyeOffIcon, GoogleIcon } from '@/shared/icons';
 import { googleLogin } from '@/features/auth/services/auth.service';
 import { useGoogleLogin } from '@react-oauth/google';
 import { Button } from '@/components/ui/Button';
+import { StaggerContainer, StaggerItem } from '@/shared/components/animations/StaggerContainer';
 
 interface Props {
   onSuccess?: () => void;
@@ -58,9 +59,8 @@ export default function SignUpForm({ onSuccess }: Props) {
         } else {
           router.push('/dashboard');
         }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } catch (error: any) {
-        showMessage(error.message || 'Google signup failed', 'error');
+      } catch (error: unknown) {
+        showMessage((error as Error).message || 'Google signup failed', 'error');
       } finally {
         setIsSubmitting(false);
       }
@@ -71,7 +71,7 @@ export default function SignUpForm({ onSuccess }: Props) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Custom validation
+    
     const errors: Record<string, string> = {};
     if (!formData.first_name) errors.first_name = 'Please enter your first name';
     if (!formData.last_name) errors.last_name = 'Please enter your last name';
@@ -93,11 +93,12 @@ export default function SignUpForm({ onSuccess }: Props) {
 
     setIsSubmitting(true);
     try {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { confirm_password, ...submitData } = formData;
+      
+      const submitData = { ...formData } as Partial<typeof formData>;
+      delete submitData.confirm_password;
       await userAPI.create(submitData);
       showMessage('Account created successfully!', 'success');
-      // Clear form
+      
       setFormData({
         username: '',
         first_name: '',
@@ -108,12 +109,12 @@ export default function SignUpForm({ onSuccess }: Props) {
         confirm_password: '',
       });
 
-      // Redirect to sign-in immediately
+      
       if (onSuccess) {
         onSuccess();
       }
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
+      const message = error instanceof Error ? (error as Error).message : 'Unknown error';
       showMessage(`Registration failed: ${message}`, 'error');
       console.error('Sign-up error:', error);
     } finally {
@@ -130,8 +131,8 @@ export default function SignUpForm({ onSuccess }: Props) {
         isVisible={toast.visible}
         onClose={() => setToast({ ...toast, visible: false })}
       />
-      <form className="space-y-4" onSubmit={handleSubmit} noValidate>
-        <div className="grid grid-cols-2 gap-3">
+      <StaggerContainer as="form" className="space-y-4" onSubmit={handleSubmit} noValidate>
+        <StaggerItem className="grid grid-cols-2 gap-3">
           <label className="block text-sm font-medium text-foreground">
             First name
             <input
@@ -156,9 +157,9 @@ export default function SignUpForm({ onSuccess }: Props) {
             />
             {fieldErrors.last_name && <span className="mt-1 block text-xs text-red-500 font-medium">{fieldErrors.last_name}</span>}
           </label>
-        </div>
+        </StaggerItem>
 
-        <label className="block text-sm font-medium text-foreground">
+        <StaggerItem className="block text-sm font-medium text-foreground">
           Username
           <input
             type="text"
@@ -169,9 +170,9 @@ export default function SignUpForm({ onSuccess }: Props) {
             onChange={handleChange}
           />
           {fieldErrors.username && <span className="mt-1 block text-xs text-red-500 font-medium">{fieldErrors.username}</span>}
-        </label>
+        </StaggerItem>
 
-        <label className="block text-sm font-medium text-foreground">
+        <StaggerItem className="block text-sm font-medium text-foreground">
           Email
           <input
             type="email"
@@ -182,9 +183,9 @@ export default function SignUpForm({ onSuccess }: Props) {
             onChange={handleChange}
           />
           {fieldErrors.email && <span className="mt-1 block text-xs text-red-500 font-medium">{fieldErrors.email}</span>}
-        </label>
+        </StaggerItem>
 
-        <label className="block text-sm font-medium text-foreground">
+        <StaggerItem className="block text-sm font-medium text-foreground">
           Date of birth
           <input
             type="date"
@@ -194,9 +195,9 @@ export default function SignUpForm({ onSuccess }: Props) {
             onChange={handleChange}
           />
           {fieldErrors.date_of_birth && <span className="mt-1 block text-xs text-red-500 font-medium">{fieldErrors.date_of_birth}</span>}
-        </label>
+        </StaggerItem>
 
-        <label className="block text-sm font-medium text-foreground relative">
+        <StaggerItem className="block text-sm font-medium text-foreground relative">
           Password
           <div className="relative">
             <input
@@ -216,9 +217,9 @@ export default function SignUpForm({ onSuccess }: Props) {
             </button>
           </div>
           {fieldErrors.password && <span className="mt-1 block text-xs text-red-500 font-medium">{fieldErrors.password}</span>}
-        </label>
+        </StaggerItem>
 
-        <label className="block text-sm font-medium text-foreground relative">
+        <StaggerItem className="block text-sm font-medium text-foreground relative">
           Confirm password
           <div className="relative">
             <input
@@ -238,9 +239,10 @@ export default function SignUpForm({ onSuccess }: Props) {
             </button>
           </div>
           {fieldErrors.confirm_password && <span className="mt-1 block text-xs text-red-500 font-medium">{fieldErrors.confirm_password}</span>}
-        </label>
+        </StaggerItem>
 
-        <Button
+        <StaggerItem>
+          <Button
           type="submit"
           disabled={isSubmitting}
           isLoading={isSubmitting}
@@ -248,14 +250,16 @@ export default function SignUpForm({ onSuccess }: Props) {
           variant="primary"
         >
           {isSubmitting ? 'Creating account...' : 'Create account'}
-        </Button>
+          </Button>
+        </StaggerItem>
 
-        <div className="relative flex items-center justify-center text-xs uppercase tracking-[0.3em] text-slate-400 mt-4 mb-4">
+        <StaggerItem className="relative flex items-center justify-center text-xs uppercase tracking-[0.3em] text-slate-400 mt-4 mb-4">
           <span className="absolute left-0 right-0 top-1/2 h-px bg-slate-200 dark:bg-slate-800" />
           <span className="relative bg-white/80 dark:bg-black/80 backdrop-blur-sm px-3 rounded-full">or</span>
-        </div>
+        </StaggerItem>
 
-        <Button
+        <StaggerItem>
+          <Button
           type="button"
           onClick={() => handleGoogleLogin()}
           disabled={isSubmitting}
@@ -264,8 +268,9 @@ export default function SignUpForm({ onSuccess }: Props) {
           leftIcon={<GoogleIcon />}
         >
           Sign up with Google
-        </Button>
-      </form>
+          </Button>
+        </StaggerItem>
+      </StaggerContainer>
     </>
   );
 }

@@ -20,7 +20,7 @@ export default function Toast({ message, isVisible, type = 'success', onClose }:
     if (isVisible) {
       const timer = setTimeout(() => {
         onClose();
-      }, 5000); // 5 seconds for errors might be better to read
+      }, 5000); 
       return () => clearTimeout(timer);
     }
   }, [isVisible, onClose]);

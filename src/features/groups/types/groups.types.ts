@@ -6,6 +6,8 @@ export interface Group {
   created_by: string;
   created_at: string;
   updated_at: string;
+  instructor?: string;
+  members_count?: number;
 }
 
 export interface GroupMember {

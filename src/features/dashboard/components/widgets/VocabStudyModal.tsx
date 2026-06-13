@@ -21,7 +21,7 @@ interface StudyCard {
 interface VocabStudyModalProps {
   isOpen: boolean;
   onClose: () => void;
-  initialCardId?: string; // optional: start from a specific card
+  initialCardId?: string;
 }
 
 export function VocabStudyModal({ isOpen, onClose, initialCardId }: VocabStudyModalProps) {
@@ -33,14 +33,15 @@ export function VocabStudyModal({ isOpen, onClose, initialCardId }: VocabStudyMo
 
   useEffect(() => {
     if (!isOpen) return;
-    setLoading(true);
-    setResults([]);
-    setIsFlipped(false);
+    setTimeout(() => {
+      setLoading(true);
+      setResults([]);
+      setIsFlipped(false);
+    }, 0);
 
     dashboardService.getVocabularyStudyCards()
       .then(res => {
-        const data: StudyCard[] = res.data || [];
-        // If we have a specific starting card, reorder so it comes first
+        const data: StudyCard[] = (res as { data?: StudyCard[] }).data ?? [];
         if (initialCardId) {
           const idx = data.findIndex(c => c.id === initialCardId);
           if (idx > 0) {
@@ -68,20 +69,15 @@ export function VocabStudyModal({ isOpen, onClose, initialCardId }: VocabStudyMo
 
     setResults(prev => [...prev, { id: currentCard.id, result }]);
 
-    // Track quest progress for studying flashcards
     dashboardService.trackQuestProgress('practice_words', 1)
       .then(() => window.dispatchEvent(new Event('questUpdate')))
       .catch(console.error);
 
-    // Update progress in DB only for teacher flashcards
     if (currentCard.source === 'flashcard') {
-      dashboardService.toggleVocabularyStar; // fire-and-forget: we just use existing updateProgress logic
-      // We'll track via flashcard service updateProgress if available
       try {
         const { flashcardService } = await import('@/features/flashcard/services/flashcard.service');
         await flashcardService.updateProgress(currentCard.id, result);
-      } catch (e) {
-        // Non-critical
+      } catch {
       }
     }
 
@@ -120,7 +116,7 @@ export function VocabStudyModal({ isOpen, onClose, initialCardId }: VocabStudyMo
             .rotate-y-180 { transform: rotateY(180deg); }
           ` }} />
 
-          {/* Close */}
+          {}
           <button
             onClick={onClose}
             className="absolute top-6 right-6 z-10 p-3 bg-white/10 hover:bg-white/20 text-white rounded-full transition-colors"
@@ -129,7 +125,7 @@ export function VocabStudyModal({ isOpen, onClose, initialCardId }: VocabStudyMo
           </button>
 
           <div className="w-full max-w-2xl flex flex-col items-center">
-            {/* Header */}
+            {}
             <div className="w-full mb-6">
               <div className="flex justify-between items-center text-white/70 text-sm font-bold mb-3">
                 <span className="flex items-center gap-2">
@@ -148,7 +144,7 @@ export function VocabStudyModal({ isOpen, onClose, initialCardId }: VocabStudyMo
               </div>
             </div>
 
-            {/* States */}
+            {}
             {loading ? (
               <div className="flex flex-col items-center gap-4 text-white">
                 <div className="w-16 h-16 border-4 border-emerald-400 border-t-transparent rounded-full animate-spin" />
@@ -199,7 +195,7 @@ export function VocabStudyModal({ isOpen, onClose, initialCardId }: VocabStudyMo
               </motion.div>
             ) : (
               <div className="w-full max-w-md">
-                {/* Source badge */}
+                {}
                 <div className="flex justify-center mb-4">
                   <span className={`text-xs font-bold uppercase px-3 py-1 rounded-full ${
                     currentCard.source === 'custom'
@@ -214,13 +210,13 @@ export function VocabStudyModal({ isOpen, onClose, initialCardId }: VocabStudyMo
                   </span>
                 </div>
 
-                {/* Flashcard */}
+                {}
                 <div className="perspective-1000">
                   <div
                     className={`relative w-full h-[380px] transition-transform duration-500 preserve-3d cursor-pointer ${isFlipped ? 'rotate-y-180' : ''}`}
                     onClick={() => setIsFlipped(!isFlipped)}
                   >
-                    {/* Front - Word */}
+                    {}
                     <div className="absolute inset-0 backface-hidden bg-white dark:bg-slate-800 rounded-3xl p-8 shadow-2xl flex flex-col items-center justify-center border-b-[6px] border-slate-200 dark:border-slate-700">
                       {currentCard.audioUrl && (
                         <button
@@ -241,7 +237,7 @@ export function VocabStudyModal({ isOpen, onClose, initialCardId }: VocabStudyMo
                       </p>
                     </div>
 
-                    {/* Back - Meaning */}
+                    {}
                     <div className="absolute inset-0 backface-hidden bg-gradient-to-br from-indigo-600 to-violet-600 rounded-3xl p-8 shadow-2xl flex flex-col items-center justify-center text-white rotate-y-180 border-b-[6px] border-indigo-800">
                       <h3 className="text-3xl font-bold mb-4 text-center leading-tight">
                         {currentCard.meaning}
@@ -254,14 +250,14 @@ export function VocabStudyModal({ isOpen, onClose, initialCardId }: VocabStudyMo
                       )}
                       {currentCard.exampleSentence && (
                         <div className="bg-white/10 border border-white/10 p-4 rounded-2xl w-full text-center italic text-indigo-100 text-base leading-relaxed">
-                          "{currentCard.exampleSentence}"
+                          &quot;{currentCard.exampleSentence}&quot;
                         </div>
                       )}
                     </div>
                   </div>
                 </div>
 
-                {/* Action buttons */}
+                {}
                 <div className={`flex gap-4 mt-6 transition-opacity duration-300 ${isFlipped ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
                   <button
                     onClick={() => handleNext('learning')}

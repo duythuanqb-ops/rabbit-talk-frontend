@@ -36,13 +36,7 @@ interface DashboardStats {
   dayStreak?: number;
 }
 
-const mockLeaderboard = [
-  { id: '1', name: 'Leo Chen', points: 2450, rank: 1 },
-  { id: '2', name: 'Sarah K.', points: 2310, rank: 2 },
-  { id: '3', name: 'Ben W.', points: 2240, rank: 3 },
-  { id: '4', name: 'Chloe M.', points: 2195, rank: 4 },
-  { id: '5', name: 'Alex R.', points: 2100, rank: 5 },
-];
+
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -166,7 +160,7 @@ export default function DashboardPage() {
             <motion.div variants={itemVariants}>
               <Leaderboard 
                 title={role === 'student' ? "Friend Leaderboard" : "Top Students"} 
-                items={leaderboard.length > 0 ? leaderboard : mockLeaderboard} 
+                items={leaderboard} 
               />
             </motion.div>
             

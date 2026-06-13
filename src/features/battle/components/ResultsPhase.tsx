@@ -1,5 +1,4 @@
 import { Trophy, RotateCcw, ChevronRight } from 'lucide-react';
-import { cn } from '@/shared/utils/cn';
 import { Player } from '../types/battle.types';
 
 export function ResultsPhase({ players, groupName, onRestart }: { players: Player[]; groupName: string; onRestart: () => void; }) {
@@ -20,9 +19,9 @@ export function ResultsPhase({ players, groupName, onRestart }: { players: Playe
         <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-amber-50 to-white z-0"></div>
         
         <div className="relative z-10 p-8 sm:p-12">
-          {/* Podium */}
+          {}
           <div className="flex items-end justify-center gap-2 sm:gap-6 mb-12 h-64">
-            {/* 2nd Place */}
+            {}
             {top3[1] && (
               <div className="flex flex-col items-center animate-in slide-in-from-bottom-8 duration-500 delay-150">
                 <div className="w-16 h-16 rounded-full border-4 border-slate-200 bg-white flex items-center justify-center font-bold text-xl text-slate-700 shadow-md relative z-10 bg-gradient-to-b from-slate-50 to-slate-200">
@@ -36,7 +35,7 @@ export function ResultsPhase({ players, groupName, onRestart }: { players: Playe
               </div>
             )}
             
-            {/* 1st Place */}
+            {}
             {top3[0] && (
               <div className="flex flex-col items-center animate-in slide-in-from-bottom-12 duration-700 delay-300">
                 <div className="w-20 h-20 rounded-full border-4 border-amber-300 bg-white flex items-center justify-center font-bold text-2xl text-amber-600 shadow-lg relative z-10 bg-gradient-to-b from-amber-50 to-amber-100">
@@ -51,7 +50,7 @@ export function ResultsPhase({ players, groupName, onRestart }: { players: Playe
               </div>
             )}
 
-            {/* 3rd Place */}
+            {}
             {top3[2] && (
               <div className="flex flex-col items-center animate-in slide-in-from-bottom-4 duration-500">
                 <div className="w-16 h-16 rounded-full border-4 border-amber-800/30 bg-white flex items-center justify-center font-bold text-xl text-amber-900/60 shadow-md relative z-10 bg-gradient-to-b from-amber-50/50 to-amber-100/50">

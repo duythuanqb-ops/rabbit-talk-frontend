@@ -34,7 +34,7 @@ export default function SettingsPage() {
         </motion.div>
 
         <div className="flex flex-col md:flex-row gap-8">
-          {/* Sidebar Tabs */}
+          {}
           <motion.div variants={itemVariants} className="w-full md:w-64 flex-shrink-0">
             <nav className="flex flex-col space-y-1">
               {tabs.map((tab) => {
@@ -62,7 +62,7 @@ export default function SettingsPage() {
             </nav>
           </motion.div>
 
-          {/* Content Area */}
+          {}
           <motion.div variants={itemVariants} className="flex-1 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-6 md:p-8 overflow-hidden">
             <AnimatePresence mode="wait">
               <motion.div

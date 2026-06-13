@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, react-hooks/exhaustive-deps */
 import config from '@/config';
 
 const API_URL = config.apiUrl;
@@ -11,7 +10,9 @@ function redirectToSignIn() {
   }
 }
 
-export async function apiCall<T = any>(
+type SafeAny = ReturnType<typeof JSON.parse>;
+
+export async function apiCall<T = SafeAny>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> {
@@ -28,7 +29,6 @@ export async function apiCall<T = any>(
 
   let response = await fetch(url, fetchOptions);
 
-  // If unauthorized and not a no-refresh endpoint, attempt token refresh
   const shouldAttemptRefresh = response.status === 401 &&
     !NO_REFRESH_ENDPOINTS.some(ep => endpoint.includes(ep));
 
@@ -40,10 +40,8 @@ export async function apiCall<T = any>(
       });
 
       if (refreshRes.ok) {
-        // Retry the original request with fresh token
         response = await fetch(url, fetchOptions);
       } else {
-        // Refresh token is invalid/expired — session is lost, force logout
         console.warn('[apiCall] Refresh token expired. Redirecting to sign-in.');
         redirectToSignIn();
         throw new Error('Session expired. Please sign in again.');

@@ -1,12 +1,12 @@
 import { apiCall } from '@/shared/api/client';
 
 export const flashcardService = {
-  // Get all sets for the current user
+  
   getMySets: async () => {
     return apiCall('/flashcard-sets', { method: 'GET' });
   },
 
-  // Create a new flashcard set
+  
   createSet: async (groupId: string, title: string, description: string) => {
     return apiCall(`/groups/${groupId}/flashcard-sets`, {
       method: 'POST',
@@ -14,12 +14,12 @@ export const flashcardService = {
     });
   },
 
-  // Get all cards for a specific set
+  
   getCardsForSet: async (setId: string) => {
     return apiCall(`/flashcard-sets/${setId}/cards`, { method: 'GET' });
   },
 
-  // Add a new card with AI autogeneration
+  
   addCard: async (setId: string, word: string) => {
     return apiCall(`/flashcard-sets/${setId}/cards`, {
       method: 'POST',
@@ -27,7 +27,7 @@ export const flashcardService = {
     });
   },
 
-  // Update study progress for a card
+  
   updateProgress: async (cardId: string, status: 'learning' | 'mastered') => {
     return apiCall(`/flashcards/${cardId}/progress`, {
       method: 'PATCH',
@@ -35,7 +35,7 @@ export const flashcardService = {
     });
   },
 
-  // Update a card details manually
+  
   updateCard: async (cardId: string, data: { word: string; phonetic?: string; part_of_speech?: string; meaning?: string; synonyms?: string; example_sentence?: string }) => {
     return apiCall(`/flashcards/${cardId}`, {
       method: 'PUT',
@@ -43,14 +43,14 @@ export const flashcardService = {
     });
   },
 
-  // Delete a card
+  
   deleteCard: async (cardId: string) => {
     return apiCall(`/flashcards/${cardId}`, {
       method: 'DELETE',
     });
   },
 
-  // Update a flashcard set title and description
+  
   updateSet: async (setId: string, title: string, description: string) => {
     return apiCall(`/flashcard-sets/${setId}`, {
       method: 'PUT',
@@ -58,14 +58,14 @@ export const flashcardService = {
     });
   },
 
-  // Delete an entire flashcard set
+  
   deleteSet: async (setId: string) => {
     return apiCall(`/flashcard-sets/${setId}`, {
       method: 'DELETE',
     });
   },
 
-  // Toggle publish/assign status for a vocabulary set
+  
   updatePublishStatus: async (setId: string, isPublished: boolean) => {
     return apiCall(`/flashcard-sets/${setId}/publish`, {
       method: 'PATCH',
@@ -73,7 +73,7 @@ export const flashcardService = {
     });
   },
 
-  // Parse raw OCR text to extract vocabulary words using backend AI
+  
   parseOcrText: async (text: string): Promise<string[]> => {
     return apiCall('/flashcard-sets/parse-ocr', {
       method: 'POST',
@@ -81,7 +81,7 @@ export const flashcardService = {
     });
   },
 
-  // Parse image directly using Gemini Vision API (bypasses Tesseract OCR for higher accuracy)
+  
   parseImage: async (file: File): Promise<string[]> => {
     const formData = new FormData();
     formData.append('image', file);

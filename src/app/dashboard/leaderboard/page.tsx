@@ -5,32 +5,9 @@ import { Trophy, Star, Flame, Loader2 } from 'lucide-react';
 import { dashboardService } from '@/features/dashboard/services/dashboard.service';
 import { motion } from 'framer-motion';
 import { containerVariants, itemVariants, scaleUpVariants } from '@/shared/utils/motion';
+import Image from 'next/image';
 
-// ─── Mock Data (replace with API calls) ───────────────────────────────────────
-const TOP3_USERS = [
-  { rank: 2, name: 'Sarah K.', points: 2310, avatar: 'SK', color: 'bg-slate-300 text-slate-800' },
-  { rank: 1, name: 'Leo Chen', points: 2450, avatar: 'LC', color: 'bg-yellow-400 text-yellow-900' },
-  { rank: 3, name: 'Ben W.',   points: 2240, avatar: 'BW', color: 'bg-orange-400 text-orange-900' },
-];
 
-const REST_USERS = [
-  { rank: 4, name: 'Chloe M.', points: 2195, streak: 12 },
-  { rank: 5, name: 'Alex R.',  points: 2100, streak: 5  },
-  { rank: 6, name: 'David L.', points: 1950, streak: 8  },
-  { rank: 7, name: 'Emma S.',  points: 1820, streak: 3  },
-  { rank: 8, name: 'James T.', points: 1750, streak: 2  },
-];
-
-const TOP3_FRIENDS = [
-  { rank: 2, name: 'Emma S.', points: 1820, avatar: 'ES', color: 'bg-slate-300 text-slate-800' },
-  { rank: 1, name: 'David L.', points: 1950, avatar: 'DL', color: 'bg-yellow-400 text-yellow-900' },
-  { rank: 3, name: 'James T.', points: 1750, avatar: 'JT', color: 'bg-orange-400 text-orange-900' },
-];
-
-const REST_FRIENDS = [
-  { rank: 4, name: 'Lucas P.', points: 1500, streak: 5 },
-  { rank: 5, name: 'Nina W.', points: 1400, streak: 2 },
-];
 
 
 const PODIUM_HEIGHT: Record<number, string> = {
@@ -39,37 +16,46 @@ const PODIUM_HEIGHT: Record<number, string> = {
   3: 'from-orange-400 to-orange-200 h-16 md:h-20',
 };
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
+interface LeaderboardUser {
+  rank: number;
+  name: string;
+  xp?: number;
+  points?: number;
+  avatar?: string;
+  streak?: number;
+}
+
+
 export default function LeaderboardPage() {
   const [activeTab, setActiveTab] = useState<'Global' | 'Friends'>('Global');
   const [loading, setLoading] = useState(true);
-  const [users, setUsers] = useState<any[]>([]);
+  const [users, setUsers] = useState<LeaderboardUser[]>([]);
 
   useEffect(() => {
-    setLoading(true);
-    dashboardService.getLeaderboard(activeTab.toLowerCase() as any)
+    setTimeout(() => setLoading(true), 0);
+    dashboardService.getLeaderboard(activeTab.toLowerCase() as 'global' | 'friends')
       .then(res => {
-        const data = res.data || res;
+        const data = (res as { data?: LeaderboardUser[] }).data ?? (res as LeaderboardUser[]);
         setUsers(data);
       })
       .catch(console.error)
       .finally(() => setLoading(false));
   }, [activeTab]);
 
-  const top3 = users.slice(0, 3).map((u: any) => ({
+  const top3 = users.slice(0, 3).map((u: LeaderboardUser) => ({
     rank: u.rank,
     name: u.name,
     points: u.xp || u.points,
     avatar: u.avatar || u.name.substring(0, 2).toUpperCase(),
     color: u.rank === 1 ? 'bg-yellow-400 text-yellow-900' : u.rank === 2 ? 'bg-slate-300 text-slate-800' : 'bg-orange-400 text-orange-900'
   })).sort((a, b) => {
-    // Reorder for podium: 2nd, 1st, 3rd
+    
     if (a.rank === 2 && b.rank === 1) return -1;
     if (a.rank === 1 && b.rank === 2) return 1;
     if (a.rank === 3) return 1;
     return 0;
   });
-  const rest = users.slice(3).map((u: any) => ({
+  const rest = users.slice(3).map((u: LeaderboardUser) => ({
     rank: u.rank,
     name: u.name,
     points: u.xp || u.points,
@@ -80,7 +66,7 @@ export default function LeaderboardPage() {
     <>
       <motion.div variants={containerVariants} initial="hidden" animate="show">
 
-        {/* Header */}
+        {}
         <motion.div
           variants={itemVariants}
           className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-8"
@@ -95,7 +81,7 @@ export default function LeaderboardPage() {
             </p>
           </div>
 
-          {/* Scope toggle */}
+          {}
           <div className="flex bg-slate-200/50 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700 w-full md:w-auto overflow-hidden">
             <button 
               onClick={() => setActiveTab('Global')}
@@ -138,7 +124,7 @@ export default function LeaderboardPage() {
 
                 <div className={`w-12 h-12 md:w-16 md:h-16 rounded-full flex items-center justify-center font-bold text-sm md:text-lg border-4 border-white dark:border-slate-800 shadow-xl z-10 ${user.color} overflow-hidden`}>
                   {user.avatar.length > 2 && user.avatar.startsWith('http') ? (
-                    <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
+                    <Image unoptimized src={user.avatar} alt={user.name} width={64} height={64} className="w-full h-full object-cover" />
                   ) : (
                     user.avatar
                   )}
@@ -167,7 +153,7 @@ export default function LeaderboardPage() {
             ))}
           </div>
 
-          {/* Rankings list */}
+          {}
           <motion.div
             variants={itemVariants}
             className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden"

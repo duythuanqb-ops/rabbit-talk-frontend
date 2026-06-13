@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -23,18 +22,19 @@ export default function AuthView() {
     return () => window.removeEventListener('resize', checkIsDesktop);
   }, []);
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+  const [prevIsSignUpPath, setPrevIsSignUpPath] = useState(isSignUpPath);
+  if (isSignUpPath !== prevIsSignUpPath) {
+    setPrevIsSignUpPath(isSignUpPath);
     setPanelIsSignUp(isSignUpPath);
     setFormIsSignUp(isSignUpPath);
-  }, [isSignUpPath]);
+  }
 
   const switchTo = (toSignUp: boolean) => {
     const newPath = toSignUp ? '/sign-up' : '/sign-in';
     setPanelIsSignUp(toSignUp);
-    // Change URL
+    
     router.push(newPath, { scroll: false });
-    // Switch the form immediately; AnimatePresence handles the transition
+    
     setFormIsSignUp(toSignUp);
   };
 
@@ -46,7 +46,7 @@ export default function AuthView() {
 
   return (
     <main className="relative min-h-screen lg:h-screen flex flex-col lg:block overflow-x-hidden bg-gradient-to-br from-emerald-50 to-teal-100 dark:from-neutral-950 dark:to-emerald-950/20 text-foreground selection:bg-primary/20 selection:text-primary">
-      {/* ========== MOBILE HEADER (< lg) ========== */}
+      {}
       <div className="lg:hidden flex flex-col items-center px-6 pt-10 pb-6 z-10 relative">
         <motion.img
           initial={{ scale: 0.8, opacity: 0, y: -20 }}
@@ -73,7 +73,7 @@ export default function AuthView() {
         </motion.h1>
       </div>
 
-      {/* ========== DESKTOP BRANDING PANEL (lg+) ========== */}
+      {}
       <motion.section
         className="hidden lg:flex absolute top-0 h-full flex-col justify-between overflow-hidden bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-700 dark:from-emerald-900 dark:via-[#050505] dark:to-[#050505] px-16 py-14 shadow-2xl"
         initial={false}
@@ -84,11 +84,11 @@ export default function AuthView() {
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         style={{ zIndex: 10 }}
       >
-        {/* Subtle Ambient Glow Orbs */}
+        {}
         <div className="absolute -top-[20%] -left-[10%] h-[600px] w-[600px] rounded-full bg-emerald-300/30 dark:bg-emerald-500/10 blur-[120px] mix-blend-screen animate-float" />
         <div className="absolute top-[40%] -right-[20%] h-[500px] w-[500px] rounded-full bg-lime-300/20 dark:bg-lime-500/5 blur-[100px] mix-blend-screen animate-float" style={{ animationDelay: '-3s' }} />
 
-        {/* Ethereal Glass Container for Content */}
+        {}
         <div className="relative z-10 glass rounded-3xl p-10 border border-white/20 shadow-2xl backdrop-blur-md bg-white/10 dark:bg-black/20">
           <motion.p 
             initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}
@@ -122,7 +122,7 @@ export default function AuthView() {
           className="relative z-10 flex flex-1 items-end justify-center pb-4 mt-12"
         >
           <div className="relative group">
-            {/* Mascot glow effect */}
+            {}
             <div className="absolute inset-0 bg-white/20 blur-3xl rounded-full scale-50 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
             <motion.img
               animate={{ y: [0, -15, 0] }}
@@ -143,7 +143,7 @@ export default function AuthView() {
         </motion.p>
       </motion.section>
 
-      {/* ========== SHARED FORM PANEL ========== */}
+      {}
       <motion.section
         className="flex-1 flex flex-col items-center lg:absolute lg:top-0 lg:h-full lg:justify-center overflow-y-auto bg-white/70 dark:bg-black/60 backdrop-blur-lg px-6 pb-10 lg:px-12 lg:py-12 z-10 relative w-full lg:w-[45%] shadow-[-10px_0_30px_rgba(0,0,0,0.1)] dark:shadow-[-10px_0_30px_rgba(0,0,0,0.5)] border-l border-white/20 dark:border-white/5"
         initial={false}

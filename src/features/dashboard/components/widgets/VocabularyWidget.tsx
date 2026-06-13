@@ -4,10 +4,21 @@ import { BookOpen, Plus, Star, X, Pencil, Trash2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { dashboardService } from '../../services/dashboard.service';
 import { motion, AnimatePresence } from 'framer-motion';
+import { StaggerContainer, StaggerItem } from '@/shared/components/animations/StaggerContainer';
 import { VocabStudyModal } from './VocabStudyModal';
 
+export interface VocabItem {
+  id: string;
+  word: string;
+  meaning?: string;
+  setTitle?: string;
+  status?: string;
+  isStarred?: boolean;
+  source?: 'custom' | 'lesson';
+}
+
 export function VocabularyWidget() {
-  const [vocab, setVocab] = useState<any[]>([]);
+  const [vocab, setVocab] = useState<VocabItem[]>([]);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showStudyModal, setShowStudyModal] = useState(false);
   const [studyStartCardId, setStudyStartCardId] = useState<string | undefined>(undefined);
@@ -15,29 +26,30 @@ export function VocabularyWidget() {
   const [newMeaning, setNewMeaning] = useState('');
   const [isAdding, setIsAdding] = useState(false);
   
-  // Edit state
+  
   const [showEditModal, setShowEditModal] = useState(false);
   const [editWordId, setEditWordId] = useState('');
   const [editWordStr, setEditWordStr] = useState('');
   const [editMeaningStr, setEditMeaningStr] = useState('');
   const [isEditing, setIsEditing] = useState(false);
 
+  const loadVocab = () => {
+    dashboardService.getStudentVocabulary().then((res) => setVocab((res as { data?: VocabItem[] }).data || [])).catch(console.error);
+  };
+
   useEffect(() => {
     loadVocab();
   }, []);
 
-  const loadVocab = () => {
-    dashboardService.getStudentVocabulary().then(res => setVocab(res.data || [])).catch(console.error);
-  };
 
-  const handleToggleStar = async (e: React.MouseEvent, item: any) => {
+  const handleToggleStar = async (e: React.MouseEvent, item: VocabItem) => {
     e.stopPropagation();
-    if (item.source === 'custom') return; // can't star custom words
-    // Optimistic update
+    if (item.source === 'custom') return; 
+    
     setVocab(prev => prev.map(v => v.id === item.id ? { ...v, isStarred: !v.isStarred } : v));
     try {
       await dashboardService.toggleVocabularyStar(item.id);
-      // reload to reflect server state
+      
       loadVocab();
     } catch (err) {
       console.error(err);
@@ -55,7 +67,7 @@ export function VocabularyWidget() {
       setShowAddModal(false);
       loadVocab();
       
-      // Track quest progress for adding custom words
+      
       await dashboardService.trackQuestProgress('add_custom_words', 1);
       window.dispatchEvent(new Event('questUpdate'));
     } catch (err) {
@@ -91,7 +103,7 @@ export function VocabularyWidget() {
     }
   };
 
-  const openEditModal = (e: React.MouseEvent, item: any) => {
+  const openEditModal = (e: React.MouseEvent, item: VocabItem) => {
     e.stopPropagation();
     setEditWordId(item.id);
     setEditWordStr(item.word);
@@ -116,26 +128,23 @@ export function VocabularyWidget() {
           </button>
         </div>
 
-        {/* Description */}
+        {}
         <p className="text-xs text-slate-400 dark:text-slate-500 mb-4">
           Words you added · Starred words from lessons
         </p>
 
-        <div className="space-y-2 flex-1 overflow-y-auto">
+        <StaggerContainer className="space-y-2 flex-1 overflow-y-auto">
           {vocab.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-8 text-center bg-slate-50 dark:bg-slate-800/30 rounded-xl border border-dashed border-slate-200 dark:border-slate-700">
+            <StaggerItem className="flex flex-col items-center justify-center py-8 text-center bg-slate-50 dark:bg-slate-800/30 rounded-xl border border-dashed border-slate-200 dark:border-slate-700">
               <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-500 rounded-full flex items-center justify-center mb-3">
                 <BookOpen size={24} />
               </div>
               <p className="font-bold text-slate-700 dark:text-slate-300">No words yet</p>
               <p className="text-xs text-slate-500 mt-1">Add a word or star words from lessons!</p>
-            </div>
+            </StaggerItem>
           )}
-          {vocab.map((item, index) => (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.04 }}
+          {vocab.map((item) => (
+            <StaggerItem
               whileHover={{ scale: 1.01 }}
               key={item.id || item.word}
               onClick={() => { setStudyStartCardId(item.id); setShowStudyModal(true); }}
@@ -194,9 +203,9 @@ export function VocabularyWidget() {
                   </div>
                 )}
               </div>
-            </motion.div>
+            </StaggerItem>
           ))}
-        </div>
+        </StaggerContainer>
 
         <button
           onClick={() => { setStudyStartCardId(undefined); setShowStudyModal(true); }}
@@ -207,7 +216,7 @@ export function VocabularyWidget() {
         </button>
       </div>
 
-      {/* Add Word Modal */}
+      {}
       <AnimatePresence>
         {showAddModal && (
           <motion.div
@@ -279,7 +288,7 @@ export function VocabularyWidget() {
         )}
       </AnimatePresence>
 
-      {/* Edit Word Modal */}
+      {}
       <AnimatePresence>
         {showEditModal && (
           <motion.div
@@ -345,7 +354,7 @@ export function VocabularyWidget() {
         )}
       </AnimatePresence>
 
-      {/* Study Modal */}
+      {}
       <VocabStudyModal
         isOpen={showStudyModal}
         onClose={() => setShowStudyModal(false)}

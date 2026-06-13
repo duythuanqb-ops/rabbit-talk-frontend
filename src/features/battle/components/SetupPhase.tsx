@@ -2,9 +2,9 @@ import { useState } from 'react';
 import { Swords, Timer, Zap, Trash2, Plus, Play } from 'lucide-react';
 import { cn } from '@/shared/utils/cn';
 import { WordItem } from '../types/battle.types';
-import { defaultWords, mockPlayers } from '../constants/battle.constants';
+import Image from 'next/image';
 
-export function SetupPhase({ groupName, members = [], onStart }: { groupName: string; members?: any[]; onStart: (words: WordItem[], timeLimit: number) => void }) {
+export function SetupPhase({ groupName, members = [], onStart }: { groupName: string; members?: { uuid?: string; avatar_url?: string | null; first_name?: string; username?: string }[]; onStart: (words: WordItem[], timeLimit: number) => void }) {
   const [words, setWords] = useState<WordItem[]>([]);
   const [newWord, setNewWord] = useState('');
   const [newHint, setNewHint] = useState('');
@@ -134,7 +134,7 @@ export function SetupPhase({ groupName, members = [], onStart }: { groupName: st
                     {members.slice(0, 5).map((p, i) => (
                       <div key={p.uuid || i} className="w-8 h-8 rounded-full border-2 border-white bg-indigo-100 flex items-center justify-center text-xs font-bold text-indigo-700 shadow-sm overflow-hidden">
                         {p.avatar_url ? (
-                          <img src={p.avatar_url} alt={p.first_name} className="w-full h-full object-cover" />
+                          <Image unoptimized src={p.avatar_url} alt={p.first_name || 'avatar'} width={32} height={32} className="w-full h-full object-cover" />
                         ) : (
                           (p.first_name?.[0] || p.username?.[0] || 'U').toUpperCase()
                         )}
