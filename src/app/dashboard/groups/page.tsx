@@ -1,36 +1,42 @@
 'use client';
 
 import { TeacherGroupManager } from '@/features/dashboard/components';
-import { Users, GraduationCap, Loader2, Calendar, BookOpen, User, FileText } from 'lucide-react';
+import { Users, GraduationCap, Loader2 } from 'lucide-react';
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { getProfile } from '@/features/auth/services/auth.service';
 import { groupsService } from '@/features/groups/services/groups.service';
 import { motion } from 'framer-motion';
 import { containerVariants, itemVariants } from '@/shared/utils/motion';
 
+interface StudentGroup {
+  id: string;
+  title: string;
+  instructor?: string;
+  avatar?: string | null;
+  members_count?: number;
+  created_at: string;
+}
+
 export default function GroupsPage() {
   const router = useRouter();
   const [role, setRole] = useState<'student' | 'teacher' | null>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [groups, setGroups] = useState<any[]>([]);
+  const [groups, setGroups] = useState<StudentGroup[]>([]);
   const [loading, setLoading] = useState(true);
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 
   useEffect(() => {
     getProfile()
       .then((res) => {
-        const user = res.data || res;
+        const user = (res as { data?: { role?: string } }).data ?? (res as { role?: string });
         if (user.role === 'admin') {
           router.push('/dashboard/admin');
         } else {
-          setRole(user.role || 'student');
+          setRole((user.role as 'student' | 'teacher') || 'student');
           if (user.role === 'student') {
             groupsService.getGroups()
               .then((groupRes) => {
-                const groupData = groupRes.data || groupRes || [];
-                setGroups(Array.isArray(groupData) ? groupData : []);
+                setGroups(groupRes.data ?? []);
                 setLoading(false);
               })
               .catch((err) => {
@@ -48,6 +54,7 @@ export default function GroupsPage() {
         setLoading(false);
       });
   }, [router]);
+
 
 
 
@@ -125,8 +132,8 @@ export default function GroupsPage() {
                                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">by {g.instructor || 'Teacher'}</p>
                              </div>
                              <div className="p-2 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-700">
-                               {g.avatar ? (
-                                 <img src={g.avatar} alt={g.title} className="w-8 h-8 rounded-lg object-cover" />
+                                {g.avatar ? (
+                                  <Image src={g.avatar} alt={g.title} width={32} height={32} className="w-8 h-8 rounded-lg object-cover" />
                                ) : (
                                  <Users size={18} className={`text-${color}-500`} />
                                )}

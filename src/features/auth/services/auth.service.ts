@@ -57,8 +57,7 @@ export async function uploadAvatar(file: File) {
 
   return apiCall('/auth/avatar', {
     method: 'POST',
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    body: formData as any,
+    body: formData,
   });
 }
 
@@ -74,8 +73,7 @@ export async function uploadCover(file: File) {
 
   return apiCall('/auth/cover', {
     method: 'POST',
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    body: formData as any,
+    body: formData,
   });
 }
 

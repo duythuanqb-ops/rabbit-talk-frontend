@@ -1,11 +1,20 @@
-import { CheckCircle2, Circle } from 'lucide-react';
+import { CheckCircle2 } from 'lucide-react';
 import { cn } from '@/shared/utils/cn';
 import { useState, useEffect } from 'react';
 import { dashboardService } from '../../services/dashboard.service';
 import toast from 'react-hot-toast';
+import { StaggerContainer, StaggerItem } from '@/shared/components/animations/StaggerContainer';
+import { FadeIn } from '@/shared/components/animations/FadeIn';
+
+export interface AttendanceRecord {
+  date: string;
+  isPresent: boolean;
+  isActiveStreak: boolean;
+  isToday: boolean;
+}
 
 export function AttendanceTracker() {
-  const [attendance, setAttendance] = useState<any[]>([]);
+  const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
   const [currentStreak, setCurrentStreak] = useState(0);
   const [currentMonth, setCurrentMonth] = useState('');
   const [paddingStartDays, setPaddingStartDays] = useState<number[]>([]);
@@ -27,7 +36,7 @@ export function AttendanceTracker() {
     try {
       const res = await dashboardService.checkInStudent();
       if (res.data?.success || res.success) {
-        // Refresh attendance
+        
         const attendanceRes = await dashboardService.getStudentAttendance();
         setAttendance(attendanceRes.data.history || []);
         setCurrentStreak(attendanceRes.data.streak || 0);
@@ -46,7 +55,7 @@ export function AttendanceTracker() {
 
   return (
     <div className="double-bezel h-full">
-      <div className="double-bezel-inner bg-surface p-6 h-full flex flex-col hover:shadow-lg transition-fluid">
+      <FadeIn className="double-bezel-inner bg-surface p-6 h-full flex flex-col hover:shadow-lg transition-fluid">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h3 className="font-bold text-slate-900 dark:text-white text-lg">Daily Attendance</h3>
@@ -67,16 +76,16 @@ export function AttendanceTracker() {
           </div>
         ))}
       </div>
-      <div className="grid grid-cols-7 gap-1">
+      <StaggerContainer className="grid grid-cols-7 gap-1">
         {attendance.length > 0 && paddingStartDays.map((dayNum, i) => (
-          <div key={`empty-start-${i}`} className="flex flex-col items-center">
+          <StaggerItem key={`empty-start-${i}`} className="flex flex-col items-center">
             <div className="w-full h-8 md:h-10 rounded-lg flex items-center justify-center text-xs font-bold text-slate-400/40 bg-slate-50/50 dark:bg-slate-800/30 opacity-60 transition-fluid">
               {dayNum}
             </div>
-          </div>
+          </StaggerItem>
         ))}
         {attendance.map((day, index) => (
-          <div key={day.date || index} className="flex flex-col items-center">
+          <StaggerItem key={day.date || index} className="flex flex-col items-center">
             <div className={cn(
               "w-full h-8 md:h-10 rounded-lg flex items-center justify-center transition-fluid text-xs font-bold relative",
               day.isPresent && day.isActiveStreak
@@ -94,16 +103,16 @@ export function AttendanceTracker() {
                 </div>
               )}
             </div>
-          </div>
+          </StaggerItem>
         ))}
         {attendance.length > 0 && paddingEndDays.map((dayNum, i) => (
-          <div key={`empty-end-${i}`} className="flex flex-col items-center">
+          <StaggerItem key={`empty-end-${i}`} className="flex flex-col items-center">
             <div className="w-full h-8 md:h-10 rounded-lg flex items-center justify-center text-xs font-bold text-slate-400/40 bg-slate-50/50 dark:bg-slate-800/30 opacity-60 transition-fluid">
               {dayNum}
             </div>
-          </div>
+          </StaggerItem>
         ))}
-      </div>
+      </StaggerContainer>
 
       <div className="mt-4 p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl border border-emerald-100 dark:border-emerald-900/50 flex flex-col md:flex-row md:items-center justify-between gap-3">
         {attendance.find(d => d.isToday)?.isPresent ? (
@@ -129,7 +138,7 @@ export function AttendanceTracker() {
           </>
         )}
       </div>
-      </div>
+      </FadeIn>
     </div>
   );
 }

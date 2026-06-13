@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { Loader2, ArrowLeft, Mail, KeyRound, Lock, Eye, EyeOff } from 'lucide-react';
 import { forgotPassword, verifyForgotPasswordOtp, resetPassword } from '@/features/auth/services/auth.service';
 import toast from 'react-hot-toast';
@@ -31,9 +32,8 @@ export default function ForgotPasswordPage() {
         toast.success('Reset code sent to your email');
       }
       setStep(2);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to send reset code');
+    } catch (err: unknown) {
+      toast.error((err as Error).message || 'Failed to send reset code');
     } finally {
       setLoading(false);
     }
@@ -44,9 +44,8 @@ export default function ForgotPasswordPage() {
       setLoading(true);
       await forgotPassword(email, true);
       toast.success('A new reset code has been sent to your email');
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to resend code');
+    } catch (err: unknown) {
+      toast.error((err as Error).message || 'Failed to resend code');
     } finally {
       setLoading(false);
     }
@@ -61,9 +60,8 @@ export default function ForgotPasswordPage() {
       await verifyForgotPasswordOtp(email, otp);
       toast.success('Code verified successfully');
       setStep(3);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
-      toast.error(err.message || 'Invalid or expired code');
+    } catch (err: unknown) {
+      toast.error((err as Error).message || 'Invalid or expired code');
     } finally {
       setLoading(false);
     }
@@ -79,9 +77,8 @@ export default function ForgotPasswordPage() {
       await resetPassword(email, otp, newPassword);
       toast.success('Password reset successfully! Please sign in.');
       router.push('/sign-in');
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to reset password');
+    } catch (err: unknown) {
+      toast.error((err as Error).message || 'Failed to reset password');
     } finally {
       setLoading(false);
     }
@@ -90,11 +87,13 @@ export default function ForgotPasswordPage() {
   return (
     <main className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-xl border border-slate-100 p-8 max-w-md w-full">
-        {/* Header */}
+        {}
         <div className="mb-8 text-center">
-          <img
+          <Image
             src="/rabbit-mascot.png"
             alt="RibbitTalk rabbit mascot"
+            width={64}
+            height={64}
             className="h-16 w-auto mx-auto mb-4 drop-shadow-md"
           />
           <h1 className="text-2xl font-bold text-slate-900">Reset Password</h1>
@@ -105,7 +104,7 @@ export default function ForgotPasswordPage() {
           </p>
         </div>
 
-        {/* Step 1: Email */}
+        {}
         {step === 1 && (
           <form onSubmit={handleSendCode} className="space-y-4">
             <div>
@@ -141,7 +140,7 @@ export default function ForgotPasswordPage() {
           </form>
         )}
 
-        {/* Step 2: OTP */}
+        {}
         {step === 2 && (
           <form onSubmit={handleVerifyCode} className="space-y-4">
             <div>
@@ -174,7 +173,7 @@ export default function ForgotPasswordPage() {
               disabled={loading}
               className="w-full py-3 flex items-center justify-center gap-2 text-emerald-600 hover:text-emerald-700 font-medium transition-colors disabled:opacity-70"
             >
-              Didn't receive the code? Resend
+              Didn&apos;t receive the code? Resend
             </button>
 
             <button
@@ -187,7 +186,7 @@ export default function ForgotPasswordPage() {
           </form>
         )}
 
-        {/* Step 3: New Password */}
+        {}
         {step === 3 && (
           <form onSubmit={handleResetPassword} className="space-y-4">
             <div>

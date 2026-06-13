@@ -9,7 +9,7 @@ import { examsService, ExamQuestion } from '@/features/groups/services/exams.ser
 import { Group } from '@/features/groups/types/groups.types';
 import toast from 'react-hot-toast';
 
-// ─── Quiz type metadata ───────────────────────────────────────────────────────
+
 const TYPE_META: Record<string, { label: string; emoji: string; color: string }> = {
   matching: { label: 'Matching',  emoji: '🔗', color: 'bg-purple-50 text-purple-600 border-purple-100' },
   synonym:  { label: 'Synonym',   emoji: '🔗', color: 'bg-purple-50 text-purple-600 border-purple-100' },
@@ -28,7 +28,7 @@ function buildGoogleTtsProxyUrl(text: string): string {
 function speak(text: string, audioUrl?: string | null) {
   if (typeof window === 'undefined') return;
   speechSynthesis.cancel();
-  // Use stored URL if available, otherwise build a Google TTS proxy URL on the fly
+  
   const src = audioUrl || buildGoogleTtsProxyUrl(text);
   const audio = new Audio();
   audio.src = src;
@@ -74,7 +74,7 @@ const mergeQuestions = (existingList: ExamQuestion[], generatedList: ExamQuestio
   return result;
 };
 
-// ─── Editable Question Card ───────────────────────────────────────────────────
+
 function EditableQuestion({ q, idx, onChange, onDelete, onFetchAudio, onAutoFillAI }: {
   q: ExamQuestion; idx: number;
   onChange: (u: ExamQuestion) => void;
@@ -241,7 +241,7 @@ function EditableQuestion({ q, idx, onChange, onDelete, onFetchAudio, onAutoFill
   );
 }
 
-// ─── Exam Create Wizard ───────────────────────────────────────────────────────
+
 interface ExamCreateWizardProps {
   isOpen: boolean;
   onClose: () => void;
@@ -261,7 +261,7 @@ export function ExamCreateWizard({ isOpen, onClose, onCreated, groups, defaultGr
   const [questions, setQuestions] = useState<ExamQuestion[]>([]);
   const [saving, setSaving] = useState(false);
 
-  // AI Vocabulary addition states
+  
   const [showAddWordsDialog, setShowAddWordsDialog] = useState(false);
   const [newWordsInput, setNewWordsInput] = useState('');
   const [addingWords, setAddingWords] = useState(false);
@@ -327,7 +327,7 @@ export function ExamCreateWizard({ isOpen, onClose, onCreated, groups, defaultGr
     setGenerating(true);
     try {
       const res = await examsService.generateQuestions(items);
-      const qs: ExamQuestion[] = Array.isArray(res) ? (res as ExamQuestion[]) : (((res as unknown) as { data?: ExamQuestion[] }).data ?? []);
+      const qs: ExamQuestion[] = Array.isArray(res) ? (res as ExamQuestion[]) : (((res as { data?: ExamQuestion[] }).data ?? []) as ExamQuestion[]);
       if (!qs.length) throw new Error('No questions returned');
       setQuestions(mergeQuestions([], qs));
       setStep('review');
@@ -369,12 +369,12 @@ export function ExamCreateWizard({ isOpen, onClose, onCreated, groups, defaultGr
     const toastId = toast.loading(`Fetching Cambridge audio for "${word}"...`);
     try {
       const res = await examsService.lookupWord(word.trim());
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const data = (res as any).data ?? res;
-      if (data && data.audioUrl) {
-        setQuestions(qs => qs.map((x, i) => i === index ? { ...x, audio_url: data.audioUrl } : x));
+      const data = (res as { data?: { audioUrl?: string } } & { audioUrl?: string }).data ?? res;
+      const audioUrl = (data as { audioUrl?: string }).audioUrl;
+      if (audioUrl) {
+        setQuestions(qs => qs.map((x, i) => i === index ? { ...x, audio_url: audioUrl } : x));
         toast.success(`Successfully loaded Cambridge pronunciation audio for "${word}"! 🎧`, { id: toastId });
-        speak(word, data.audioUrl);
+        speak(word, audioUrl);
       } else {
         toast.error(`Audio not found for "${word}" in Cambridge Dictionary.`, { id: toastId });
       }
@@ -392,8 +392,7 @@ export function ExamCreateWizard({ isOpen, onClose, onCreated, groups, defaultGr
     const toastId = toast.loading(`Generating question for "${word}"...`);
     try {
       const res = await examsService.generateQuestions([word.trim()]);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const newQs: ExamQuestion[] = Array.isArray(res) ? (res as ExamQuestion[]) : (((res as any).data ?? []) as ExamQuestion[]);
+      const newQs: ExamQuestion[] = Array.isArray(res) ? (res as ExamQuestion[]) : (((res as { data?: ExamQuestion[] }).data ?? []) as ExamQuestion[]);
       if (newQs && newQs.length > 0) {
         const matchedQ = newQs.find(q => q.type === type) || newQs.find(q => q.type !== 'matching') || newQs[0];
         if (matchedQ) {
@@ -411,10 +410,9 @@ export function ExamCreateWizard({ isOpen, onClose, onCreated, groups, defaultGr
       } else {
         toast.error(`AI failed to generate question details for "${word}".`, { id: toastId });
       }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      toast.error(err?.message || `Failed to generate details for "${word}".`, { id: toastId });
+      toast.error((err as { message?: string })?.message || `Failed to generate details for "${word}".`, { id: toastId });
     }
   };
 
@@ -457,8 +455,7 @@ export function ExamCreateWizard({ isOpen, onClose, onCreated, groups, defaultGr
     const toastId = toast.loading(`Generating questions for ${newWords.length} new word(s)...`);
     try {
       const res = await examsService.generateQuestions(newWords);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const newQs: ExamQuestion[] = Array.isArray(res) ? (res as ExamQuestion[]) : (((res as any).data ?? []) as ExamQuestion[]);
+      const newQs: ExamQuestion[] = Array.isArray(res) ? (res as ExamQuestion[]) : (((res as { data?: ExamQuestion[] }).data ?? []) as ExamQuestion[]);
       if (newQs && newQs.length > 0) {
         setQuestions(prev => mergeQuestions(prev, newQs));
         toast.success(`Generated questions for ${newWords.length} new word(s) successfully!`, { id: toastId });
@@ -467,10 +464,9 @@ export function ExamCreateWizard({ isOpen, onClose, onCreated, groups, defaultGr
       } else {
         toast.error('Failed to generate questions. No questions returned from AI.', { id: toastId });
       }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      toast.error(err?.message || 'Failed to generate questions with AI.', { id: toastId });
+      toast.error((err as { message?: string })?.message || 'Failed to generate questions with AI.', { id: toastId });
     } finally {
       setAddingWords(false);
     }
@@ -482,7 +478,7 @@ export function ExamCreateWizard({ isOpen, onClose, onCreated, groups, defaultGr
   return (
     <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
       <div className={`bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full ${step === 'review' ? 'max-w-6xl' : 'max-w-2xl'} max-h-[92vh] flex flex-col overflow-hidden transition-all duration-300`}>
-        {/* Header */}
+        {}
         <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100 bg-gradient-to-r from-blue-500 to-blue-700 rounded-t-3xl text-white">
           <div>
             <h2 className="text-xl font-black flex items-center gap-2"><Sparkles size={20} /> Create AI Vocabulary Exam</h2>
@@ -491,7 +487,7 @@ export function ExamCreateWizard({ isOpen, onClose, onCreated, groups, defaultGr
           <button onClick={reset} className="p-2 text-white/70 hover:text-white hover:bg-white/10 rounded-xl transition-colors"><X size={20} /></button>
         </div>
 
-        {/* Stepper */}
+        {}
         {step === 'input' && (
           <div className="flex border-b border-slate-100 px-6 pt-3 pb-0 gap-6">
             {(['input', 'review'] as const).map((s, i) => (
@@ -503,9 +499,9 @@ export function ExamCreateWizard({ isOpen, onClose, onCreated, groups, defaultGr
           </div>
         )}
 
-        {/* Body */}
+        {}
         <div className={`flex-1 overflow-y-auto p-6 ${step === 'review' ? 'flex flex-col lg:flex-row gap-8' : 'space-y-5'}`}>
-          {/* LEFT: Input Form (Always visible) */}
+          {}
           <div className={`${step === 'review' ? 'w-full lg:w-[40%] flex-shrink-0 space-y-5' : 'space-y-5'}`}>
             <div className={`grid grid-cols-1 ${defaultGroupId ? '' : 'md:grid-cols-2'} gap-4`}>
               {!defaultGroupId && (
@@ -559,7 +555,7 @@ export function ExamCreateWizard({ isOpen, onClose, onCreated, groups, defaultGr
             )}
           </div>
 
-          {/* RIGHT: Review Column (Only in review mode) */}
+          {}
           {step === 'review' && (
             <div className="w-full lg:w-[60%] border-t lg:border-t-0 lg:border-l border-slate-200 pt-6 lg:pt-0 lg:pl-8 space-y-5 flex flex-col min-h-0">
               <div className="flex items-center justify-between flex-shrink-0">
@@ -583,7 +579,7 @@ export function ExamCreateWizard({ isOpen, onClose, onCreated, groups, defaultGr
                 })}
               </div>
 
-              {/* Unique Vocabulary List Chip Container */}
+              {}
               <div className="bg-slate-50 dark:bg-slate-700/50 border border-slate-200/60 dark:border-slate-600 rounded-2xl p-3.5 flex flex-wrap items-center gap-1.5 flex-shrink-0">
                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mr-1">Vocab list:</span>
                 {Array.from(
@@ -617,7 +613,7 @@ export function ExamCreateWizard({ isOpen, onClose, onCreated, groups, defaultGr
           )}
         </div>
 
-        {/* Footer */}
+        {}
         <div className="flex items-center justify-between px-6 py-4 border-t border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/80">
           <button onClick={reset} className="px-4 py-2 text-sm font-bold text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-colors">Cancel</button>
           {step === 'input' ? (
@@ -636,7 +632,7 @@ export function ExamCreateWizard({ isOpen, onClose, onCreated, groups, defaultGr
         </div>
       </div>
 
-      {/* Add Vocabulary via AI Modal Overlay */}
+      {}
       {showAddWordsDialog && (
         <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
           <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border border-slate-100 dark:border-slate-700 flex flex-col p-6 space-y-4 animate-in scale-in duration-200 text-slate-800 dark:text-white">

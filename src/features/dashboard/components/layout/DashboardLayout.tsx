@@ -18,7 +18,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
       
       <div className="flex-1 lg:ml-64 relative flex flex-col min-h-screen max-w-full lg:max-w-[calc(100vw-16rem)]">
-        {/* Mobile Header */}
+        {}
         <motion.div 
           initial={{ y: -50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
@@ -45,7 +45,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         </motion.div>
 
         <main className="flex-1 p-4 md:p-8 relative overflow-x-hidden">
-          {/* Background Accent Gradient */}
+          {}
           <div className="absolute top-0 right-0 w-full h-[500px] bg-gradient-to-br from-emerald-500/5 dark:from-emerald-500/10 via-teal-500/5 dark:via-teal-500/5 to-transparent -z-10 pointer-events-none" />
           
           <motion.div

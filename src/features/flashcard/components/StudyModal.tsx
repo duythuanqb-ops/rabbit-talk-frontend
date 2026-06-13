@@ -4,7 +4,18 @@ import { flashcardService } from '../services/flashcard.service';
 import { getAudioUrl } from '@/shared/utils/audio';
 
 export function StudyModal({ isOpen, onClose, setId, setName }: { isOpen: boolean, onClose: () => void, setId: string, setName: string }) {
-  const [cards, setCards] = useState<any[]>([]);
+  const [cards, setCards] = useState<{
+    id: string;
+    audio_url?: string;
+    word?: string;
+    definition?: string;
+    example_sentence?: string;
+    part_of_speech?: string;
+    phonetic?: string;
+    meaning?: string;
+    synonyms?: string;
+    source?: string;
+  }[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -12,9 +23,8 @@ export function StudyModal({ isOpen, onClose, setId, setName }: { isOpen: boolea
   useEffect(() => {
     if (isOpen && setId) {
       flashcardService.getCardsForSet(setId).then(res => {
-        const data = res.data || res;
+        const data = (res as { data?: typeof cards }).data ?? (res as typeof cards);
         if (Array.isArray(data)) {
-          // For studying, we typically show all cards or filter out mastered ones. Let's show all.
           setCards(data);
         }
         setLoading(false);
@@ -36,7 +46,7 @@ export function StudyModal({ isOpen, onClose, setId, setName }: { isOpen: boolea
     if (currentCard) {
       await flashcardService.updateProgress(currentCard.id, status);
       
-      // Track quest progress for practicing flashcards
+      
       try {
         const { dashboardService } = await import('@/features/dashboard/services/dashboard.service');
         await dashboardService.trackQuestProgress('practice_words', 1);
@@ -51,7 +61,7 @@ export function StudyModal({ isOpen, onClose, setId, setName }: { isOpen: boolea
     }, 150);
   };
 
-  const playAudio = (e: any) => {
+  const playAudio = (e: React.MouseEvent | { stopPropagation: () => void }) => {
     e.stopPropagation();
     if (currentCard?.audio_url) {
       new Audio(getAudioUrl(currentCard.audio_url)).play();
@@ -74,7 +84,7 @@ export function StudyModal({ isOpen, onClose, setId, setName }: { isOpen: boolea
       </div>
 
       <div className="w-full max-w-2xl flex flex-col items-center">
-        {/* Progress Bar */}
+        {}
         <div className="w-full mb-8">
           <div className="flex justify-between text-white/70 text-sm font-bold mb-2">
             <span>{setName}</span>
@@ -99,7 +109,7 @@ export function StudyModal({ isOpen, onClose, setId, setName }: { isOpen: boolea
               <CheckCircle2 size={48} />
             </div>
             <h2 className="text-3xl font-black text-slate-900 mb-2">You did it!</h2>
-            <p className="text-slate-500 font-medium mb-8">You've gone through all the flashcards in this set.</p>
+            <p className="text-slate-500 font-medium mb-8">You&apos;ve gone through all the flashcards in this set.</p>
             <button onClick={onClose} className="w-full py-4 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-2xl transition-colors shadow-lg">
               Finish Session
             </button>
@@ -110,7 +120,7 @@ export function StudyModal({ isOpen, onClose, setId, setName }: { isOpen: boolea
               className={`relative w-full h-[420px] transition-transform duration-500 preserve-3d cursor-pointer ${isFlipped ? 'rotate-y-180' : ''}`}
               onClick={() => setIsFlipped(!isFlipped)}
             >
-              {/* Front side (Word) */}
+              {}
               <div className="absolute inset-0 backface-hidden bg-white rounded-3xl p-8 shadow-2xl flex flex-col items-center justify-center border-b-8 border-slate-200">
                 {currentCard.audio_url && (
                   <button onClick={playAudio} className="absolute top-6 right-6 p-3 bg-indigo-50 hover:bg-indigo-100 text-indigo-500 rounded-2xl transition-colors">
@@ -129,7 +139,7 @@ export function StudyModal({ isOpen, onClose, setId, setName }: { isOpen: boolea
                 <p className="absolute bottom-6 text-slate-300 text-xs font-bold uppercase tracking-widest flex items-center gap-2 animate-bounce">Tap to flip</p>
               </div>
 
-              {/* Back side (Meaning) */}
+              {}
               <div className="absolute inset-0 backface-hidden bg-indigo-600 rounded-3xl p-8 shadow-2xl flex flex-col items-center justify-center text-white rotate-y-180 border-b-8 border-indigo-800">
                 <h3 className="text-3xl font-bold mb-4 text-center leading-tight">{currentCard.meaning || "No meaning provided"}</h3>
                 
@@ -142,13 +152,13 @@ export function StudyModal({ isOpen, onClose, setId, setName }: { isOpen: boolea
 
                 {currentCard.example_sentence && (
                   <div className="bg-white/10 p-5 rounded-2xl w-full text-center italic text-indigo-100 text-lg">
-                    "{currentCard.example_sentence}"
+                    &quot;{currentCard.example_sentence}&quot;
                   </div>
                 )}
               </div>
             </div>
 
-            {/* Action Buttons */}
+            {}
             <div className={`flex gap-4 mt-8 transition-opacity duration-300 ${isFlipped ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
               <button 
                 onClick={() => handleNext('learning')}

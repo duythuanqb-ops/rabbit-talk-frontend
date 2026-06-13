@@ -1,13 +1,11 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { StopCircle, SkipForward, Volume2, Trophy, Medal, Users } from 'lucide-react';
 import { cn } from '@/shared/utils/cn';
 import { WordItem, Player } from '../types/battle.types';
-import { mockPlayers } from '../constants/battle.constants';
-
 export function BattlePhase({
   words, timeLimit, groupName, members = [], onEnd
 }: {
-  words: WordItem[]; timeLimit: number; groupName: string; members?: any[]; onEnd: (players: Player[]) => void;
+  words: WordItem[]; timeLimit: number; groupName: string; members?: { first_name?: string; last_name?: string; username?: string }[]; onEnd: (players: Player[]) => void;
 }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [timeLeft, setTimeLeft] = useState(timeLimit);
@@ -16,25 +14,37 @@ export function BattlePhase({
   const [players, setPlayers] = useState<Player[]>(() => {
     if (members.length === 0) return [];
     return members.map(m => ({
-      name: `${m.first_name} ${m.last_name}`.trim() || m.username,
-      initials: (m.first_name?.[0] || m.username?.[0] || 'U').toUpperCase(),
+      name: `${m.first_name || ''} ${m.last_name || ''}`.trim() || m.username || 'Student',
+      initials: (m.first_name?.[0] || m.username?.[0] || 'S').toUpperCase(),
       score: 0,
       answered: false,
-      correct: false,
+      correct: false
     }));
   });
   
   const currentWord = words[currentIndex];
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
+  const handleNextWord = useCallback(() => {
+    setIsPlaying(false);
+    if (currentIndex < words.length - 1) {
+      setCurrentIndex(c => c + 1);
+      setTimeLeft(timeLimit);
+      setPlayers(prev => prev.map(p => ({ ...p, answered: false, correct: false })));
+    } else {
+      onEnd(players);
+    }
+  }, [currentIndex, words.length, timeLimit, onEnd, players]);
+
   useEffect(() => {
     if (isPlaying && timeLeft > 0) {
       timerRef.current = setInterval(() => setTimeLeft(t => t - 1), 1000);
     } else if (timeLeft === 0) {
-      handleNextWord();
+      setTimeout(() => handleNextWord(), 0);
     }
     return () => clearInterval(timerRef.current!);
-  }, [isPlaying, timeLeft]);
+    
+  }, [isPlaying, timeLeft, handleNextWord]);
 
   const speakWord = () => {
     const utterance = new SpeechSynthesisUtterance(currentWord.word);
@@ -45,7 +55,7 @@ export function BattlePhase({
   const handleStartRound = () => {
     setIsPlaying(true);
     speakWord();
-    // Simulate real-time responses
+    
     setTimeout(() => simulateResponse(0, true), 2000);
     setTimeout(() => simulateResponse(1, false), 3500);
     setTimeout(() => simulateResponse(2, true), 5000);
@@ -64,16 +74,6 @@ export function BattlePhase({
     });
   };
 
-  const handleNextWord = () => {
-    setIsPlaying(false);
-    if (currentIndex < words.length - 1) {
-      setCurrentIndex(c => c + 1);
-      setTimeLeft(timeLimit);
-      setPlayers(prev => prev.map(p => ({ ...p, answered: false, correct: false })));
-    } else {
-      onEnd(players);
-    }
-  };
 
   return (
     <div className="flex flex-col h-[calc(100vh-8rem)] animate-in fade-in duration-500">
@@ -100,7 +100,7 @@ export function BattlePhase({
       </div>
 
       <div className="flex-1 flex gap-6 bg-slate-50 border border-slate-200 p-6 rounded-b-2xl overflow-hidden">
-        {/* Main Stage */}
+        {}
         <div className="flex-1 flex flex-col items-center justify-center bg-white rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden">
           <div className={cn(
             "absolute inset-0 bg-indigo-50/50 transition-opacity duration-1000",
@@ -176,7 +176,7 @@ export function BattlePhase({
           )}
         </div>
 
-        {/* Live Leaderboard Sidebar */}
+        {}
         <div className="w-80 bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col">
           <div className="p-4 border-b border-slate-100 bg-slate-50/50 rounded-t-2xl">
             <h3 className="font-bold text-slate-900 flex items-center gap-2">

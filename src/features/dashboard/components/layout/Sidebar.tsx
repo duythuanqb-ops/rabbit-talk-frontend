@@ -1,7 +1,7 @@
-/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard,
@@ -23,6 +23,7 @@ import { cn } from '@/shared/utils/cn';
 import { logout, getProfile } from '@/features/auth/services/auth.service';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
+import { User } from '@/shared/types/api.types';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -67,12 +68,18 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [prevPathname, setPrevPathname] = useState(pathname);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  if (pathname !== prevPathname) {
+    setPrevPathname(pathname);
+    setShowUserMenu(false);
+  }
 
   useEffect(() => {
     getProfile()
       .then((res) => {
-        const user = res.data || res;
+        const user = (res as { data?: User }).data ?? (res as User);
         setRole(user.role || 'student');
         setUserName(user.first_name || user.username || 'User');
         setAvatarUrl(user.avatar_url || null);
@@ -81,7 +88,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       .finally(() => setIsLoading(false));
   }, []);
 
-  // Close menu when clicking outside
+  
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
@@ -93,12 +100,6 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     }
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showUserMenu]);
-
-  // Close menu on route change
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setShowUserMenu(false);
-  }, [pathname]);
 
   const handleLogout = async () => {
     try {
@@ -115,7 +116,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
   return (
     <>
-      {/* Mobile overlay */}
+      {}
       {isOpen && (
         <div
           className="fixed inset-0 bg-slate-900/50 z-40 lg:hidden transition-opacity"
@@ -127,7 +128,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         "w-64 h-screen bg-surface/90 dark:bg-[#050505]/90 backdrop-blur-2xl shadow-[4px_0_24px_rgba(0,0,0,0.02)] flex flex-col fixed left-0 top-0 z-50 transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] lg:translate-x-0 border-r border-white/10 dark:border-white/[0.05]",
         isOpen ? "translate-x-0" : "-translate-x-full"
       )}>
-        {/* Logo */}
+        {}
         <div className="p-8 flex items-center justify-between pb-4">
           <Link href="/dashboard" className="flex items-center gap-3 group cursor-pointer">
             <div className="w-10 h-10 rounded-[12px] flex items-center justify-center text-white bg-emerald-500 shadow-[inset_0_1px_0_rgba(255,255,255,0.4)] group-hover:scale-105 transition-fluid">
@@ -143,7 +144,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
           </button>
         </div>
 
-        {/* Navigation */}
+        {}
         <nav className="flex-1 px-4 space-y-1.5 overflow-y-auto mt-4">
           {isLoading ? (
             <div className="flex flex-col gap-2 py-2">
@@ -172,7 +173,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                       : "text-muted-foreground font-medium hover:bg-surface-hover hover:text-foreground active:scale-[0.98]"
                   )}
                 >
-                  {/* Active Indicator Bar */}
+                  {}
                   {isActive && (
                     <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-emerald-500 rounded-r-full shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
                   )}
@@ -189,10 +190,10 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
           )}
         </nav>
 
-        {/* Bottom: User profile card with popup menu */}
+        {}
         <div className="p-4 border-t border-border" ref={menuRef}>
 
-          {/* Popup menu — slides up when open */}
+          {}
           {showUserMenu && (
             <div className="mb-3 glass rounded-2xl shadow-2xl overflow-hidden animate-in slide-in-from-bottom-2 fade-in duration-300">
               {role !== 'admin' && (
@@ -223,7 +224,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             </div>
           )}
 
-          {/* User card — click to toggle popup */}
+          {}
           {isLoading ? (
              <div className="h-[68px] w-full bg-slate-100 dark:bg-white/5 rounded-[20px] animate-pulse" />
           ) : role && (
@@ -236,14 +237,14 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                     : "group-hover:bg-surface-hover"
                 )}
               >
-                {/* Avatar */}
+                {}
                 <div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center text-emerald-700 dark:text-emerald-400 font-bold text-sm shrink-0 overflow-hidden ring-2 ring-white dark:ring-[#050505]">
                   {avatarUrl ? (
-                    <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" />
+                    <Image unoptimized src={avatarUrl} alt="avatar" width={40} height={40} className="w-full h-full object-cover" />
                   ) : initials}
                 </div>
 
-                {/* Name + badge */}
+                {}
                 <div className="min-w-0 flex-1 text-left">
                   <p className="text-sm font-semibold text-foreground truncate">{userName}</p>
                   {badge && (
@@ -253,7 +254,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                   )}
                 </div>
 
-                {/* Chevron — rotates when open */}
+                {}
                 <div className="w-6 h-6 rounded-full bg-surface-hover flex items-center justify-center group-hover:bg-emerald-100 dark:group-hover:bg-emerald-900/30 transition-colors">
                   <ChevronUp
                     size={14}

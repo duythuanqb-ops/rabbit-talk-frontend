@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import Image from 'next/image';
 import { 
   Users, 
   UserPlus, 
@@ -19,7 +20,6 @@ import { friendsService } from '../services/friends.service';
 import { Friend, PendingRequest, SearchUserResult } from '../types/friends.types';
 import { getProfile } from '@/features/auth/services/auth.service';
 
-// ─── Types ────────────────────────────────────────────────────────────────────
 type Tab = 'friends' | 'pending' | 'find';
 
 type Notification = {
@@ -34,7 +34,6 @@ type ConfirmModal = {
 };
 
 export function FriendsPage() {
-  // ─── State ────────────────────────────────────────────────────────────────
   const [activeTab, setActiveTab] = useState<Tab>('friends');
 
   const [friends, setFriends]               = useState<Friend[]>([]);
@@ -51,26 +50,14 @@ export function FriendsPage() {
   const [notification, setNotification] = useState<Notification | null>(null);
   const [confirmModal, setConfirmModal]  = useState<ConfirmModal | null>(null);
 
-  // Load initial data
-  useEffect(() => {
-    getProfile()
-      .then((res) => {
-        const user = res.data || res;
-        setCurrentUserId(user.uuid || '');
-      })
-      .catch((err) => console.error("Failed to load user profile", err));
-
-    loadFriendsAndPending();
-  }, []);
-
-  const showNotification = (type: 'success' | 'error', message: string) => {
+  const showNotification = useCallback((type: 'success' | 'error', message: string) => {
     setNotification({ type, message });
     setTimeout(() => {
       setNotification(null);
     }, 4000);
-  };
+  }, []);
 
-  const loadFriendsAndPending = async () => {
+  const loadFriendsAndPending = useCallback(async () => {
     setLoading(true);
     try {
       const [friendsRes, pendingRes] = await Promise.all([
@@ -85,9 +72,19 @@ export function FriendsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [showNotification]);
 
-  // Handle direct send request (by email or username)
+  useEffect(() => {
+    getProfile()
+      .then((res) => {
+        const user = (res as { data?: { uuid?: string } }).data ?? (res as { uuid?: string });
+        setCurrentUserId(user.uuid || '');
+      })
+      .catch((err) => console.error("Failed to load user profile", err));
+
+    setTimeout(() => { loadFriendsAndPending(); }, 0);
+  }, [loadFriendsAndPending]);
+
   const handleDirectAdd = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!directAddQuery.trim()) return;
@@ -97,18 +94,16 @@ export function FriendsPage() {
       const res = await friendsService.sendFriendRequest(directAddQuery.trim());
       showNotification('success', res.message || 'Friend request sent successfully!');
       setDirectAddQuery('');
-      // Reload both lists
       loadFriendsAndPending();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error);
-      const errMsg = error.message || 'Failed to send friend request. Check the username or email.';
+      const errMsg = (error as Error).message || 'Failed to send friend request. Check the username or email.';
       showNotification('error', errMsg);
     } finally {
       setDirectAddLoading(false);
     }
   };
 
-  // Handle search tab queries
   const handleSearchUsers = async (queryStr: string) => {
     setSearchQuery(queryStr);
     if (!queryStr.trim()) {
@@ -127,24 +122,20 @@ export function FriendsPage() {
     }
   };
 
-  // Respond to pending requests (Accept/Decline)
   const handleRespondRequest = async (requestId: string, accept: boolean) => {
     try {
       const res = await friendsService.respondFriendRequest(requestId, accept);
       showNotification('success', res.message || (accept ? 'Request accepted!' : 'Request declined.'));
-      // Reload
       loadFriendsAndPending();
-    } catch (error: any) {
-      showNotification('error', error.message || 'Failed to respond to request.');
+    } catch (error: unknown) {
+      showNotification('error', (error as Error).message || 'Failed to respond to request.');
     }
   };
 
-  // Open confirm modal
   const handleUnfriendClick = (friendUuid: string, friendName: string) => {
     setConfirmModal({ isOpen: true, friendUuid, friendName });
   };
 
-  // Execute unfriend from modal
   const executeUnfriend = async () => {
     if (!confirmModal) return;
     try {
@@ -152,33 +143,30 @@ export function FriendsPage() {
       showNotification('success', res.message || 'Unfriended successfully.');
       setConfirmModal(null);
       loadFriendsAndPending();
-      // If we are searching, update search query list to reflect change
       if (searchQuery) {
         handleSearchUsers(searchQuery);
       }
-    } catch (error: any) {
-      showNotification('error', error.message || 'Failed to unfriend.');
+    } catch (error: unknown) {
+      showNotification('error', (error as Error).message || 'Failed to unfriend.');
       setConfirmModal(null);
     }
   };
 
-  // Send request from Search Tab list
   const handleSendRequestFromSearch = async (userUuid: string, identifier: string) => {
     try {
       const res = await friendsService.sendFriendRequest(identifier);
       showNotification('success', res.message || 'Friend request sent!');
-      // Refresh search results to show "Pending"
       handleSearchUsers(searchQuery);
       loadFriendsAndPending();
-    } catch (error: any) {
-      showNotification('error', error.message || 'Failed to send friend request.');
+    } catch (error: unknown) {
+      showNotification('error', (error as Error).message || 'Failed to send friend request.');
     }
   };
 
   return (
     <div className="max-w-6xl mx-auto space-y-8 relative pb-16">
       
-      {/* Toast Notification */}
+      {}
       {notification && (
         <div className={`fixed bottom-5 right-5 z-50 flex items-center gap-3 px-5 py-4 rounded-2xl shadow-xl transition-all border animate-in slide-in-from-bottom-5 duration-300 ${
           notification.type === 'success' 
@@ -195,7 +183,7 @@ export function FriendsPage() {
         </div>
       )}
 
-      {/* Header Banner */}
+      {}
       <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-500 dark:from-emerald-800 dark:via-teal-800 dark:to-emerald-700 p-8 md:p-10 rounded-3xl text-white shadow-xl shadow-emerald-200/50 dark:shadow-emerald-900/30 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative overflow-hidden">
         <div className="relative z-10 space-y-2">
           <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-xs font-bold uppercase tracking-wider">
@@ -207,7 +195,7 @@ export function FriendsPage() {
           </p>
         </div>
 
-        {/* Direct Add Friend Form */}
+        {}
         <form onSubmit={handleDirectAdd} className="w-full md:w-auto relative z-10 flex gap-2">
           <div className="relative w-full md:w-72">
             <UserPlus className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-600 dark:text-emerald-400" size={18} />
@@ -228,12 +216,12 @@ export function FriendsPage() {
           </button>
         </form>
 
-        {/* Background blobs */}
+        {}
         <div className="absolute right-0 bottom-0 w-80 h-80 bg-white/5 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute left-1/3 top-0 w-40 h-40 bg-lime-300/10 rounded-full blur-2xl pointer-events-none" />
       </div>
 
-      {/* Tabs Menu */}
+      {}
       <div className="flex border-b border-slate-200 dark:border-slate-700 gap-1.5 p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl max-w-xl">
         <button
           onClick={() => setActiveTab('friends')}
@@ -280,10 +268,10 @@ export function FriendsPage() {
         </button>
       </div>
 
-      {/* Main Tab Views */}
+      {}
       <div className="mt-6">
         {loading ? (
-          /* Loading State Skeletons */
+          
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[1, 2, 3].map((i) => (
               <div key={i} className="bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm space-y-4 animate-pulse">
@@ -301,7 +289,7 @@ export function FriendsPage() {
           </div>
         ) : (
           <>
-            {/* TAB 1: MY FRIENDS */}
+            {}
             {activeTab === 'friends' && (
               friends.length === 0 ? (
                 <div className="text-center py-20 bg-white dark:bg-slate-800 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm max-w-xl mx-auto p-8 space-y-6">
@@ -330,12 +318,14 @@ export function FriendsPage() {
                     >
                       <div className="space-y-4">
                         <div className="flex gap-4 items-center">
-                          {/* Avatar */}
+                          {}
                           <div className="relative shrink-0">
                             {friend.avatar_url ? (
-                              <img 
+                              <Image 
                                 src={friend.avatar_url} 
                                 alt={friend.username} 
+                                width={56}
+                                height={56}
                                 className="w-14 h-14 rounded-2xl object-cover border border-slate-100 shadow-sm"
                               />
                             ) : (
@@ -383,7 +373,7 @@ export function FriendsPage() {
               )
             )}
 
-            {/* TAB 2: PENDING REQUESTS */}
+            {}
             {activeTab === 'pending' && (
               pendingRequests.length === 0 ? (
                 <div className="text-center py-20 bg-white dark:bg-slate-800 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm max-w-xl mx-auto p-8 space-y-4">
@@ -404,12 +394,14 @@ export function FriendsPage() {
                     >
                       <div className="space-y-4">
                         <div className="flex gap-4 items-center">
-                          {/* Avatar */}
+                          {}
                           <div className="relative shrink-0">
                             {request.avatar_url ? (
-                              <img 
+                              <Image 
                                 src={request.avatar_url} 
                                 alt={request.username} 
+                                width={56}
+                                height={56}
                                 className="w-14 h-14 rounded-2xl object-cover border border-slate-100 shadow-sm"
                               />
                             ) : (
@@ -466,11 +458,11 @@ export function FriendsPage() {
               )
             )}
 
-            {/* TAB 3: FIND PEOPLE */}
+            {}
             {activeTab === 'find' && (
               <div className="space-y-6">
                 
-                {/* Search Bar */}
+                {}
                 <div className="relative max-w-xl mx-auto">
                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
                   <input 
@@ -485,7 +477,7 @@ export function FriendsPage() {
                   )}
                 </div>
 
-                {/* Search Results */}
+                {}
                 {searchQuery.trim() === '' ? (
                   <div className="text-center py-20 bg-slate-50 dark:bg-slate-800/50 rounded-3xl border border-dashed border-slate-200 dark:border-slate-700 max-w-xl mx-auto p-8 space-y-4">
                     <Search className="mx-auto text-slate-300" size={40} />
@@ -499,7 +491,7 @@ export function FriendsPage() {
                     <AlertCircle className="mx-auto text-rose-400" size={40} />
                     <h4 className="font-bold text-slate-900 dark:text-white text-lg">No matches found</h4>
                     <p className="text-slate-500 dark:text-slate-400 text-xs max-w-xs mx-auto">
-                      We couldn't find an exact match for "{searchQuery}". Make sure to enter their full username or email.
+                      We couldn&apos;t find an exact match for &quot;{searchQuery}&quot;. Make sure to enter their full username or email.
                     </p>
                   </div>
                 ) : (
@@ -516,12 +508,14 @@ export function FriendsPage() {
                         >
                           <div className="space-y-4">
                             <div className="flex gap-4 items-center">
-                              {/* Avatar */}
+                              {}
                               <div className="relative shrink-0">
                                 {user.avatar_url ? (
-                                  <img 
+                                  <Image 
                                     src={user.avatar_url} 
                                     alt={user.username} 
+                                    width={56}
+                                    height={56}
                                     className="w-14 h-14 rounded-2xl object-cover border border-slate-100 shadow-sm"
                                   />
                                 ) : (
@@ -593,7 +587,7 @@ export function FriendsPage() {
         )}
       </div>
 
-      {/* Confirm Modal */}
+      {}
       {confirmModal?.isOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200 p-4">
           <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 md:p-8 max-w-sm w-full mx-auto shadow-2xl animate-in zoom-in-95 duration-200 relative overflow-hidden border border-slate-100 dark:border-slate-700">

@@ -1,12 +1,12 @@
-/* eslint-disable @next/next/no-img-element */
-'use client';
-
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { Users, Calendar, BookOpen, User, FileText, ChevronLeft, Loader2 } from 'lucide-react';
 import { groupsService } from '@/features/groups/services/groups.service';
 import { Group, GroupMember } from '@/features/groups/types/groups.types';
-import { motion } from 'framer-motion';
+import { FadeIn } from '@/shared/components/animations/FadeIn';
+import { StaggerContainer, StaggerItem } from '@/shared/components/animations/StaggerContainer';
+import { Button } from '@/components/ui/Button';
 
 interface StudentGroupDetailProps {
   groupId: string;
@@ -52,7 +52,7 @@ export function StudentGroupDetail({ groupId }: StudentGroupDetailProps) {
   }
 
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 md:p-8 w-full shadow-lg border border-slate-100 dark:border-slate-700 relative">
+    <FadeIn className="bg-white dark:bg-slate-800 rounded-3xl p-6 md:p-8 w-full shadow-lg border border-slate-100 dark:border-slate-700 relative">
       <button 
         onClick={() => router.push('/dashboard/groups')}
         className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-full transition-colors flex items-center gap-1"
@@ -63,7 +63,7 @@ export function StudentGroupDetail({ groupId }: StudentGroupDetailProps) {
       <div className="flex items-start gap-4 mb-6">
         <div className="w-16 h-16 bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-100 dark:border-emerald-800 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-sm overflow-hidden">
           {selectedGroup.avatar ? (
-            <img src={selectedGroup.avatar} alt={selectedGroup.title} className="w-full h-full object-cover" />
+            <Image unoptimized src={selectedGroup.avatar} alt={selectedGroup.title} width={64} height={64} className="w-full h-full object-cover" />
           ) : (
             <Users className="text-emerald-500" size={32} />
           )}
@@ -117,12 +117,12 @@ export function StudentGroupDetail({ groupId }: StudentGroupDetailProps) {
         {members.length === 0 ? (
           <p className="text-xs text-slate-400 py-3 italic text-center">No other members in this class yet.</p>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-h-[160px] overflow-y-auto pr-1 custom-scrollbar">
+          <StaggerContainer className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-h-[160px] overflow-y-auto pr-1 custom-scrollbar">
             {members.map((member) => (
-              <div key={member.uuid} className="flex items-center gap-2 bg-slate-50 dark:bg-slate-700/50 border border-slate-100 dark:border-slate-700 p-2 rounded-xl">
+              <StaggerItem key={member.uuid} className="flex items-center gap-2 bg-slate-50 dark:bg-slate-700/50 border border-slate-100 dark:border-slate-700 p-2 rounded-xl">
                 <div className="w-7 h-7 bg-white dark:bg-slate-700 border border-slate-100 dark:border-slate-600 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0 shadow-sm">
                   {member.avatar_url ? (
-                    <img src={member.avatar_url} alt={member.username} className="w-full h-full object-cover" />
+                    <Image unoptimized src={member.avatar_url} alt={member.username} width={28} height={28} className="w-full h-full object-cover" />
                   ) : (
                     <User size={12} className="text-slate-400" />
                   )}
@@ -130,30 +130,32 @@ export function StudentGroupDetail({ groupId }: StudentGroupDetailProps) {
                 <span className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate" title={`${member.first_name} ${member.last_name}`}>
                   {member.first_name} {member.last_name?.[0]}.
                 </span>
-              </div>
+              </StaggerItem>
             ))}
-          </div>
+          </StaggerContainer>
         )}
       </div>
 
       <div className="flex gap-2.5">
-        <button 
+        <Button 
           onClick={() => {
             router.push(`/dashboard/vocabulary?groupId=${selectedGroup.id}`);
           }}
-          className="flex-1 py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-2xl text-xs shadow-lg shadow-orange-200 transition-colors flex items-center justify-center gap-1.5"
+          className="flex-1 py-3 bg-orange-500 hover:bg-orange-600 border-none text-white font-bold rounded-2xl text-xs shadow-lg shadow-orange-200 transition-colors"
+          leftIcon={<BookOpen size={14} />}
         >
-          <BookOpen size={14} /> Vocabulary
-        </button>
-        <button 
+          Vocabulary
+        </Button>
+        <Button 
           onClick={() => {
             router.push(`/dashboard/exams?groupId=${selectedGroup.id}`);
           }}
-          className="flex-1 py-3 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-2xl text-xs shadow-lg shadow-blue-200 transition-colors flex items-center justify-center gap-1.5"
+          className="flex-1 py-3 bg-blue-500 hover:bg-blue-600 border-none text-white font-bold rounded-2xl text-xs shadow-lg shadow-blue-200 transition-colors"
+          leftIcon={<FileText size={14} />}
         >
-          <FileText size={14} /> Exams
-        </button>
+          Exams
+        </Button>
       </div>
-    </div>
+    </FadeIn>
   );
 }
