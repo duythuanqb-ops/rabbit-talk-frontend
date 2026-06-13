@@ -6,7 +6,7 @@ interface Props {
   onSwitchToSignIn: () => void;
 }
 
-// ─── Component ────────────────────────────────────────────────────────────────
+
 export default function SignUpCard({ onSwitchToSignIn }: Props) {
   return (
     <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-6">

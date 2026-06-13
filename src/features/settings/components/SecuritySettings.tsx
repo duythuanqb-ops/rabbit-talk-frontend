@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, react-hooks/exhaustive-deps */
 import { Shield, Loader2, CheckCircle } from 'lucide-react';
 import { useState } from 'react';
 import { userAPI } from '../../user/services/user.service';
@@ -29,9 +28,9 @@ export function SecuritySettings() {
       setNewPassword('');
       setConfirmPassword('');
       setTimeout(() => setStatus('idle'), 3000);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setStatus('error');
-      setErrorMsg(err.message || 'Failed to update password');
+      setErrorMsg((err as Error).message || 'Failed to update password');
     }
   };
 

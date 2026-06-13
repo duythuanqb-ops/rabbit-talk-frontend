@@ -1,17 +1,15 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   FileText, Plus, Loader2, Trash2, Sparkles,
-  RefreshCw, Save, X, Volume2, CheckCircle, ChevronRight,
-  ChevronLeft, Trophy, RotateCcw, Headphones, PenLine,
-  Lightbulb, Globe, XCircle
+  Save, X, Volume2
 } from 'lucide-react';
-import { examsService, Exam, ExamQuestion, ExamAttempt } from '../services/exams.service';
+import { examsService, Exam, ExamQuestion } from '../services/exams.service';
 import toast from 'react-hot-toast';
 import { SharedExamTakerModal } from "@/features/exams/components/SharedExamTakerModal";
 
-// ─── Cambridge-first speak helper ─────────────────────────────────────────────
+
 function buildGoogleTtsProxyUrl(text: string): string {
   const apiBase =
     process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000/api/v1';
@@ -23,12 +21,12 @@ function speak(text: string, audioUrl?: string | null) {
   if (typeof window === 'undefined') return;
   speechSynthesis.cancel();
 
-  // Use stored URL if available, otherwise build a Google TTS proxy URL on the fly
+  
   const src = audioUrl || buildGoogleTtsProxyUrl(text);
   const audio = new Audio();
   audio.src = src;
   audio.play().catch(() => {
-    // Final fallback: Web Speech API (with delay to avoid Chrome cancel+speak bug)
+    
     setTimeout(() => {
       const utt = new SpeechSynthesisUtterance(text);
       utt.lang = 'en-US';
@@ -38,7 +36,7 @@ function speak(text: string, audioUrl?: string | null) {
   });
 }
 
-// ─── Quiz type metadata ───────────────────────────────────────────────────────
+
 const TYPE_META: Record<string, { label: string; emoji: string; color: string; gradient: string }> = {
   matching: { label: 'Matching',  emoji: '🔗', color: 'bg-purple-50 text-purple-600 border-purple-100',  gradient: 'from-purple-400 to-purple-600' },
   synonym:  { label: 'Synonym',   emoji: '🔗', color: 'bg-purple-50 text-purple-600 border-purple-100',  gradient: 'from-purple-400 to-purple-600' },
@@ -47,13 +45,7 @@ const TYPE_META: Record<string, { label: string; emoji: string; color: string; g
   situation:{ label: 'Situation', emoji: '🌍', color: 'bg-emerald-50 text-emerald-600 border-emerald-100',gradient: 'from-emerald-400 to-emerald-600'},
 };
 
-const TYPE_ICON: Record<string, React.ReactNode> = {
-  matching: <Lightbulb  size={15} className="text-purple-500" />,
-  synonym:  <Lightbulb  size={15} className="text-purple-500" />,
-  listening:<Headphones size={15} className="text-blue-500"   />,
-  spelling: <PenLine    size={15} className="text-amber-500"  />,
-  situation:<Globe      size={15} className="text-emerald-500"/>,
-};
+
 
 const mergeQuestions = (existingList: ExamQuestion[], generatedList: ExamQuestion[]): ExamQuestion[] => {
   const result = existingList.map(q => ({ ...q }));
@@ -88,8 +80,8 @@ const mergeQuestions = (existingList: ExamQuestion[], generatedList: ExamQuestio
   return result;
 };
 
-// ─── Editable Question Card (wizard review step) ──────────────────────────────
-// ─── Editable Question Card (wizard review step) ──────────────────────────────
+
+
 function EditableQuestion({ q, idx, onChange, onDelete, onFetchAudio, onAutoFillAI }: {
   q: ExamQuestion; idx: number;
   onChange: (u: ExamQuestion) => void;
@@ -256,424 +248,10 @@ function EditableQuestion({ q, idx, onChange, onDelete, onFetchAudio, onAutoFill
   );
 }
 
-// ─── Exam Editor Modal ────────────────────────────────────────────────────────
-interface ExamEditorModalProps {
-  exam: Exam;
-  onClose: () => void;
-  onSaved: () => void;
-}
-
-function ExamEditorModal({ exam, onClose, onSaved }: ExamEditorModalProps) {
-  const formatForDatetimeLocal = (isoString?: string) => {
-    if (!isoString) return '';
-    const d = new Date(isoString);
-    if (isNaN(d.getTime())) return '';
-    return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
-  };
-
-  const [title, setTitle] = useState(exam.title);
-  const [description, setDescription] = useState(exam.description || '');
-  const [dueDate, setDueDate] = useState(formatForDatetimeLocal(exam.dueDate));
-  const [questions, setQuestions] = useState<ExamQuestion[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-
-  // AI Vocabulary addition states
-  const [showAddWordsDialog, setShowAddWordsDialog] = useState(false);
-  const [newWordsInput, setNewWordsInput] = useState('');
-  const [addingWords, setAddingWords] = useState(false);
-
-  const handleQuestionChange = (updated: ExamQuestion, index: number) => {
-    if (updated.type === 'matching' && questions[index]?.type !== 'matching') {
-      const existingMatchingIdx = questions.findIndex(q => q.type === 'matching');
-      if (existingMatchingIdx > -1 && existingMatchingIdx !== index) {
-        const existingQ = { ...questions[existingMatchingIdx] };
-        const wordToMerge = updated.word || 'word';
-        try {
-          const existingPairs = existingQ.correct_answer ? JSON.parse(existingQ.correct_answer) : {};
-          const synonym = wordToMerge + ' (synonym)';
-          const mergedPairs = { ...existingPairs, [wordToMerge]: synonym };
-          
-          existingQ.correct_answer = JSON.stringify(mergedPairs);
-          existingQ.word = Object.keys(mergedPairs).join(', ');
-          
-          const allOptions = Object.values(mergedPairs) as string[];
-          existingQ.options = Array.from(new Set(allOptions)).sort(() => Math.random() - 0.5);
-          
-          setQuestions(prev => {
-            const next = prev.map((x, i) => i === existingMatchingIdx ? existingQ : x);
-            return next.filter((_, i) => i !== index);
-          });
-          
-          toast.success(`Merged "${wordToMerge}" into the existing Matching question! 🔗`);
-          return;
-        } catch (e) {
-          console.error('Failed to merge manual matching change:', e);
-        }
-      }
-    }
-    setQuestions(qs => qs.map((x, i) => i === index ? updated : x));
-  };
-
-  const loadQuestions = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await examsService.getExamById(exam.id);
-      const data = ((res as unknown) as { data?: Exam }).data ?? (res as Exam);
-      setQuestions(data?.questions ?? []);
-    } catch {
-      toast.error('Failed to load exam questions');
-    } finally {
-      setLoading(false);
-    }
-  }, [exam.id]);
-
-  useEffect(() => {
-    let active = true;
-    const run = async () => {
-      await Promise.resolve();
-      if (active) {
-        loadQuestions();
-      }
-    };
-    run();
-    return () => {
-      active = false;
-    };
-  }, [loadQuestions]);
-
-  const handleFetchAudio = async (word: string, index: number) => {
-    if (!word.trim()) {
-      toast.error('Please enter a word first');
-      return;
-    }
-    const toastId = toast.loading(`Fetching Cambridge audio for "${word}"...`);
-    try {
-      const res = await examsService.lookupWord(word.trim());
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const data = (res as any).data ?? res;
-      if (data && data.audioUrl) {
-        setQuestions(qs => qs.map((x, i) => i === index ? { ...x, audio_url: data.audioUrl } : x));
-        toast.success(`Successfully loaded Cambridge pronunciation audio for "${word}"! 🎧`, { id: toastId });
-        speak(word, data.audioUrl);
-      } else {
-        toast.error(`Audio not found for "${word}" in Cambridge Dictionary.`, { id: toastId });
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error(`Failed to fetch Cambridge audio for "${word}".`, { id: toastId });
-    }
-  };
-
-  const handleAutoFillAI = async (word: string, index: number, type: string) => {
-    if (!word.trim()) {
-      toast.error('Please enter a word first');
-      return;
-    }
-    const toastId = toast.loading(`Generating question for "${word}"...`);
-    try {
-      const res = await examsService.generateQuestions([word.trim()]);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const newQs: ExamQuestion[] = Array.isArray(res) ? (res as ExamQuestion[]) : (((res as any).data ?? []) as ExamQuestion[]);
-      if (newQs && newQs.length > 0) {
-        const matchedQ = newQs.find(q => q.type === type) || newQs.find(q => q.type !== 'matching') || newQs[0];
-        if (matchedQ) {
-          setQuestions(qs => qs.map((x, i) => i === index ? {
-            ...x,
-            question_text: matchedQ.question_text,
-            options: matchedQ.options,
-            correct_answer: matchedQ.correct_answer,
-            audio_url: matchedQ.audio_url || x.audio_url || null
-          } : x));
-          toast.success(`AI successfully generated details for "${word}"! ✨`, { id: toastId });
-        } else {
-          toast.error(`Could not generate details for "${word}".`, { id: toastId });
-        }
-      } else {
-        toast.error(`AI failed to generate question details for "${word}".`, { id: toastId });
-      }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
-      console.error(err);
-      toast.error(err?.message || `Failed to generate details for "${word}".`, { id: toastId });
-    }
-  };
-
-  const handleAIAddWords = async () => {
-    if (!newWordsInput.trim()) {
-      toast.error('Please enter at least one word');
-      return;
-    }
-    const words = newWordsInput.split(/[\n,]+/).map(w => w.trim()).filter(Boolean);
-    if (!words.length) {
-      toast.error('No valid words found');
-      return;
-    }
-
-    const existingWords = new Set(questions.map(q => q.word.toLowerCase()));
-    const duplicates: string[] = [];
-    const newWords: string[] = [];
-
-    words.forEach(w => {
-      if (existingWords.has(w.toLowerCase())) {
-        duplicates.push(w);
-      } else {
-        newWords.push(w);
-      }
-    });
-
-    if (duplicates.length > 0) {
-      toast(`Skipped ${duplicates.length} duplicate word(s) (${duplicates.join(', ')})`, {
-        icon: '⚠️',
-        duration: 4000,
-      });
-    }
-
-    if (newWords.length === 0) {
-      toast.error('All entered words already exist in this exam.');
-      return;
-    }
-
-    setAddingWords(true);
-    const toastId = toast.loading(`Generating questions for ${newWords.length} new word(s)...`);
-    try {
-      const res = await examsService.generateQuestions(newWords);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const newQs: ExamQuestion[] = Array.isArray(res) ? (res as ExamQuestion[]) : (((res as any).data ?? []) as ExamQuestion[]);
-      if (newQs && newQs.length > 0) {
-        setQuestions(prev => mergeQuestions(prev, newQs));
-        toast.success(`Generated questions for ${newWords.length} new word(s) successfully!`, { id: toastId });
-        setShowAddWordsDialog(false);
-        setNewWordsInput('');
-      } else {
-        toast.error('Failed to generate questions. No questions returned from AI.', { id: toastId });
-      }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
-      console.error(err);
-      toast.error(err?.message || 'Failed to generate questions with AI.', { id: toastId });
-    } finally {
-      setAddingWords(false);
-    }
-  };
 
 
-  const handleSave = async () => {
-    if (!title.trim()) {
-      toast.error('Please enter an exam title');
-      return;
-    }
-    if (!questions.length) {
-      toast.error('Exam must have at least one question');
-      return;
-    }
-    setSaving(true);
-    try {
-      await examsService.updateExam(exam.id, {
-        title: title.trim(),
-        description: description.trim() || undefined,
-        dueDate: dueDate || undefined,
-        questions,
-      });
-      toast.success('Exam updated successfully! 🎉');
-      onSaved();
-      onClose();
-    } catch (e: unknown) {
-      const errMessage = e instanceof Error ? e.message : String(e);
-      toast.error(errMessage || 'Failed to update exam');
-    } finally {
-      setSaving(false);
-    }
-  };
 
-  const listeningCount = questions.filter(q => q.type === 'listening').length;
-  const cambridgeCount = questions.filter(q => q.type === 'listening' && q.audio_url).length;
 
-  return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-      <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-6xl max-h-[92vh] flex flex-col overflow-hidden transition-all duration-300">
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100 bg-gradient-to-r from-blue-500 to-blue-700 rounded-t-3xl text-white">
-          <div>
-            <h2 className="text-xl font-black flex items-center gap-2"><Sparkles size={20} /> Edit & Manage Exam</h2>
-            <p className="text-blue-100 text-xs mt-0.5">Modify exam questions, add skills, or update pronunciation audio on the fly.</p>
-          </div>
-          <button onClick={onClose} className="p-2 text-white/70 hover:text-white hover:bg-white/10 rounded-xl transition-colors"><X size={20} /></button>
-        </div>
-
-        {/* Body */}
-        <div className="flex-1 overflow-y-auto p-6 flex flex-col lg:flex-row gap-8 min-h-0">
-          {/* LEFT: Settings Form */}
-          <div className="w-full lg:w-[40%] flex-shrink-0 space-y-5">
-            <div>
-              <label className="block text-xs font-black text-slate-600 mb-1">Exam Title *</label>
-              <input type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g. Unit 2 Adjectives Quiz"
-                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100" />
-            </div>
-            <div>
-              <label className="block text-xs font-black text-slate-600 mb-1">Description (Optional)</label>
-              <textarea rows={4} value={description} onChange={e => setDescription(e.target.value)} placeholder="e.g. Synonyms, listening, situational context"
-                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-800 resize-none focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100" />
-            </div>
-            <div>
-              <label className="block text-xs font-black text-slate-600 mb-1">Due Date (Optional)</label>
-              <input type="datetime-local" value={dueDate} onChange={e => setDueDate(e.target.value)}
-                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-800 focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100" />
-            </div>
-            <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100 text-xs font-medium text-slate-500 space-y-2 leading-relaxed">
-              <h4 className="font-extrabold text-slate-700 mb-1 uppercase tracking-wider text-[10px]">Teacher Quick Guide</h4>
-              <p>✏️ <strong>Target Word</strong>: Input the English word. Changing it won&apos;t affect options unless you update them.</p>
-              <p>🎧 <strong>Listening Skill</strong>: Click <em>Fetch Audio</em> to dynamically pull premium speech patterns from Cambridge Dictionary.</p>
-              <p>🔗 <strong>Matching Type</strong>: Specify matching synonym pairs in valid JSON, e.g. <code>{"{\"happy\":\"joyful\"}"}</code>.</p>
-            </div>
-          </div>
-
-          {/* RIGHT: Questions Editor */}
-          <div className="w-full lg:w-[60%] border-t lg:border-t-0 lg:border-l border-slate-200 pt-6 lg:pt-0 lg:pl-8 space-y-5 flex flex-col min-h-0">
-            {loading ? (
-              <div className="flex-1 flex items-center justify-center">
-                <div className="text-center">
-                  <Loader2 className="animate-spin text-blue-500 mx-auto mb-3" size={32} />
-                  <p className="text-sm font-semibold text-slate-500">Loading questions...</p>
-                </div>
-              </div>
-            ) : (
-              <>
-                <div className="flex items-center justify-between flex-shrink-0">
-                  <div>
-                    <h3 className="font-extrabold text-slate-800 text-sm">{questions.length} Total Questions</h3>
-                    {listeningCount > 0 && (
-                      <p className={`text-[11px] mt-0.5 font-bold ${cambridgeCount === listeningCount ? 'text-emerald-600' : 'text-amber-600'}`}>
-                        🎧 {cambridgeCount}/{listeningCount} listening questions have premium Cambridge audio
-                      </p>
-                    )}
-                  </div>
-                  <button type="button" onClick={() => setShowAddWordsDialog(true)} className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl text-xs transition-all shadow-sm border border-emerald-600">
-                    <Plus size={13} /> Add Question
-                  </button>
-                </div>
-
-                <div className="flex flex-wrap gap-2 flex-shrink-0">
-                  {Object.entries(TYPE_META).map(([type, meta]) => {
-                    const cnt = questions.filter(q => q.type === type).length;
-                    if (!cnt) return null;
-                    return <span key={type} className={`text-[10px] font-bold px-2.5 py-1 rounded-full border uppercase tracking-wider ${meta.color}`}>{meta.emoji} {meta.label}: {cnt}</span>;
-                  })}
-                </div>
-
-                {/* Unique Vocabulary List Chip Container */}
-                <div className="bg-slate-50 border border-slate-200/60 rounded-2xl p-3.5 flex flex-wrap items-center gap-1.5 flex-shrink-0">
-                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mr-1">Vocab list:</span>
-                  {Array.from(
-                    new Set(
-                      questions
-                        .map(q => q.word)
-                        .flatMap(w => w.split(',').map(s => s.trim()))
-                        .filter(Boolean)
-                    )
-                  ).map((word, wIdx) => (
-                    <span key={wIdx} className="text-xs font-bold px-3 py-1 bg-white border border-slate-200 text-slate-700 rounded-xl shadow-sm hover:border-blue-400 hover:text-blue-500 transition-all select-none">
-                      {word}
-                    </span>
-                  ))}
-                </div>
-
-                <div className="space-y-4 overflow-y-auto flex-1 pr-1 pb-4">
-                  {questions.map((q, idx) => (
-                    <EditableQuestion key={idx} q={q} idx={idx}
-                      onChange={updated => handleQuestionChange(updated, idx)}
-                      onDelete={() => setQuestions(qs => qs.filter((_, i) => i !== idx))}
-                      onFetchAudio={handleFetchAudio}
-                      onAutoFillAI={handleAutoFillAI}
-                    />
-                  ))}
-                </div>
-
-                <button type="button" onClick={() => setShowAddWordsDialog(true)} className="w-full py-3 bg-slate-50 hover:bg-slate-100 border-2 border-dashed border-slate-200 hover:border-slate-300 rounded-2xl text-xs font-bold text-slate-500 hover:text-slate-600 transition-colors flex items-center justify-center gap-1.5 flex-shrink-0">
-                  <Plus size={14} /> Add Another Question
-                </button>
-              </>
-            )}
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="flex items-center justify-between px-6 py-4 border-t border-slate-100 bg-slate-50/50 flex-shrink-0">
-          <button onClick={onClose} className="px-4 py-2 text-sm font-bold text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-colors">Cancel</button>
-          <button onClick={handleSave} disabled={saving || loading || !questions.length}
-            className="flex items-center gap-2 px-6 py-2.5 bg-emerald-500 hover:bg-emerald-600 disabled:bg-slate-200 disabled:cursor-not-allowed text-white font-bold rounded-xl text-sm transition-all shadow-md shadow-emerald-200">
-            {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-            {saving ? 'Saving changes...' : 'Save Changes'}
-          </button>
-        </div>
-      </div>
-
-      {/* Add Vocabulary via AI Modal Overlay */}
-      {showAddWordsDialog && (
-        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border border-slate-100 dark:border-slate-700 flex flex-col p-6 space-y-4 animate-in scale-in duration-200 text-slate-800 dark:text-white">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-black text-slate-800 dark:text-white flex items-center gap-2">
-                <Sparkles className="text-purple-500" size={18} /> Add Vocabulary via AI
-              </h3>
-              <button onClick={() => { setShowAddWordsDialog(false); setNewWordsInput(''); }} className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-lg transition-colors">
-                <X size={16} />
-              </button>
-            </div>
-            
-            <div>
-              <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">New Target Words</label>
-              <textarea
-                rows={4}
-                value={newWordsInput}
-                onChange={e => setNewWordsInput(e.target.value)}
-                placeholder="Enter words separated by commas or new lines, e.g. genius, brave, wisdom"
-                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm font-medium text-slate-700 dark:text-white resize-none focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100"
-              />
-              <p className="text-[10px] text-slate-400 mt-1">
-                Existing words in the exam will be automatically identified and skipped.
-              </p>
-            </div>
-            
-            <div className="flex gap-3 pt-2">
-              <button
-                type="button"
-                onClick={() => {
-                  const newQ: ExamQuestion = {
-                    word: '',
-                    type: 'listening',
-                    question_text: 'Nghe phát âm và chọn từ viết đúng chính tả:',
-                    options: ['', '', '', ''],
-                    correct_answer: '',
-                    audio_url: null,
-                  };
-                  setQuestions(prev => [...prev, newQ]);
-                  setShowAddWordsDialog(false);
-                  setNewWordsInput('');
-                  toast.success('Added new empty question!');
-                }}
-                className="flex-1 py-2 border border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold rounded-xl text-xs transition-all flex items-center justify-center gap-1.5"
-              >
-                <Plus size={13} /> Add Empty Card
-              </button>
-              <button
-                type="button"
-                disabled={addingWords || !newWordsInput.trim()}
-                onClick={handleAIAddWords}
-                className="flex-1 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-slate-200 dark:disabled:bg-slate-600 disabled:cursor-not-allowed text-white font-bold rounded-xl text-xs transition-all shadow-md shadow-purple-200 dark:shadow-none flex items-center justify-center gap-1.5"
-              >
-                {addingWords ? <Loader2 size={13} className="animate-spin" /> : <Sparkles size={13} />}
-                {addingWords ? 'Generating...' : 'Generate with AI'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ─── Main ExamManagerPanel ────────────────────────────────────────────────────
 interface Props {
   groupId: string;
 }
@@ -685,9 +263,9 @@ export function ExamManagerPanel({ groupId }: Props) {
   const [editingExamId, setEditingExamId] = useState<string | null>(null);
   const [showExamList, setShowExamList] = useState(false);
 
-  // Wizard state
+  
   const [showWizard, setShowWizard] = useState(false);
-  const [step, setStep] = useState<'input' | 'review'>('input');
+  
   const [examTitle, setExamTitle] = useState('');
   const [examDesc, setExamDesc] = useState('');
   const [wizardDueDate, setWizardDueDate] = useState('');
@@ -699,7 +277,7 @@ export function ExamManagerPanel({ groupId }: Props) {
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  // Wizard AI Vocabulary addition states
+  
   const [wizardShowAddWords, setWizardShowAddWords] = useState(false);
   const [wizardNewWords, setWizardNewWords] = useState('');
   const [wizardAddingWords, setWizardAddingWords] = useState(false);
@@ -756,8 +334,20 @@ export function ExamManagerPanel({ groupId }: Props) {
     }
   }, [groupId]);
 
-  // eslint-disable-next-line react-hooks/set-state-in-effect
-  useEffect(() => { void loadExams(); }, [loadExams]);
+  
+  useEffect(() => {
+    let active = true;
+    const run = async () => {
+      await Promise.resolve();
+      if (active) {
+        loadExams();
+      }
+    };
+    run();
+    return () => {
+      active = false;
+    };
+  }, [loadExams]);
 
 
 
@@ -774,7 +364,7 @@ export function ExamManagerPanel({ groupId }: Props) {
       if (!qs.length) throw new Error('No questions returned');
       setQuestions(mergeQuestions([], qs));
       if (!examTitle) setExamTitle(`Exam ${new Date().toLocaleDateString('vi-VN')}`);
-      setStep('review');
+      
       toast.success('Questions generated with Cambridge audio! 🎧');
     } catch (e) {
       const err = e as Error;
@@ -822,8 +412,8 @@ export function ExamManagerPanel({ groupId }: Props) {
     const toastId = toast.loading(`Fetching Cambridge audio for "${word}"...`);
     try {
       const res = await examsService.lookupWord(word.trim());
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const data = (res as any).data ?? res;
+      
+      const data = ((res as unknown) as { data?: { audioUrl?: string } }).data ?? (res as { audioUrl?: string });
       if (data && data.audioUrl) {
         setQuestions(qs => qs.map((x, i) => i === index ? { ...x, audio_url: data.audioUrl } : x));
         toast.success(`Successfully loaded Cambridge pronunciation audio for "${word}"! 🎧`, { id: toastId });
@@ -845,8 +435,8 @@ export function ExamManagerPanel({ groupId }: Props) {
     const toastId = toast.loading(`Generating question for "${word}"...`);
     try {
       const res = await examsService.generateQuestions([word.trim()]);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const newQs: ExamQuestion[] = Array.isArray(res) ? (res as ExamQuestion[]) : (((res as any).data ?? []) as ExamQuestion[]);
+      
+      const newQs: ExamQuestion[] = Array.isArray(res) ? (res as ExamQuestion[]) : (((res as unknown) as { data?: ExamQuestion[] }).data ?? []);
       if (newQs && newQs.length > 0) {
         const matchedQ = newQs.find(q => q.type === type) || newQs.find(q => q.type !== 'matching') || newQs[0];
         if (matchedQ) {
@@ -864,10 +454,11 @@ export function ExamManagerPanel({ groupId }: Props) {
       } else {
         toast.error(`AI failed to generate question details for "${word}".`, { id: toastId });
       }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
-      console.error(err);
-      toast.error(err?.message || `Failed to generate details for "${word}".`, { id: toastId });
+      
+    } catch (err) {
+      const error = err as Error;
+      console.error(error);
+      toast.error(error?.message || `Failed to generate details for "${word}".`, { id: toastId });
     }
   };
 
@@ -910,8 +501,8 @@ export function ExamManagerPanel({ groupId }: Props) {
     const toastId = toast.loading(`Generating questions for ${newWords.length} new word(s)...`);
     try {
       const res = await examsService.generateQuestions(newWords);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const newQs: ExamQuestion[] = Array.isArray(res) ? (res as ExamQuestion[]) : (((res as any).data ?? []) as ExamQuestion[]);
+      
+      const newQs: ExamQuestion[] = Array.isArray(res) ? (res as ExamQuestion[]) : (((res as unknown) as { data?: ExamQuestion[] }).data ?? []);
       if (newQs && newQs.length > 0) {
         setQuestions(prev => mergeQuestions(prev, newQs));
         toast.success(`Generated questions for ${newWords.length} new word(s) successfully!`, { id: toastId });
@@ -920,10 +511,11 @@ export function ExamManagerPanel({ groupId }: Props) {
       } else {
         toast.error('Failed to generate questions. No questions returned from AI.', { id: toastId });
       }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
-      console.error(err);
-      toast.error(err?.message || 'Failed to generate questions with AI.', { id: toastId });
+      
+    } catch (err) {
+      const error = err as Error;
+      console.error(error);
+      toast.error(error?.message || 'Failed to generate questions with AI.', { id: toastId });
     } finally {
       setWizardAddingWords(false);
     }
@@ -945,7 +537,7 @@ export function ExamManagerPanel({ groupId }: Props) {
   const resetWizard = () => {
     setShowWizard(false);
     setEditingExamId(null);
-    setStep('input');
+    
     setWordInput('');
     setExamTitle('');
     setExamDesc('');
@@ -964,19 +556,19 @@ export function ExamManagerPanel({ groupId }: Props) {
 
   return (
     <div className="flex flex-col h-full">
-      {/* ── Header: title only (no button) ── */}
+      {}
       <div className="flex items-center justify-between mb-4">
         <h4 className="font-bold text-slate-800 flex items-center gap-2">
           <FileText className="text-blue-500" size={18} /> Exams
         </h4>
       </div>
 
-      {/* ── Description ── */}
+      {}
       <p className="text-sm text-slate-500 mb-6">
         Create AI-powered vocabulary exams for your students with Cambridge-quality audio for listening questions.
       </p>
 
-      {/* ── Exam list (shown when toggled) ── */}
+      {}
       {loading ? (
         <div className="flex items-center justify-center py-4 flex-1">
           <Loader2 className="animate-spin text-blue-400" size={20} />
@@ -993,8 +585,8 @@ export function ExamManagerPanel({ groupId }: Props) {
                 <button onClick={async () => {
                   try {
                     const res = await examsService.getExamById(exam.id);
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const fullExam = (res as any).data ?? res;
+                    
+                    const fullExam = ((res as unknown) as { data?: Exam }).data ?? (res as Exam);
                     setEditingExamId(exam.id);
                     setExamTitle(exam.title);
                     setExamDesc(exam.description || '');
@@ -1002,7 +594,7 @@ export function ExamManagerPanel({ groupId }: Props) {
                     setWizardStartDate(fullExam.start_date ? formatForDatetimeLocal(fullExam.start_date) : '');
                     setWizardAllowRetry(!!fullExam.allow_retry);
                     setQuestions(fullExam.questions || []);
-                    setStep('review');
+                    
                     setShowWizard(true);
                   } catch (error) {
                     console.error(error);
@@ -1022,7 +614,7 @@ export function ExamManagerPanel({ groupId }: Props) {
         </div>
       ) : null}
 
-      {/* ── Action buttons (always at bottom, like Vocabulary Sets) ── */}
+      {}
       <div className="flex gap-2 mt-auto">
         {exams.length > 0 && (
           <button
@@ -1040,12 +632,12 @@ export function ExamManagerPanel({ groupId }: Props) {
         </button>
       </div>
 
-      {/* ─── Create Wizard Modal ─── */}
+      {}
       {showWizard && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
           <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-6xl h-[92vh] flex flex-col overflow-hidden">
 
-            {/* Wizard header */}
+            {}
             <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100 dark:border-slate-700 bg-gradient-to-r from-blue-500 to-blue-700 text-white shrink-0">
               <div>
                 <h2 className="text-xl font-black text-white flex items-center gap-2">
@@ -1060,9 +652,9 @@ export function ExamManagerPanel({ groupId }: Props) {
               </button>
             </div>
 
-            {/* Split Body */}
+            {}
             <div className="flex-1 overflow-hidden flex flex-col lg:flex-row">
-              {/* Left Panel: Settings & Word List */}
+              {}
               <div className="w-full lg:w-[40%] flex flex-col border-r border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50">
                 <div className="flex-1 overflow-y-auto p-6 space-y-5">
                   <div>
@@ -1112,7 +704,7 @@ export function ExamManagerPanel({ groupId }: Props) {
                   </div>
                 </div>
                 
-                {/* Left Panel Footer */}
+                {}
                 <div className="p-4 border-t border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 shrink-0">
                   <button onClick={handleGenerate} disabled={generating || !examTitle || !wordInput}
                     className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-blue-500 hover:bg-blue-600 disabled:bg-slate-200 dark:disabled:bg-slate-600 disabled:cursor-not-allowed text-white font-bold rounded-xl text-sm transition-all shadow-md shadow-blue-200 dark:shadow-none">
@@ -1122,7 +714,7 @@ export function ExamManagerPanel({ groupId }: Props) {
                 </div>
               </div>
 
-              {/* Right Panel: Review & Modify Questions */}
+              {}
               <div className="w-full lg:w-[60%] flex flex-col bg-white dark:bg-slate-800">
                 <div className="flex-1 overflow-y-auto p-6 space-y-5">
                   <div className="flex items-center justify-between">
@@ -1150,7 +742,7 @@ export function ExamManagerPanel({ groupId }: Props) {
                     })}
                   </div>
 
-                  {/* Unique Vocabulary List Chip Container */}
+                  {}
                   <div className="bg-slate-50 dark:bg-slate-700/50 border border-slate-200/60 dark:border-slate-600 rounded-2xl p-3.5 flex flex-wrap items-center gap-1.5 flex-shrink-0">
                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mr-1">Vocab list:</span>
                     {Array.from(
@@ -1189,7 +781,7 @@ export function ExamManagerPanel({ groupId }: Props) {
                   </div>
                 </div>
 
-                {/* Footer */}
+                {}
                 <div className="flex items-center justify-end px-6 py-4 border-t border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/80 gap-3 shrink-0">
                   <button onClick={resetWizard} className="px-4 py-2.5 text-sm font-bold text-slate-500 hover:text-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl transition-colors">
                     Cancel
@@ -1206,10 +798,10 @@ export function ExamManagerPanel({ groupId }: Props) {
         </div>
       )}
 
-      {/* ─── Exam Taker Modal ─── */}
+      {}
       {activeExam && <SharedExamTakerModal exam={activeExam} onClose={() => { setActiveExam(null); loadExams(); }} />}
 
-      {/* ─── Delete confirm ─── */}
+      {}
       {deletingId && (
         <div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 w-full max-w-sm shadow-2xl">
@@ -1223,7 +815,7 @@ export function ExamManagerPanel({ groupId }: Props) {
         </div>
       )}
 
-      {/* Inline Wizard Add Vocabulary via AI Modal Overlay */}
+      {}
       {wizardShowAddWords && (
         <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
           <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border border-slate-100 dark:border-slate-700 flex flex-col p-6 space-y-4 animate-in scale-in duration-200 text-slate-800 dark:text-white">

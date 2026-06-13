@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { FadeIn } from '@/shared/components/animations/FadeIn';
+import { Button } from '@/components/ui/Button';
 
 interface AddMemberModalProps {
   isOpen: boolean;
@@ -25,7 +27,7 @@ export function AddMemberModal({ isOpen, onClose, onAdd }: AddMemberModalProps) 
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-      <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 w-full max-w-md shadow-2xl border border-slate-100 dark:border-slate-700">
+      <FadeIn className="bg-white dark:bg-slate-800 rounded-3xl p-6 w-full max-w-md shadow-2xl border border-slate-100 dark:border-slate-700">
         <h3 className="text-xl font-bold mb-4 text-slate-800 dark:text-white">Add Member</h3>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -40,24 +42,26 @@ export function AddMemberModal({ isOpen, onClose, onAdd }: AddMemberModalProps) 
             />
           </div>
           <div className="flex justify-end gap-3 pt-4">
-            <button 
+            <Button 
               type="button" 
               onClick={onClose} 
               disabled={isSaving}
-              className="px-4 py-2 text-slate-600 dark:text-slate-300 font-bold hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition-colors disabled:opacity-50"
+              variant="outline"
+              className="rounded-xl border-slate-200 hover:bg-slate-100"
             >
               Cancel
-            </button>
-            <button 
+            </Button>
+            <Button 
               type="submit" 
               disabled={isSaving}
-              className="px-4 py-2 bg-emerald-500 text-white font-bold rounded-xl hover:bg-emerald-600 transition-colors shadow-lg shadow-emerald-200 dark:shadow-none disabled:opacity-50 flex items-center gap-2"
+              variant="primary"
+              className="rounded-xl shadow-lg shadow-emerald-200"
             >
               {isSaving ? 'Adding...' : 'Add Member'}
-            </button>
+            </Button>
           </div>
         </form>
-      </div>
+      </FadeIn>
     </div>
   );
 }

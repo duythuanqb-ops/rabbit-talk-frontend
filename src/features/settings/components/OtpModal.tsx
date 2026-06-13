@@ -19,12 +19,12 @@ export function OtpModal({
   const [countdown, setCountdown] = useState(0);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  // Focus first input on mount
+  
   useEffect(() => {
     setTimeout(() => inputRefs.current[0]?.focus(), 100);
   }, []);
 
-  // Countdown timer for resend
+  
   useEffect(() => {
     if (countdown <= 0) return;
     const t = setTimeout(() => setCountdown(c => c - 1), 1000);
@@ -68,9 +68,9 @@ export function OtpModal({
       await verifyEmailOtp(code);
       setSubmitState('success');
       setTimeout(() => { onVerified(); onClose(); }, 1500);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setSubmitState('error');
-      setErrorMsg(err.message || 'Invalid code. Please try again.');
+      setErrorMsg((err as Error).message || 'Invalid code. Please try again.');
       setDigits(['', '', '', '', '', '']);
       setTimeout(() => inputRefs.current[0]?.focus(), 50);
     }
@@ -156,7 +156,7 @@ export function OtpModal({
         </button>
 
         <p className="text-center text-sm text-slate-500 mt-4">
-          Didn't receive the code?{' '}
+          Didn&apos;t receive the code?{' '}
           {countdown > 0 ? (
             <span className="text-slate-400">Resend in {countdown}s</span>
           ) : (

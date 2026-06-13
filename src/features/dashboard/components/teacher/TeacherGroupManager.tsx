@@ -1,13 +1,13 @@
-/* eslint-disable @next/next/no-img-element */
-'use client';
-
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { Users, Plus, Swords, Settings } from 'lucide-react';
 import { Group } from '../../../groups/types/groups.types';
 import { ConfirmModal } from '@/shared/components/ConfirmModal';
 import { useGroupManager } from '@/features/groups/hooks/useGroupManager';
 import { GroupFormModal } from './GroupFormModal';
+import { StaggerContainer, StaggerItem } from '@/shared/components/animations/StaggerContainer';
+import { Button } from '@/components/ui/Button';
 
 export function TeacherGroupManager() {
   const router = useRouter();
@@ -42,6 +42,7 @@ export function TeacherGroupManager() {
     <div className="double-bezel h-full">
       <div className="double-bezel-inner bg-surface p-6 relative min-h-[400px]">
         <GroupFormModal
+          key={isGroupModalOpen ? (editingGroup?.id || 'new') : 'closed'}
           isOpen={isGroupModalOpen}
           onClose={() => setIsGroupModalOpen(false)}
           onSave={(form, file) => saveGroup(editingGroup, form, file)}
@@ -55,16 +56,17 @@ export function TeacherGroupManager() {
             </div>
             My Groups
           </h3>
-          <button
+          <Button
             onClick={() => {
               setEditingGroup(null);
               setIsGroupModalOpen(true);
             }}
-            className="flex items-center gap-2 px-5 py-2.5 bg-emerald-500 text-white rounded-xl hover:bg-emerald-600 transition-all text-sm font-bold shadow-lg shadow-emerald-200 hover:scale-105 active:scale-95"
+            variant="primary"
+            className="rounded-xl shadow-lg shadow-emerald-200"
+            leftIcon={<Plus size={18} />}
           >
-            <Plus size={18} />
             Create Group
-          </button>
+          </Button>
         </div>
 
         {groups.length === 0 ? (
@@ -76,21 +78,22 @@ export function TeacherGroupManager() {
             <p className="text-slate-500 max-w-sm mb-6 text-sm">
               Create your first group to start managing students, assigning exams, and hosting live battles.
             </p>
-            <button
+            <Button
               onClick={() => {
                 setEditingGroup(null);
                 setIsGroupModalOpen(true);
               }}
-              className="flex items-center gap-2 px-6 py-3 bg-emerald-50 text-emerald-600 rounded-xl hover:bg-emerald-100 transition-colors text-sm font-bold border border-emerald-100"
+              variant="outline"
+              className="rounded-xl border-emerald-100 bg-emerald-50 text-emerald-600 hover:bg-emerald-100"
+              leftIcon={<Plus size={18} />}
             >
-              <Plus size={18} />
               Create Your First Group
-            </button>
+            </Button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <StaggerContainer className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {groups.map((group) => (
-              <div
+              <StaggerItem
                 key={group.id}
                 onClick={() => router.push(`/dashboard/groups/${group.id}`)}
                 className="p-5 rounded-3xl shadow-[0_2px_12px_rgba(0,0,0,0.03)] dark:shadow-none ring-1 ring-slate-100 dark:ring-slate-700/50 hover:ring-emerald-300 dark:hover:ring-emerald-500/50 transition-all cursor-pointer bg-white dark:bg-slate-700 hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] hover:-translate-y-1 group relative flex flex-col h-full"
@@ -103,9 +106,12 @@ export function TeacherGroupManager() {
 
                 <div className="flex gap-4 items-start mb-4 pr-10">
                   {group.avatar ? (
-                    <img
+                    <Image
+                      unoptimized
                       src={group.avatar}
                       alt={group.title}
+                      width={48}
+                      height={48}
                       className="w-12 h-12 rounded-xl object-cover border border-slate-100 shadow-sm flex-shrink-0"
                     />
                   ) : (
@@ -139,9 +145,9 @@ export function TeacherGroupManager() {
                     </button>
                   </div>
                 </div>
-              </div>
+              </StaggerItem>
             ))}
-          </div>
+          </StaggerContainer>
         )}
         <ConfirmModal
           isOpen={confirmState.isOpen}

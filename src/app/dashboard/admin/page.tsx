@@ -1,20 +1,43 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import Image from 'next/image';
 import { ShieldAlert, Loader2, CheckCircle, XCircle, GraduationCap, Video, FileText, User } from 'lucide-react';
 import { getProfile } from '@/features/auth/services/auth.service';
 import { getTeacherRequests, approveTeacherRequest, rejectTeacherRequest, getAdminQuests, createAdminQuest, updateAdminQuest, deleteAdminQuest } from '@/features/auth/services/admin.service';
 import { cn } from '@/shared/utils/cn';
 import toast from 'react-hot-toast';
 
+type TeacherRequest = {
+  id: string;
+  uuid: string;
+  first_name?: string;
+  last_name?: string;
+  email?: string;
+  avatar_url?: string;
+  status: 'pending' | 'approved' | 'rejected';
+  headline?: string;
+  experience_years?: number;
+  video_intro_url?: string;
+  certificates?: string;
+};
+
+type Quest = {
+  id: string;
+  title: string;
+  description: string;
+  xp_reward: number;
+  type: string;
+  target_value: number;
+};
+
 export default function AdminPage() {
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
-  const [requests, setRequests] = useState<any[]>([]);
+  const [requests, setRequests] = useState<TeacherRequest[]>([]);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-  // Quests State
-  const [quests, setQuests] = useState<any[]>([]);
+  const [quests, setQuests] = useState<Quest[]>([]);
   const [editingQuestId, setEditingQuestId] = useState<string | null>(null);
   const [newQuest, setNewQuest] = useState({
     title: '',
@@ -28,7 +51,7 @@ export default function AdminPage() {
   const fetchRequests = useCallback(async () => {
     try {
       const res = await getTeacherRequests();
-      setRequests(res.data || res);
+      setRequests((res as { data?: TeacherRequest[] }).data || (res as TeacherRequest[]));
     } catch (err) {
       console.error('Failed to fetch requests', err);
     }
@@ -37,7 +60,7 @@ export default function AdminPage() {
   const fetchQuests = useCallback(async () => {
     try {
       const res = await getAdminQuests();
-      setQuests(res.data || res);
+      setQuests((res as { data?: Quest[] }).data || (res as Quest[]));
     } catch (err) {
       console.error('Failed to fetch quests', err);
     }
@@ -47,14 +70,14 @@ export default function AdminPage() {
     const init = async () => {
       try {
         const res = await getProfile();
-        const user = res.data || res;
+        const user = (res as { data?: { role?: string; [key: string]: unknown } }).data || (res as { role?: string });
         if (user.role === 'admin') {
           setIsAdmin(true);
           await Promise.all([fetchRequests(), fetchQuests()]);
         } else {
           setIsAdmin(false);
         }
-      } catch (err) {
+      } catch {
         setIsAdmin(false);
       } finally {
         setLoading(false);
@@ -111,7 +134,7 @@ export default function AdminPage() {
     }
   };
 
-  const handleEditQuest = (q: any) => {
+  const handleEditQuest = (q: Quest) => {
     setEditingQuestId(q.id);
     setNewQuest({
       title: q.title,
@@ -169,7 +192,7 @@ export default function AdminPage() {
   return (
     <>
       <div className="max-w-6xl mx-auto w-full pb-12">
-        {/* Header */}
+        {}
         <div className="mb-8 flex items-start gap-4">
           <div className="w-14 h-14 bg-indigo-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-indigo-200 shrink-0">
             <ShieldAlert size={28} />
@@ -180,7 +203,7 @@ export default function AdminPage() {
           </div>
         </div>
 
-        {/* Stats Row */}
+        {}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           {[
             { label: 'Total Applications', value: requests.length, color: 'bg-slate-50 border-slate-200 dark:bg-slate-800 dark:border-slate-700', valueColor: 'text-slate-900 dark:text-white' },
@@ -195,7 +218,7 @@ export default function AdminPage() {
           ))}
         </div>
 
-        {/* Teacher Applications */}
+        {}
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
           <div className="p-6 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 flex items-center gap-3">
             <GraduationCap className="text-indigo-500 dark:text-indigo-400" size={22} />
@@ -219,7 +242,7 @@ export default function AdminPage() {
                     <div className="flex items-start gap-4 flex-1">
                       <div className="w-14 h-14 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 dark:text-slate-400 overflow-hidden shrink-0">
                         {req.avatar_url ? (
-                          <img src={req.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+                          <Image src={req.avatar_url} alt="Avatar" width={56} height={56} className="w-full h-full object-cover" />
                         ) : (
                           <User size={24} />
                         )}
@@ -287,7 +310,7 @@ export default function AdminPage() {
           </div>
         </div>
 
-        {/* Daily Quests Management */}
+        {}
         <div className="mt-8 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
           <div className="p-6 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 flex items-center gap-3">
             <CheckCircle className="text-orange-500" size={22} />
@@ -299,7 +322,7 @@ export default function AdminPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 divide-y lg:divide-y-0 lg:divide-x divide-slate-100 dark:divide-slate-800">
             
-            {/* Create/Edit Quest Form */}
+            {}
             <div className="p-6 lg:col-span-1 bg-slate-50/30 dark:bg-slate-800/20">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-bold text-slate-800 dark:text-slate-200">
@@ -352,11 +375,11 @@ export default function AdminPage() {
               </form>
             </div>
 
-            {/* Quests List */}
+            {}
             <div className="lg:col-span-2 p-0">
               {quests.length === 0 ? (
                 <div className="p-12 text-center text-slate-500 dark:text-slate-400">
-                  No daily quests configured. Students won't see any quests.
+                  No daily quests configured. Students won&apos;t see any quests.
                 </div>
               ) : (
                 <div className="divide-y divide-slate-100 dark:divide-slate-800">

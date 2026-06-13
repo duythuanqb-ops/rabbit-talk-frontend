@@ -8,7 +8,7 @@ import { motion } from 'framer-motion';
 import { containerVariants, itemVariants } from '@/shared/utils/motion';
 import ImageCropperModal from '@/features/dashboard/components/teacher/ImageCropperModal';
 
-// ─── Static Data (replace with real user data from context/API) ───────────────
+
 const STATS = [
   {
     label: 'Day Streak',
@@ -33,21 +33,35 @@ const STATS = [
   },
 ] as const;
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const ACHIEVEMENTS = [
-  { title: 'Early Bird',    desc: 'Completed a lesson before 8 AM', icon: '🌅', bg: 'bg-orange-100  dark:bg-orange-900/20'  },
-  { title: 'Vocab Master',  desc: 'Learned 500 new words',           icon: '🧠', bg: 'bg-purple-100  dark:bg-purple-900/20'  },
-  { title: 'Unstoppable',   desc: 'Reached a 14-day streak',         icon: '🔥', bg: 'bg-red-100     dark:bg-red-900/20'     },
-  { title: 'Perfect Score', desc: '100% on a grammar test',          icon: '💯', bg: 'bg-emerald-100 dark:bg-emerald-900/20' },
-];
+import { User } from '@/shared/types/api.types';
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
+interface ProfileUser extends User {
+  cover_url?: string | null;
+  created_at?: string;
+}
+
+interface Achievement {
+  id?: string;
+  title: string;
+  desc?: string;
+  description?: string;
+  icon: string;
+  bg?: string;
+  bg_color?: string;
+}
+
+interface ProfileStats {
+  dayStreak: number;
+  xp: number;
+  league: string;
+  achievements?: Achievement[];
+}
+
+
 export default function ProfilePage() {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<ProfileUser | null>(null);
   const [loading, setLoading] = useState(true);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [stats, setStats] = useState<any>(null);
+  const [stats, setStats] = useState<ProfileStats | null>(null);
   const [uploadingCover, setUploadingCover] = useState(false);
   const [coverToCrop, setCoverToCrop] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -56,21 +70,19 @@ export default function ProfilePage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Create an object URL for the cropper
+    
     const url = URL.createObjectURL(file);
     setCoverToCrop(url);
-    // clear the input so the same file can be selected again
+    
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const handleCroppedCover = async (croppedFile: File) => {
     try {
       setUploadingCover(true);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const res: any = await uploadCover(croppedFile);
+      const res = await uploadCover(croppedFile) as { data?: { cover_url?: string }; cover_url?: string };
       const newCoverUrl = res.data?.cover_url || res.cover_url;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      setUser((prev: any) => ({ ...prev, cover_url: newCoverUrl }));
+      setUser((prev) => prev ? ({ ...prev, cover_url: newCoverUrl }) : null);
       setCoverToCrop(null);
     } catch (err) {
       console.error('Failed to upload cover', err);
@@ -85,9 +97,9 @@ export default function ProfilePage() {
       dashboardService.getProfileStats()
     ])
       .then(([userRes, statsRes]) => {
-        const u = userRes.data || userRes;
+        const u = (userRes as { data?: ProfileUser }).data ?? (userRes as ProfileUser);
         setUser(u);
-        setStats(statsRes.data);
+        setStats((statsRes as { data: ProfileStats }).data);
         setLoading(false);
       })
       .catch((err) => {
@@ -138,12 +150,12 @@ export default function ProfilePage() {
         animate="show"
         className="max-w-4xl mx-auto space-y-6"
       >
-        {/* ── Profile Header ── */}
+        {}
         <motion.div
           variants={itemVariants}
           className="bg-white dark:bg-slate-800 rounded-3xl shadow-[0_2px_12px_rgba(0,0,0,0.03)] ring-1 ring-slate-100 dark:ring-slate-700 overflow-hidden"
         >
-          {/* Cover */}
+          {}
           <div 
             className="h-32 bg-gradient-to-r from-emerald-400 to-teal-500 relative bg-cover bg-center"
             style={user?.cover_url ? { backgroundImage: `url(${user.cover_url})` } : {}}
@@ -165,17 +177,17 @@ export default function ProfilePage() {
             </button>
           </div>
 
-          {/* Info row */}
+          {}
           <div className="px-4 md:px-8 pb-8">
             <div className="flex flex-col md:flex-row items-center md:items-end gap-4 md:gap-6 -mt-12 relative z-10">
-              {/* Avatar */}
+              {}
               <div className="w-24 h-24 bg-white dark:bg-slate-700 rounded-full p-1 shadow-md">
                 <div className="w-full h-full bg-emerald-100 dark:bg-emerald-900/50 rounded-full flex items-center justify-center text-3xl font-bold text-emerald-700 dark:text-emerald-400">
                   {user?.first_name?.[0]?.toUpperCase() || user?.username?.[0]?.toUpperCase() || 'U'}
                 </div>
               </div>
 
-              {/* Name & email */}
+              {}
               <div className="flex-1 text-center md:text-left">
                 <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
                   {user ? `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.username : 'Unknown User'}
@@ -185,7 +197,7 @@ export default function ProfilePage() {
                 </p>
               </div>
 
-              {/* Actions */}
+              {}
               <div className="flex gap-2 w-full md:w-auto mt-4 md:mt-0">
                 <button className="flex-1 md:flex-none px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold rounded-xl text-sm hover:bg-slate-200 dark:hover:bg-slate-600 transition">
                   Share Profile
@@ -196,7 +208,7 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            {/* Stats row */}
+            {}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8 pt-8 border-t border-slate-100 dark:border-slate-700">
               {currentStats.map(({ label, value, icon: Icon, bg, color }) => (
                 <div key={label} className="flex items-center gap-3">
@@ -213,9 +225,9 @@ export default function ProfilePage() {
           </div>
         </motion.div>
 
-        {/* ── Achievements & About ── */}
+        {}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Achievements */}
+          {}
           <motion.div
             variants={itemVariants}
             className="md:col-span-2 bg-white dark:bg-slate-800 rounded-3xl shadow-[0_2px_12px_rgba(0,0,0,0.03)] ring-1 ring-slate-100 dark:ring-slate-700 p-6"
@@ -226,8 +238,7 @@ export default function ProfilePage() {
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {currentAchievements.length > 0 ? (
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                currentAchievements.map((ach: any) => (
+                currentAchievements.map((ach: Achievement) => (
                   <div
                     key={ach.id || ach.title}
                     className="flex items-center gap-4 p-4 rounded-xl border border-slate-50 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-700/30 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
@@ -249,7 +260,7 @@ export default function ProfilePage() {
             </div>
           </motion.div>
 
-          {/* About Me */}
+          {}
           <motion.div
             variants={itemVariants}
             className="bg-white dark:bg-slate-800 rounded-3xl shadow-[0_2px_12px_rgba(0,0,0,0.03)] ring-1 ring-slate-100 dark:ring-slate-700 p-6"
@@ -259,10 +270,7 @@ export default function ProfilePage() {
               About Me
             </h3>
             <div className="space-y-4">
-              {/* <div className="flex items-start gap-3 text-sm text-slate-600 dark:text-slate-400">
-                <MapPin size={16} className="text-slate-400 dark:text-slate-500 mt-0.5 shrink-0" />
-                <span>Hanoi, Vietnam</span>
-              </div> */}
+              {}
               <div className="flex items-start gap-3 text-sm text-slate-600 dark:text-slate-400">
                 <Calendar size={16} className="text-slate-400 dark:text-slate-500 mt-0.5 shrink-0" />
                 <span>Joined {user?.created_at ? new Date(user.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : 'Unknown'}</span>

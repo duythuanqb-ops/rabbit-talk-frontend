@@ -3,12 +3,22 @@ import { useState, useEffect } from 'react';
 import { dashboardService } from '../../services/dashboard.service';
 
 import { motion } from 'framer-motion';
+import { StaggerContainer, StaggerItem } from '@/shared/components/animations/StaggerContainer';
+
+interface QuestItem {
+  id?: string;
+  isCompleted?: boolean;
+  title?: string;
+  currentValue?: number;
+  targetValue?: number;
+  xpReward?: number;
+}
 
 export function DailyQuests() {
-  const [quests, setQuests] = useState<any[]>([]);
+  const [quests, setQuests] = useState<QuestItem[]>([]);
 
   const fetchQuests = () => {
-    dashboardService.getStudentQuests().then(res => setQuests(res.data)).catch(console.error);
+    dashboardService.getStudentQuests().then(res => setQuests((res as { data: QuestItem[] }).data)).catch(console.error);
   };
 
   useEffect(() => {
@@ -31,12 +41,9 @@ export function DailyQuests() {
           <span className="text-[11px] font-bold text-muted-foreground bg-surface-hover px-2.5 py-1 rounded-full uppercase tracking-wide">Resets in 12h</span>
         </div>
         
-        <div className="space-y-4">
-          {quests.map((quest, index) => (
-            <motion.div 
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: index * 0.1 }}
+        <StaggerContainer className="space-y-4">
+          {quests.map((quest: { id?: string; isCompleted?: boolean; title?: string; currentValue?: number; targetValue?: number; xpReward?: number }, index: number) => (
+            <StaggerItem 
               whileHover={{ scale: 1.02 }}
               key={quest.id} 
               className="group relative"
@@ -58,13 +65,13 @@ export function DailyQuests() {
                     <div className="flex-1 h-2 bg-black/5 dark:bg-white/5 rounded-full overflow-hidden ring-1 ring-inset ring-black/5 dark:ring-white/5">
                       <motion.div 
                         initial={{ width: 0 }}
-                        animate={{ width: `${(quest.currentValue / quest.targetValue) * 100}%` }}
+                        animate={{ width: `${((quest.currentValue ?? 0) / (quest.targetValue ?? 1)) * 100}%` }}
                         transition={{ duration: 1, delay: 0.2 + index * 0.1, ease: 'easeOut' }}
                         className={`h-full rounded-full ${quest.isCompleted ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-gradient-to-r from-orange-400 to-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.4)]'}`} 
                       />
                     </div>
                     <span className="text-[11px] font-bold text-muted-foreground w-8 text-right tabular-nums">
-                      {quest.currentValue}/{quest.targetValue}
+                      {quest.currentValue ?? 0}/{quest.targetValue ?? 0}
                     </span>
                   </div>
                 </div>
@@ -72,9 +79,9 @@ export function DailyQuests() {
                   +{quest.xpReward} XP
                 </div>
               </div>
-            </motion.div>
+            </StaggerItem>
           ))}
-        </div>
+        </StaggerContainer>
       </div>
     </div>
   );

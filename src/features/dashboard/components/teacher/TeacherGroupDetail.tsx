@@ -1,8 +1,6 @@
-/* eslint-disable @next/next/no-img-element */
-'use client';
-
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { Users, ChevronLeft, BookOpen, Swords, Trash2, Edit, Loader2, UserPlus, UserMinus, Play, FileText } from 'lucide-react';
 import { Group, GroupMember } from '../../../groups/types/groups.types';
 import { ConfirmModal } from '@/shared/components/ConfirmModal';
@@ -12,6 +10,8 @@ import { flashcardService } from '@/features/flashcard/services/flashcard.servic
 import { useGroupManager } from '@/features/groups/hooks/useGroupManager';
 import { GroupFormModal } from './GroupFormModal';
 import { AddMemberModal } from './AddMemberModal';
+import { FadeIn } from '@/shared/components/animations/FadeIn';
+import { StaggerContainer, StaggerItem } from '@/shared/components/animations/StaggerContainer';
 
 interface TeacherGroupDetailProps {
   groupId: string;
@@ -109,8 +109,9 @@ export function TeacherGroupDetail({ groupId }: TeacherGroupDetailProps) {
 
   return (
     <div className="double-bezel">
-      <div className="double-bezel-inner bg-surface p-6 relative">
+      <FadeIn className="double-bezel-inner bg-surface p-6 relative">
         <GroupFormModal
+          key={isGroupModalOpen ? (editingGroup?.id || 'new') : 'closed'}
           isOpen={isGroupModalOpen}
           onClose={() => setIsGroupModalOpen(false)}
           onSave={(form, file) => saveGroup(editingGroup, form, file)}
@@ -133,9 +134,12 @@ export function TeacherGroupDetail({ groupId }: TeacherGroupDetailProps) {
             </button>
             <div className="flex items-center gap-4">
               {selectedGroup.avatar ? (
-                <img
+                <Image
+                  unoptimized
                   src={selectedGroup.avatar}
                   alt={selectedGroup.title}
+                  width={64}
+                  height={64}
                   className="w-16 h-16 rounded-2xl object-cover border border-slate-200 shadow-md"
                 />
               ) : (
@@ -275,10 +279,10 @@ export function TeacherGroupDetail({ groupId }: TeacherGroupDetailProps) {
                 </button>
               </div>
 
-              <div className="space-y-3 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+              <StaggerContainer className="space-y-3 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
                 {members.length > 0 ? (
                   members.map((member) => (
-                    <div
+                    <StaggerItem
                       key={member.uuid}
                       className="flex items-center justify-between bg-slate-50 dark:bg-slate-700/50 p-3 rounded-xl border border-slate-100 dark:border-slate-600/50 group transition-all hover:bg-white dark:hover:bg-slate-700 hover:border-slate-200 dark:hover:border-slate-500 hover:shadow-sm"
                     >
@@ -308,10 +312,10 @@ export function TeacherGroupDetail({ groupId }: TeacherGroupDetailProps) {
                       >
                         <UserMinus size={16} />
                       </button>
-                    </div>
+                    </StaggerItem>
                   ))
                 ) : (
-                  <div className="p-8 text-center bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700">
+                  <StaggerItem className="p-8 text-center bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700">
                     <div className="w-12 h-12 bg-white dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-3 shadow-sm border border-slate-100 dark:border-slate-600">
                       <Users size={20} className="text-slate-400" />
                     </div>
@@ -322,9 +326,9 @@ export function TeacherGroupDetail({ groupId }: TeacherGroupDetailProps) {
                     >
                       Add first member
                     </button>
-                  </div>
+                  </StaggerItem>
                 )}
-              </div>
+              </StaggerContainer>
             </div>
           </div>
         </div>
@@ -354,7 +358,7 @@ export function TeacherGroupDetail({ groupId }: TeacherGroupDetailProps) {
           }}
           defaultGroupId={selectedGroup.id}
         />
-      </div>
+      </FadeIn>
     </div>
   );
 }

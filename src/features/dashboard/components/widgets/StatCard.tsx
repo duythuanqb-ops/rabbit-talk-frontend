@@ -26,7 +26,7 @@ export function StatCard({ title, value, icon: Icon, trend, trendType = 'neutral
       className="double-bezel group"
     >
       <div className="double-bezel-inner p-6 flex flex-col h-full relative overflow-hidden backdrop-blur-md bg-white/60 dark:bg-slate-900/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(255,255,255,0.01)] border border-white/20 dark:border-slate-700/30 transition-fluid">
-        {/* Subtle background glow on hover */}
+        {}
         <div className={cn(
           "absolute -right-8 -top-8 w-32 h-32 rounded-full blur-[40px] opacity-0 group-hover:opacity-20 transition-fluid duration-500",
           color === 'emerald' ? 'bg-emerald-500' :

@@ -3,13 +3,13 @@
 import { Suspense, useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { DashboardLayout } from '@/features/dashboard/components';
-import { Swords, ArrowLeft, ChevronRight, Loader2 } from 'lucide-react';
+import { Swords, ChevronRight, Loader2 } from 'lucide-react';
 import { groupsService } from '@/features/groups/services/groups.service';
-import { cn } from '@/shared/utils/cn';
 import { Phase, WordItem, Player } from '../types/battle.types';
 import { SetupPhase } from '../components/SetupPhase';
 import { BattlePhase } from '../components/BattlePhase';
 import { ResultsPhase } from '../components/ResultsPhase';
+import { GroupMember } from '@/features/groups/types/groups.types';
 
 export function LiveBattlePage() {
   const router = useRouter();
@@ -21,7 +21,7 @@ export function LiveBattlePage() {
   const [words, setWords] = useState<WordItem[]>([]);
   const [timeLimit, setTimeLimit] = useState(30);
   const [finalPlayers, setFinalPlayers] = useState<Player[]>([]);
-  const [members, setMembers] = useState<any[]>([]);
+  const [members, setMembers] = useState<GroupMember[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -31,7 +31,7 @@ export function LiveBattlePage() {
         .catch(console.error)
         .finally(() => setLoading(false));
     } else {
-      setLoading(false);
+      setTimeout(() => setLoading(false), 0);
     }
   }, [groupId]);
 
@@ -49,7 +49,7 @@ export function LiveBattlePage() {
   return (
     <DashboardLayout>
       <div className="max-w-7xl mx-auto w-full pb-12">
-        {/* Header Breadcrumbs */}
+        {}
         <div className="flex items-center gap-2 text-sm font-medium text-slate-500 mb-8">
           <button onClick={() => router.push('/dashboard')} className="hover:text-indigo-600 transition-colors">Dashboard</button>
           <ChevronRight size={16} />

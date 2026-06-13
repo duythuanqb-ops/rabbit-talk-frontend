@@ -3,6 +3,13 @@ import Cropper from 'react-easy-crop';
 import { X, Check, Loader2 } from 'lucide-react';
 import getCroppedImg from '@/shared/utils/cropImage';
 
+export interface Area {
+  width: number;
+  height: number;
+  x: number;
+  y: number;
+}
+
 interface ImageCropperModalProps {
   imageSrc: string;
   onClose: () => void;
@@ -20,12 +27,10 @@ export default function ImageCropperModal({
 }: ImageCropperModalProps) {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const onCropCompleteHandler = useCallback((croppedArea: any, croppedAreaPixels: any) => {
+  const onCropCompleteHandler = useCallback((croppedArea: Area, croppedAreaPixels: Area) => {
     setCroppedAreaPixels(croppedAreaPixels);
   }, []);
 
@@ -46,12 +51,12 @@ export default function ImageCropperModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop */}
+      {}
       <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm" onClick={!isProcessing ? onClose : undefined} />
       
-      {/* Modal */}
+      {}
       <div className="relative bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-        {/* Header */}
+        {}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
           <h3 className="text-lg font-semibold text-slate-900">{title}</h3>
           <button
@@ -63,7 +68,7 @@ export default function ImageCropperModal({
           </button>
         </div>
 
-        {/* Cropper Area */}
+        {}
         <div className="relative h-80 bg-slate-900 w-full">
           <Cropper
             image={imageSrc}
@@ -79,7 +84,7 @@ export default function ImageCropperModal({
           />
         </div>
 
-        {/* Controls */}
+        {}
         <div className="p-6 space-y-6">
           <div className="space-y-3">
             <label className="text-sm font-medium text-slate-700 flex justify-between">

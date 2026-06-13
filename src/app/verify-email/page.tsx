@@ -15,22 +15,21 @@ function VerifyEmailContent() {
 
   useEffect(() => {
     if (!token) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setStatus('error');
-      setMessage('No verification token found. Please use the link from your email.');
+      setTimeout(() => {
+        setStatus('error');
+        setMessage('No verification token found. Please use the link from your email.');
+      }, 0);
       return;
     }
 
     const verify = async () => {
       try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const res: any = await apiCall(`/auth/verify-email?token=${token}`, { method: 'GET' });
+        const res = await apiCall<{ message?: string }>(`/auth/verify-email?token=${token}`, { method: 'GET' });
         setStatus('success');
         setMessage(res?.message || 'Your email has been verified successfully!');
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } catch (err: any) {
+      } catch (err: unknown) {
         setStatus('error');
-        setMessage(err.message || 'Verification failed. The link may have expired.');
+        setMessage((err as Error).message || 'Verification failed. The link may have expired.');
       }
     };
 
@@ -40,7 +39,7 @@ function VerifyEmailContent() {
   return (
     <main className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-xl border border-slate-100 p-10 max-w-md w-full text-center">
-        {/* Logo */}
+        {}
         <div className="mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-emerald-500 text-white text-3xl font-bold shadow-lg shadow-emerald-500/30 mb-4">
             🐸
@@ -48,7 +47,7 @@ function VerifyEmailContent() {
           <h1 className="text-xl font-bold text-slate-900">RibbitTalk</h1>
         </div>
 
-        {/* Status */}
+        {}
         {status === 'loading' && (
           <div className="space-y-4">
             <div className="flex justify-center">

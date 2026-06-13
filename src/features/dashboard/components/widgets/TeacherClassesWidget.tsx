@@ -2,9 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { Users, Plus, Swords, Loader2 } from 'lucide-react';
 import { groupsService } from '@/features/groups/services/groups.service';
 import { Group } from '@/features/groups/types/groups.types';
+import { StaggerContainer, StaggerItem } from '@/shared/components/animations/StaggerContainer';
+import { Button } from '@/components/ui/Button';
 
 export function TeacherClassesWidget() {
   const router = useRouter();
@@ -32,12 +35,15 @@ export function TeacherClassesWidget() {
             <h3 className="font-bold text-foreground text-lg">My Classes</h3>
             <p className="text-muted-foreground text-sm">Select a class to manage or start a Live Battle.</p>
           </div>
-          <button 
+          <Button
             onClick={() => router.push('/dashboard/groups')}
-            className="px-4 py-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-bold rounded-xl text-xs transition-colors flex items-center gap-1.5"
+            size="sm"
+            variant="primary"
+            className="rounded-xl"
+            leftIcon={<Plus size={14} />}
           >
-            <Plus size={14} /> Create Class
-          </button>
+            Create Class
+          </Button>
         </div>
 
         {loading ? (
@@ -48,17 +54,18 @@ export function TeacherClassesWidget() {
           <div className="text-center py-12 bg-surface-hover rounded-2xl border border-dashed border-border/60">
             <Users className="mx-auto text-muted-foreground/50 mb-3" size={36} />
             <p className="text-muted-foreground font-medium text-sm">No classes created yet</p>
-            <button 
+            <Button
               onClick={() => router.push('/dashboard/groups')}
-              className="mt-4 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl text-xs transition shadow-[0_4px_14px_rgba(16,185,129,0.4)]"
+              className="mt-4 rounded-xl"
+              variant="primary"
             >
               Create Your First Class
-            </button>
+            </Button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <StaggerContainer className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {groups.map((group) => (
-              <div 
+              <StaggerItem 
                 key={group.id}
                 onClick={() => router.push(`/dashboard/groups?groupId=${group.id}`)}
                 className="p-5 rounded-2xl border border-border/50 bg-surface-hover/50 hover:border-emerald-500/30 hover:shadow-md hover:bg-surface transition-all cursor-pointer group flex flex-col justify-between"
@@ -66,9 +73,12 @@ export function TeacherClassesWidget() {
                 <div>
                   <div className="flex gap-3 items-start mb-3">
                     {group.avatar ? (
-                      <img 
+                      <Image 
+                        unoptimized
                         src={group.avatar} 
                         alt={group.title} 
+                        width={40}
+                        height={40}
                         className="w-10 h-10 rounded-xl object-cover border border-border shadow-sm flex-shrink-0"
                       />
                     ) : (
@@ -96,19 +106,21 @@ export function TeacherClassesWidget() {
                   <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider group-hover:text-foreground transition-colors">
                     Click to manage &rarr;
                   </span>
-                  <button 
+                  <Button
                     onClick={(e) => {
                       e.stopPropagation();
                       router.push(`/dashboard/battle?groupId=${group.id}&groupName=${encodeURIComponent(group.title)}`);
                     }}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500 text-white hover:bg-emerald-600 font-bold rounded-lg text-xs transition-colors shadow-sm"
+                    size="sm"
+                    className="h-8 text-xs rounded-lg px-3"
+                    leftIcon={<Swords size={12} />}
                   >
-                    <Swords size={12} /> Battle
-                  </button>
+                    Battle
+                  </Button>
                 </div>
-              </div>
+              </StaggerItem>
             ))}
-          </div>
+          </StaggerContainer>
         )}
       </div>
     </div>

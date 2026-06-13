@@ -1,16 +1,32 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import Image from 'next/image';
 import { Upload, Shield, Loader2, Save, GraduationCap, CheckCircle } from 'lucide-react';
 import { getProfile, sendVerificationEmail, updateProfile, uploadAvatar, removeAvatar, registerTeacher } from '@/features/auth/services/auth.service';
 import { ImageCropperModal } from '@/features/dashboard/components';
 import { OtpModal } from './OtpModal';
 
+interface UserProfile {
+  first_name?: string;
+  last_name?: string;
+  firstName?: string;
+  lastName?: string;
+  bio?: string;
+  avatar_url?: string | null;
+  cover_url?: string | null;
+  role?: string;
+  is_verified?: boolean;
+  email?: string;
+  is_email_verified?: boolean;
+  username?: string;
+}
+
 export function ProfileSettings() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [sendState, setSendState] = useState<'idle' | 'sending' | 'error'>('idle');
   const [showOtpModal, setShowOtpModal] = useState(false);
 
-  // Controlled form state
+  
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [bio, setBio] = useState('');
@@ -19,7 +35,7 @@ export function ProfileSettings() {
   const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Teacher Registration State
+  
   const [teacherHeadline, setTeacherHeadline] = useState('');
   const [teacherExperience, setTeacherExperience] = useState('');
   const [teacherVideo, setTeacherVideo] = useState('');
@@ -43,7 +59,19 @@ export function ProfileSettings() {
     }
   }, []);
 
-  useEffect(() => { fetchUser(); }, [fetchUser]);
+  useEffect(() => {
+    let active = true;
+    const run = async () => {
+      await Promise.resolve();
+      if (active) {
+        fetchUser();
+      }
+    };
+    run();
+    return () => {
+      active = false;
+    };
+  }, [fetchUser]);
 
   const handleSendOtp = async () => {
     setSendState('sending');
@@ -51,7 +79,7 @@ export function ProfileSettings() {
       await sendVerificationEmail();
       setSendState('idle');
       setShowOtpModal(true);
-    } catch (err: any) {
+    } catch {
       setSendState('error');
       setTimeout(() => setSendState('idle'), 3000);
     }
@@ -68,7 +96,7 @@ export function ProfileSettings() {
       await updateProfile({ first_name: firstName, last_name: lastName, bio });
       setSaveState('success');
       setTimeout(() => setSaveState('idle'), 2500);
-    } catch (err: any) {
+    } catch {
       setSaveState('error');
       setTimeout(() => setSaveState('idle'), 3000);
     }
@@ -102,11 +130,11 @@ export function ProfileSettings() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Read file as object URL for cropper
+    
     const url = URL.createObjectURL(file);
     setCropImageSrc(url);
     
-    // Clear input so same file can be selected again
+    
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -119,10 +147,10 @@ export function ProfileSettings() {
     setUploadingAvatar(true);
     
     try {
-      const res: any = await uploadAvatar(croppedFile);
+      const res = (await uploadAvatar(croppedFile)) as { data?: { avatar_url?: string }; avatar_url?: string };
       const newAvatarUrl = res.data?.avatar_url || res.avatar_url;
-      setUser((prev: any) => ({ ...prev, avatar_url: newAvatarUrl }));
-      await fetchUser(); // Ensure profile is fully synced
+      setUser((prev: UserProfile | null) => prev ? ({ ...prev, avatar_url: newAvatarUrl }) : null);
+      await fetchUser(); 
     } catch (err) {
       console.error('Failed to upload avatar', err);
     } finally {
@@ -159,9 +187,10 @@ export function ProfileSettings() {
       setTeacherSubmitState('success');
       setTimeout(() => setTeacherSubmitState('idle'), 3000);
       fetchUser();
-    } catch (err: any) {
+    } catch (err) {
+      const error = err as Error;
       setTeacherSubmitState('error');
-      setTeacherErrorMsg(err.message || 'Failed to register as teacher');
+      setTeacherErrorMsg(error.message || 'Failed to register as teacher');
     }
   };
 
@@ -192,7 +221,7 @@ export function ProfileSettings() {
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 pb-6 border-b border-slate-100 dark:border-slate-700">
           <div className="w-24 h-24 shrink-0 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 text-3xl font-bold shadow-inner overflow-hidden relative">
             {avatarUrl ? (
-              <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+              <Image unoptimized src={avatarUrl} alt="Avatar" width={96} height={96} className="w-full h-full object-cover" />
             ) : (
               initials
             )}
@@ -308,7 +337,7 @@ export function ProfileSettings() {
           </button>
         </div>
 
-        {/* Teacher Registration Section */}
+        {}
         <div className="pt-8 border-t border-slate-100 dark:border-slate-700">
           <div className="flex items-center gap-2 mb-4">
             <GraduationCap className="text-slate-800 dark:text-slate-200" size={22} />

@@ -11,7 +11,6 @@ export function useGroupManager(queryGroupId?: string | null) {
 
   const fetchGroups = useCallback(async () => {
     try {
-      setLoading(true);
       const res = await groupsService.getGroups();
       setGroups(res.data || []);
     } catch {
@@ -39,20 +38,21 @@ export function useGroupManager(queryGroupId?: string | null) {
     }
   }, [fetchMembers]);
 
-  // Initial load
+  
   useEffect(() => {
-    fetchGroups();
+    setTimeout(() => fetchGroups(), 0);
   }, [fetchGroups]);
 
-  // Handle URL query parameter
+  
   useEffect(() => {
     if (queryGroupId && groups.length > 0) {
       const found = groups.find((g) => g.id === queryGroupId);
-      if (found) {
-        handleSelectGroup(found);
+      if (found && selectedGroup?.id !== queryGroupId) {
+        
+        setTimeout(() => handleSelectGroup(found), 0);
       }
     }
-  }, [queryGroupId, groups, handleSelectGroup]);
+  }, [queryGroupId, groups, selectedGroup?.id, handleSelectGroup]);
 
   const saveGroup = async (
     editingGroup: Group | null,
@@ -119,7 +119,7 @@ export function useGroupManager(queryGroupId?: string | null) {
       fetchMembers(groupId);
       return true;
     } catch (error: unknown) {
-      const msg = error instanceof Error ? error.message : 'Failed to add member';
+      const msg = error instanceof Error ? (error as Error).message : 'Failed to add member';
       toast.error(msg);
       return false;
     }
