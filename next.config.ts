@@ -1,7 +1,18 @@
 import type { NextConfig } from "next";
 
+function getApiHostname(): string | null {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (!apiUrl) return null;
+  try {
+    return new URL(apiUrl).hostname;
+  } catch {
+    return null;
+  }
+}
+
+const apiHostname = getApiHostname();
+
 const nextConfig: NextConfig = {
-  output: "standalone",
   reactCompiler: true,
   images: {
     unoptimized: true,
@@ -11,6 +22,14 @@ const nextConfig: NextConfig = {
         hostname: 'localhost',
         port: '3000',
       },
+      ...(apiHostname
+        ? [
+            {
+              protocol: 'https' as const,
+              hostname: apiHostname,
+            },
+          ]
+        : []),
     ],
   },
   async headers() {
